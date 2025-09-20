@@ -1,0 +1,37 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* AOS-like animations */
+.aos-element {
+  opacity: 0;
+  transition: opacity 0.8s ease-out, transform 0.8s ease-out;
+}
+
+.aos-element.aos-animate {
+  opacity: 1;
+}
+
+.aos-fade-up {
+  transform: translateY(30px);
+}
+
+.aos-fade-up.aos-animate {
+  transform: translateY(0);
+}
+
+.aos-fade-in {
+  transform: scale(0.95);
+}
+
+.aos-fade-in.aos-animate {
+  transform: scale(1);
+}
+
+.aos-slide-left {
+  transform: translateX(30px);
+}
+
+.aos-slide-left.aos-animate {
+  transform: translateX(0);
+}
