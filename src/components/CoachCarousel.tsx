@@ -4,20 +4,10 @@ import CoachDetailModal from './CoachDetailModal';
 
 export default function CoachCarousel() {
   const { coaches } = useApp();
-  const [currentIndex, setCurrentIndex] = useState(0);
   const [selectedCoach, setSelectedCoach] = useState<string | null>(null);
 
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setCurrentIndex((prevIndex) => (prevIndex + 1) % coaches.length);
-    }, 4000); // Slower transition for smoother effect
-
-    return () => clearInterval(interval);
-  }, [coaches.length]);
-
-  // Create infinite loop effect
-  const extendedCoaches = [...coaches, ...coaches, ...coaches];
-  const visibleCoaches = extendedCoaches.slice(currentIndex, currentIndex + 3);
+  // Create multiple copies for infinite scroll
+  const infiniteCoaches = [...coaches, ...coaches, ...coaches, ...coaches];
 
   const getFieldName = (field: string) => {
     const fieldNames = { SAY: 'Sayısal', EA: 'Eşit Ağırlık', SÖZ: 'Sözel', DİL: 'Dil' };
@@ -32,12 +22,12 @@ export default function CoachCarousel() {
         </h2>
         
         <div className="overflow-hidden">
-          <div className="flex space-x-6 justify-center transition-transform duration-1000 ease-in-out">
-            {visibleCoaches.map((coach, index) => (
+          <div className="flex space-x-6 animate-slide-infinite">
+            {infiniteCoaches.map((coach, index) => (
               <button 
                 key={`${coach.id}-${index}`}
                 onClick={() => setSelectedCoach(coach.id)}
-                className="group flex-shrink-0 w-64 bg-white rounded-lg shadow-md overflow-hidden transform transition-all duration-300 hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-warmAmber"
+                className="group flex-shrink-0 w-64 bg-white rounded-lg shadow-md overflow-hidden transform transition-all duration-300 hover:shadow-lg hover:scale-105 focus:outline-none focus:ring-2 focus:ring-warmAmber"
               >
                 <div 
                   className="h-72 bg-cover bg-center relative overflow-hidden"
