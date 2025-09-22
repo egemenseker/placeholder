@@ -29,12 +29,7 @@ export default function Header({ showDebugButtons, onCoachPanelClick, onAdminPan
 
           {/* Navigation */}
           <nav className="flex flex-col md:flex-row space-y-2 md:space-y-0 md:space-x-8 text-sm md:text-base">
-            <button 
-              onClick={onLogoClick}
-              className="text-softBlack hover:text-warmAmber transition-colors"
-            >
-              Ana Sayfa
-            </button>
+           
             <button onClick={onPurchaseClick} className="text-softBlack hover:text-warmAmber transition-colors">
               Koçluk Paketi Satın Al
             </button>
