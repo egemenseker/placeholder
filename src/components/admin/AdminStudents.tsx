@@ -1,9 +1,10 @@
 import React, { useState } from 'react';
-import { Plus, MoreVertical, Edit2, Trash2, User, UserCheck } from 'lucide-react';
+import { Plus, MoreVertical, Edit2, Trash2, User, UserCheck, Calendar } from 'lucide-react';
 import { useApp } from '../../contexts/AppContext';
 import AddStudentModal from './AddStudentModal';
 import EditStudentModal from './EditStudentModal';
 import AssignCoachModal from './AssignCoachModal';
+import StudentProgramsModal from './StudentProgramsModal';
 
 export default function AdminStudents() {
   const { students, coaches, deleteStudent } = useApp();
@@ -11,6 +12,7 @@ export default function AdminStudents() {
   const [editStudentId, setEditStudentId] = useState<string | null>(null);
   const [assignStudentId, setAssignStudentId] = useState<string | null>(null);
   const [selectedStudentId, setSelectedStudentId] = useState<string | null>(null);
+  const [showProgramsId, setShowProgramsId] = useState<string | null>(null);
 
   const getCoachName = (coachId: string) => {
     const coach = coaches.find(c => c.id === coachId);
@@ -62,6 +64,9 @@ export default function AdminStudents() {
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Kayıt Tarihi
                 </th>
+                <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Programlar
+                </th>
                 <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
                   İşlemler
                 </th>
@@ -108,6 +113,15 @@ export default function AdminStudents() {
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                     {new Date(student.registeredDate).toLocaleDateString('tr-TR')}
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-center">
+                    <button
+                      onClick={() => setShowProgramsId(student.id)}
+                      className="inline-flex items-center space-x-2 px-3 py-2 bg-blue-600 text-white text-sm rounded-lg hover:bg-blue-700 transition-colors"
+                    >
+                      <Calendar className="w-4 h-4" />
+                      <span>Geçmiş Programları Görüntüle</span>
+                    </button>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                     <div className="relative">
@@ -177,6 +191,13 @@ export default function AdminStudents() {
         <AssignCoachModal
           studentId={assignStudentId}
           onClose={() => setAssignStudentId(null)}
+        />
+      )}
+
+      {showProgramsId && (
+        <StudentProgramsModal
+          studentId={showProgramsId}
+          onClose={() => setShowProgramsId(null)}
         />
       )}
     </div>

@@ -14,7 +14,9 @@ export default function AssignCoachModal({ studentId, onClose }: AssignCoachModa
 
   if (!student) return null;
 
-  const availableCoaches = coaches.filter(coach => coach.field === student.field);
+  const availableCoaches = coaches
+    .filter(coach => coach.field === student.field)
+    .sort((a, b) => a.ranking - b.ranking);
 
   const handleAssign = () => {
     if (selectedCoachId) {

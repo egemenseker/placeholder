@@ -127,7 +127,7 @@ export default function AddCoachModal({ onClose }: AddCoachModalProps) {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">TYT Puanı</label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">İlk TYT Neti</label>
               <input
                 type="number"
                 name="tytScore"

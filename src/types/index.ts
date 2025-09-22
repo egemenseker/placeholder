@@ -15,6 +15,7 @@ export interface Coach {
   quotaFull: boolean;
   price: number;
   registeredDate: string;
+  adminNotes?: string;
 }
 
 export interface Student {

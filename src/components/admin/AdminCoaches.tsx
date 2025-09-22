@@ -1,8 +1,12 @@
 import React, { useState } from 'react';
-import { Plus, MoreVertical, Edit2, Trash2, Users, User } from 'lucide-react';
+import { Plus, MoreVertical, Edit2, Trash2, Users, User, DollarSign, FileText, Eye } from 'lucide-react';
 import { useApp } from '../../contexts/AppContext';
 import AddCoachModal from './AddCoachModal';
 import EditCoachModal from './EditCoachModal';
+import PriceEditModal from './PriceEditModal';
+import CoachProfileModal from './CoachProfileModal';
+import AddCoachNoteModal from './AddCoachNoteModal';
+import StudentInfoModal from './StudentInfoModal';
 
 export default function AdminCoaches() {
   const { coaches, students, deleteCoach } = useApp();
@@ -10,6 +14,10 @@ export default function AdminCoaches() {
   const [editCoachId, setEditCoachId] = useState<string | null>(null);
   const [selectedCoachId, setSelectedCoachId] = useState<string | null>(null);
   const [expandedCoachId, setExpandedCoachId] = useState<string | null>(null);
+  const [showPriceModal, setShowPriceModal] = useState(false);
+  const [showCoachProfile, setShowCoachProfile] = useState<string | null>(null);
+  const [showAddNote, setShowAddNote] = useState<string | null>(null);
+  const [showStudentInfo, setShowStudentInfo] = useState<string | null>(null);
 
   const getCoachStudents = (coachId: string) => {
     return students.filter(student => student.coachId === coachId);
@@ -35,13 +43,22 @@ export default function AdminCoaches() {
     <div className="space-y-6">
       <div className="flex justify-between items-center">
         <h2 className="text-2xl font-bold text-gray-900">Koçlar</h2>
-        <button
-          onClick={() => setShowAddModal(true)}
-          className="flex items-center space-x-2 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors"
-        >
-          <Plus className="w-4 h-4" />
-          <span>Koç Ekle</span>
-        </button>
+        <div className="flex space-x-3">
+          <button
+            onClick={() => setShowPriceModal(true)}
+            className="flex items-center space-x-2 bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition-colors"
+          >
+            <DollarSign className="w-4 h-4" />
+            <span>Fiyat Düzenle</span>
+          </button>
+          <button
+            onClick={() => setShowAddModal(true)}
+            className="flex items-center space-x-2 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors"
+          >
+            <Plus className="w-4 h-4" />
+            <span>Koç Ekle</span>
+          </button>
+        </div>
       </div>
 
       <div className="bg-white rounded-lg shadow-md overflow-hidden">
@@ -145,6 +162,28 @@ export default function AdminCoaches() {
                                 <button
                                   onClick={(e) => {
                                     e.stopPropagation();
+                                    setShowCoachProfile(coach.id);
+                                    setSelectedCoachId(null);
+                                  }}
+                                  className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 w-full"
+                                >
+                                  <Eye className="w-4 h-4 mr-2" />
+                                  Profil
+                                </button>
+                                <button
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    setShowAddNote(coach.id);
+                                    setSelectedCoachId(null);
+                                  }}
+                                  className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 w-full"
+                                >
+                                  <FileText className="w-4 h-4 mr-2" />
+                                  Not Ekle
+                                </button>
+                                <button
+                                  onClick={(e) => {
+                                    e.stopPropagation();
                                     handleDeleteCoach(coach.id);
                                   }}
                                   className="flex items-center px-4 py-2 text-sm text-red-600 hover:bg-red-50 w-full"
@@ -171,18 +210,29 @@ export default function AdminCoaches() {
                                 {coachStudents.map((student) => (
                                   <div 
                                     key={student.id}
-                                    className={`flex items-center space-x-2 text-sm p-2 rounded ${
+                                    className={`flex items-center justify-between text-sm p-2 rounded ${
                                       !student.hasPaid ? 'bg-red-100 text-red-800' : 'text-gray-700'
                                     }`}
                                   >
-                                    <User className="w-4 h-4" />
-                                    <span>{student.firstName} {student.lastName}</span>
-                                    <span className="text-xs">({getFieldName(student.field)})</span>
-                                    {!student.hasPaid && (
-                                      <span className="text-xs bg-red-200 px-2 py-1 rounded">
-                                        Ödeme Bekliyor
-                                      </span>
-                                    )}
+                                    <div className="flex items-center space-x-2">
+                                      <User className="w-4 h-4" />
+                                      <span>{student.firstName} {student.lastName}</span>
+                                      <span className="text-xs">({getFieldName(student.field)})</span>
+                                      {!student.hasPaid && (
+                                        <span className="text-xs bg-red-200 px-2 py-1 rounded">
+                                          Ödeme Bekliyor
+                                        </span>
+                                      )}
+                                    </div>
+                                    <button
+                                      onClick={(e) => {
+                                        e.stopPropagation();
+                                        setShowStudentInfo(student.id);
+                                      }}
+                                      className="text-gray-400 hover:text-gray-600"
+                                    >
+                                      <MoreVertical className="w-4 h-4" />
+                                    </button>
                                   </div>
                                 ))}
                               </div>
@@ -201,6 +251,31 @@ export default function AdminCoaches() {
 
       {showAddModal && (
         <AddCoachModal onClose={() => setShowAddModal(false)} />
+      )}
+
+      {showPriceModal && (
+        <PriceEditModal onClose={() => setShowPriceModal(false)} />
+      )}
+
+      {showCoachProfile && (
+        <CoachProfileModal
+          coachId={showCoachProfile}
+          onClose={() => setShowCoachProfile(null)}
+        />
+      )}
+
+      {showAddNote && (
+        <AddCoachNoteModal
+          coachId={showAddNote}
+          onClose={() => setShowAddNote(null)}
+        />
+      )}
+
+      {showStudentInfo && (
+        <StudentInfoModal
+          studentId={showStudentInfo}
+          onClose={() => setShowStudentInfo(null)}
+        />
       )}
 
       {editCoachId && (
