@@ -80,8 +80,49 @@ export default function AdminStudents() {
                 >
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div className="flex items-center">
-                      <div className="h-10 w-10 rounded-full bg-gray-300 flex items-center justify-center">
-                        <User className="w-5 h-5 text-gray-600" />
+                      <div className="relative mr-4">
+                        <button
+                          onClick={() => setSelectedStudentId(
+                            selectedStudentId === student.id ? null : student.id
+                          )}
+                          className="text-gray-400 hover:text-gray-600"
+                        >
+                          <MoreVertical className="w-4 h-4" />
+                        </button>
+                        
+                        {selectedStudentId === student.id && (
+                          <div className="absolute left-0 mt-2 w-48 bg-white rounded-md shadow-lg z-10 border">
+                            <div className="py-1">
+                              <button
+                                onClick={() => {
+                                  setEditStudentId(student.id);
+                                  setSelectedStudentId(null);
+                                }}
+                                className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 w-full"
+                              >
+                                <Edit2 className="w-4 h-4 mr-2" />
+                                Düzenle
+                              </button>
+                              <button
+                                onClick={() => {
+                                  setAssignStudentId(student.id);
+                                  setSelectedStudentId(null);
+                                }}
+                                className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 w-full"
+                              >
+                                <UserCheck className="w-4 h-4 mr-2" />
+                                Koç Ata
+                              </button>
+                              <button
+                                onClick={() => handleDeleteStudent(student.id)}
+                                className="flex items-center px-4 py-2 text-sm text-red-600 hover:bg-red-50 w-full"
+                              >
+                                <Trash2 className="w-4 h-4 mr-2" />
+                                Sil
+                              </button>
+                            </div>
+                          </div>
+                        )}
                       </div>
                       <div className="ml-4">
                         <div className="text-sm font-medium text-gray-900">
@@ -124,50 +165,7 @@ export default function AdminStudents() {
                     </button>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                    <div className="relative">
-                      <button
-                        onClick={() => setSelectedStudentId(
-                          selectedStudentId === student.id ? null : student.id
-                        )}
-                        className="text-gray-400 hover:text-gray-600"
-                      >
-                        <MoreVertical className="w-4 h-4" />
-                      </button>
-                      
-                      {selectedStudentId === student.id && (
-                        <div className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg z-10 border">
-                          <div className="py-1">
-                            <button
-                              onClick={() => {
-                                setEditStudentId(student.id);
-                                setSelectedStudentId(null);
-                              }}
-                              className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 w-full"
-                            >
-                              <Edit2 className="w-4 h-4 mr-2" />
-                              Düzenle
-                            </button>
-                            <button
-                              onClick={() => {
-                                setAssignStudentId(student.id);
-                                setSelectedStudentId(null);
-                              }}
-                              className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 w-full"
-                            >
-                              <UserCheck className="w-4 h-4 mr-2" />
-                              Koç Ata
-                            </button>
-                            <button
-                              onClick={() => handleDeleteStudent(student.id)}
-                              className="flex items-center px-4 py-2 text-sm text-red-600 hover:bg-red-50 w-full"
-                            >
-                              <Trash2 className="w-4 h-4 mr-2" />
-                              Sil
-                            </button>
-                          </div>
-                        </div>
-                      )}
-                    </div>
+                    {/* Actions moved to left of student name */}
                   </td>
                 </tr>
               ))}

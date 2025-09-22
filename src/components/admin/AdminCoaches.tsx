@@ -101,6 +101,69 @@ export default function AdminCoaches() {
                     >
                       <td className="px-6 py-4 whitespace-nowrap">
                         <div className="flex items-center">
+                          <div className="relative mr-4">
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setSelectedCoachId(
+                                  selectedCoachId === coach.id ? null : coach.id
+                                );
+                              }}
+                              className="text-gray-400 hover:text-gray-600"
+                            >
+                              <MoreVertical className="w-4 h-4" />
+                            </button>
+                            
+                            {selectedCoachId === coach.id && (
+                              <div className="absolute left-0 mt-2 w-48 bg-white rounded-md shadow-lg z-10 border">
+                                <div className="py-1">
+                                  <button
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      setEditCoachId(coach.id);
+                                      setSelectedCoachId(null);
+                                    }}
+                                    className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 w-full"
+                                  >
+                                    <Edit2 className="w-4 h-4 mr-2" />
+                                    Düzenle
+                                  </button>
+                                  <button
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      setShowCoachProfile(coach.id);
+                                      setSelectedCoachId(null);
+                                    }}
+                                    className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 w-full"
+                                  >
+                                    <Eye className="w-4 h-4 mr-2" />
+                                    Profil
+                                  </button>
+                                  <button
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      setShowAddNote(coach.id);
+                                      setSelectedCoachId(null);
+                                    }}
+                                    className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 w-full"
+                                  >
+                                    <FileText className="w-4 h-4 mr-2" />
+                                    Not Ekle
+                                  </button>
+                                  <button
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      handleDeleteCoach(coach.id);
+                                    }}
+                                    className="flex items-center px-4 py-2 text-sm text-red-600 hover:bg-red-50 w-full"
+                                  >
+                                    <Trash2 className="w-4 h-4 mr-2" />
+                                    Sil
+                                  </button>
+                                </div>
+                              </div>
+                            )}
+                          </div>
                           <img
                             src={coach.profilePhoto || 'https://images.pexels.com/photos/220453/pexels-photo-220453.jpeg?auto=compress&cs=tinysrgb&w=100'}
                             alt={coach.firstName}
@@ -132,69 +195,7 @@ export default function AdminCoaches() {
                         {new Date(coach.registeredDate).toLocaleDateString('tr-TR')}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                        <div className="relative">
-                          <button
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              setSelectedCoachId(
-                                selectedCoachId === coach.id ? null : coach.id
-                              );
-                            }}
-                            className="text-gray-400 hover:text-gray-600"
-                          >
-                            <MoreVertical className="w-4 h-4" />
-                          </button>
-                          
-                          {selectedCoachId === coach.id && (
-                            <div className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg z-10 border">
-                              <div className="py-1">
-                                <button
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    setEditCoachId(coach.id);
-                                    setSelectedCoachId(null);
-                                  }}
-                                  className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 w-full"
-                                >
-                                  <Edit2 className="w-4 h-4 mr-2" />
-                                  Düzenle
-                                </button>
-                                <button
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    setShowCoachProfile(coach.id);
-                                    setSelectedCoachId(null);
-                                  }}
-                                  className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 w-full"
-                                >
-                                  <Eye className="w-4 h-4 mr-2" />
-                                  Profil
-                                </button>
-                                <button
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    setShowAddNote(coach.id);
-                                    setSelectedCoachId(null);
-                                  }}
-                                  className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 w-full"
-                                >
-                                  <FileText className="w-4 h-4 mr-2" />
-                                  Not Ekle
-                                </button>
-                                <button
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    handleDeleteCoach(coach.id);
-                                  }}
-                                  className="flex items-center px-4 py-2 text-sm text-red-600 hover:bg-red-50 w-full"
-                                >
-                                  <Trash2 className="w-4 h-4 mr-2" />
-                                  Sil
-                                </button>
-                              </div>
-                            </div>
-                          )}
-                        </div>
+                        {/* Actions moved to left of profile photo */}
                       </td>
                     </tr>
                     
@@ -215,7 +216,17 @@ export default function AdminCoaches() {
                                     }`}
                                   >
                                     <div className="flex items-center space-x-2">
-                                      <User className="w-4 h-4" />
+                                      <div className="relative">
+                                        <button
+                                          onClick={(e) => {
+                                            e.stopPropagation();
+                                            setShowStudentInfo(student.id);
+                                          }}
+                                          className="text-gray-400 hover:text-gray-600"
+                                        >
+                                          <MoreVertical className="w-4 h-4" />
+                                        </button>
+                                      </div>
                                       <span>{student.firstName} {student.lastName}</span>
                                       <span className="text-xs">({getFieldName(student.field)})</span>
                                       {!student.hasPaid && (
@@ -224,15 +235,6 @@ export default function AdminCoaches() {
                                         </span>
                                       )}
                                     </div>
-                                    <button
-                                      onClick={(e) => {
-                                        e.stopPropagation();
-                                        setShowStudentInfo(student.id);
-                                      }}
-                                      className="text-gray-400 hover:text-gray-600"
-                                    >
-                                      <MoreVertical className="w-4 h-4" />
-                                    </button>
                                   </div>
                                 ))}
                               </div>

@@ -24,11 +24,11 @@ export default function Header({ showDebugButtons, onCoachPanelClick, onAdminPan
               alt="Arı Koçluk Logo" 
               className="w-10 h-10 rounded-full object-cover"
             />
-            <span className="text-xl font-bold text-softBlack">Arı Koçluk</span>
+            <span className="text-xl font-bold text-softBlack hidden md:block">Arı Koçluk</span>
           </div>
 
           {/* Navigation */}
-          <nav className="hidden md:flex space-x-8">
+          <nav className="flex flex-col md:flex-row space-y-2 md:space-y-0 md:space-x-8 text-sm md:text-base">
             <button 
               onClick={onLogoClick}
               className="text-softBlack hover:text-warmAmber transition-colors"
@@ -67,7 +67,7 @@ export default function Header({ showDebugButtons, onCoachPanelClick, onAdminPan
           )}
 
           {/* Social Icons */}
-          <div className="flex items-center space-x-4">
+          <div className="flex flex-col md:flex-row items-center space-y-2 md:space-y-0 md:space-x-4">
             <a 
               href="https://www.instagram.com/serkanpakfiliz.yks?igsh=MXVwM3luZjdoZ3Z1cg%3D%3D&utm_source=qr" 
               target="_blank" 

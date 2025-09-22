@@ -52,6 +52,9 @@ export default function CoachStudents({ onCreateProgram }: CoachStudentsProps) {
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Öğrenci
                   </th>
+                  <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Program
+                  </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Alan
                   </th>
@@ -64,9 +67,6 @@ export default function CoachStudents({ onCreateProgram }: CoachStudentsProps) {
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Ödeme Durumu
                   </th>
-                  <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    İşlemler
-                  </th>
                 </tr>
               </thead>
               <tbody className="bg-white divide-y divide-gray-200">
@@ -77,8 +77,52 @@ export default function CoachStudents({ onCreateProgram }: CoachStudentsProps) {
                   >
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="flex items-center">
-                        <div className="h-10 w-10 rounded-full bg-gray-300 flex items-center justify-center">
-                          <User className="w-5 h-5 text-gray-600" />
+                        <div className="relative mr-4">
+                          <button
+                            onClick={() => setSelectedStudentId(
+                              selectedStudentId === student.id ? null : student.id
+                            )}
+                            className="text-gray-400 hover:text-gray-600"
+                          >
+                            <MoreVertical className="w-4 h-4" />
+                          </button>
+                          
+                          {selectedStudentId === student.id && (
+                            <div className="absolute left-0 mt-2 w-48 bg-white rounded-md shadow-lg z-10 border">
+                              <div className="py-1">
+                                <button
+                                  onClick={() => {
+                                    setShowNotesModal(student.id);
+                                    setSelectedStudentId(null);
+                                  }}
+                                  className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 w-full"
+                                >
+                                  <FileText className="w-4 h-4 mr-2" />
+                                  Notlar
+                                </button>
+                                <button
+                                  onClick={() => {
+                                    onCreateProgram(student.id);
+                                    setSelectedStudentId(null);
+                                  }}
+                                  className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 w-full"
+                                >
+                                  <Calendar className="w-4 h-4 mr-2" />
+                                  Program Oluştur
+                                </button>
+                                <button
+                                  onClick={() => {
+                                    alert(`${student.firstName}'in geçmiş programları gösteriliyor...`);
+                                    setSelectedStudentId(null);
+                                  }}
+                                  className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 w-full"
+                                >
+                                  <Eye className="w-4 h-4 mr-2" />
+                                  Geçmiş Programlar
+                                </button>
+                              </div>
+                            </div>
+                          )}
                         </div>
                         <div className="ml-4">
                           <div className="text-sm font-medium text-gray-900">
@@ -86,6 +130,15 @@ export default function CoachStudents({ onCreateProgram }: CoachStudentsProps) {
                           </div>
                         </div>
                       </div>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-center">
+                      <button
+                        onClick={() => onCreateProgram(student.id)}
+                        className="inline-flex items-center space-x-2 px-4 py-2 bg-blue-600 text-white text-sm rounded-lg hover:bg-blue-700 transition-colors"
+                      >
+                        <Calendar className="w-4 h-4" />
+                        <span>Program Oluştur</span>
+                      </button>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
@@ -106,55 +159,6 @@ export default function CoachStudents({ onCreateProgram }: CoachStudentsProps) {
                       }`}>
                         {student.hasPaid ? 'Ödendi' : 'Ödenmedi'}
                       </span>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                      <div className="relative">
-                        <button
-                          onClick={() => setSelectedStudentId(
-                            selectedStudentId === student.id ? null : student.id
-                          )}
-                          className="text-gray-400 hover:text-gray-600"
-                        >
-                          <MoreVertical className="w-4 h-4" />
-                        </button>
-                        
-                        {selectedStudentId === student.id && (
-                          <div className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg z-10 border">
-                            <div className="py-1">
-                              <button
-                                onClick={() => {
-                                  setShowNotesModal(student.id);
-                                  setSelectedStudentId(null);
-                                }}
-                                className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 w-full"
-                              >
-                                <FileText className="w-4 h-4 mr-2" />
-                                Notlar
-                              </button>
-                              <button
-                                onClick={() => {
-                                  onCreateProgram(student.id);
-                                  setSelectedStudentId(null);
-                                }}
-                                className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 w-full"
-                              >
-                                <Calendar className="w-4 h-4 mr-2" />
-                                Program Oluştur
-                              </button>
-                              <button
-                                onClick={() => {
-                                  alert(`${student.firstName}'in geçmiş programları gösteriliyor...`);
-                                  setSelectedStudentId(null);
-                                }}
-                                className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 w-full"
-                              >
-                                <Eye className="w-4 h-4 mr-2" />
-                                Geçmiş Programlar
-                              </button>
-                            </div>
-                          </div>
-                        )}
-                      </div>
                     </td>
                   </tr>
                 ))}
