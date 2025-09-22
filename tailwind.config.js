@@ -18,7 +18,7 @@ export default {
       keyframes: {
         'slide-infinite': {
           '0%': { transform: 'translateX(0)' },
-          '100%': { transform: 'translateX(-25%)' },
+          '100%': { transform: 'translateX(-75%)' },
         },
       },
     },

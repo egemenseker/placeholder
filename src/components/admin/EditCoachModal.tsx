@@ -177,7 +177,7 @@ export default function EditCoachModal({ coachId, onClose }: EditCoachModalProps
                 className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
               />
               <label htmlFor="hasGapYear" className="ml-2 block text-sm text-gray-900">
-                Mezun (Gap Year)
+                Mezun
               </label>
             </div>
 
@@ -191,7 +191,7 @@ export default function EditCoachModal({ coachId, onClose }: EditCoachModalProps
                 className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
               />
               <label htmlFor="attendedPrivateInstitution" className="ml-2 block text-sm text-gray-900">
-                Özel dershaneye gitti
+                Dershaneye gitti
               </label>
             </div>
 

@@ -3,6 +3,7 @@ export interface Coach {
   firstName: string;
   lastName: string;
   email: string;
+  password?: string;
   field: 'EA' | 'SAY' | 'SÖZ' | 'DİL';
   ranking: number;
   description: string;

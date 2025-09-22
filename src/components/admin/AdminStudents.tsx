@@ -67,9 +67,6 @@ export default function AdminStudents() {
                 <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Programlar
                 </th>
-                <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  İşlemler
-                </th>
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">

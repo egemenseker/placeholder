@@ -105,12 +105,16 @@ export default function PurchaseMainPage({ onBack }: PurchaseMainPageProps) {
             {filteredCoaches.map((coach) => (
               <div 
                 key={coach.id}
-                className={`bg-white rounded-lg shadow-md overflow-hidden transform transition-all duration-300 hover:shadow-lg border-4 ${
-                  coach.quotaFull ? 'border-red-500' : 'border-warmAmber'
+                className={`bg-white rounded-lg shadow-md overflow-hidden transform transition-all duration-300 hover:shadow-lg border-2 ${
+                  coach.quotaFull ? 'border-red-500' : 'border-green-500'
                 }`}
               >
-                <div className="h-48 bg-cover bg-center" 
-                     style={{ backgroundImage: `url('${coach.profilePhoto}')` }} />
+                <div className="h-48 bg-cover bg-center overflow-hidden">
+                  <div 
+                    className="h-full bg-cover bg-center transition-transform duration-300 hover:scale-110 hover:brightness-110"
+                    style={{ backgroundImage: `url('${coach.profilePhoto}')` }}
+                  />
+                </div>
                 
                 <div className="p-4">
                   <h3 className="text-lg font-bold text-softBlack mb-2">
