@@ -6,8 +6,8 @@ export default function CoachCarousel() {
   const { coaches } = useApp();
   const [selectedCoach, setSelectedCoach] = useState<string | null>(null);
 
-  // Create multiple copies for infinite scroll
-  const infiniteCoaches = [...coaches, ...coaches, ...coaches, ...coaches];
+  // Create enough copies for seamless infinite scroll
+  const infiniteCoaches = [...coaches, ...coaches, ...coaches, ...coaches, ...coaches, ...coaches];
 
   const getFieldName = (field: string) => {
     const fieldNames = { SAY: 'Sayısal', EA: 'Eşit Ağırlık', SÖZ: 'Sözel', DİL: 'Dil' };

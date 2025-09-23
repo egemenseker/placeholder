@@ -74,12 +74,14 @@ export default function Header({ showDebugButtons, onCoachPanelClick, onAdminPan
               <Instagram className="w-5 h-5" />
             </a>
             <a 
-              href="https://wa.me/+905432069594" 
+              href="https://www.tiktok.com/@serkanpakfiliz.yks" 
               target="_blank" 
               rel="noopener noreferrer"
-              className="text-softBlack hover:text-green-600 transition-colors"
+              className="text-softBlack hover:text-black transition-colors"
             >
-              <MessageCircle className="w-5 h-5" />
+              <svg className="w-5 h-5" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-2.08v5.58a3.06 3.06 0 0 1-3.06 3.06 3.06 3.06 0 0 1-3.06-3.06V2H5.54v5.58a5.14 5.14 0 0 0 5.14 5.14 5.14 5.14 0 0 0 5.14-5.14V6.69a6.91 6.91 0 0 0 3.77 1.11V6.69z"/>
+              </svg>
             </a>
           </div>
         </div>

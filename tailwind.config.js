@@ -13,12 +13,12 @@ export default {
         beeOrange: '#FF8C00',
       },
       animation: {
-        'slide-infinite': 'slide-infinite 30s linear infinite',
+        'slide-infinite': 'slide-infinite 20s linear infinite',
       },
       keyframes: {
         'slide-infinite': {
           '0%': { transform: 'translateX(0)' },
-          '100%': { transform: 'translateX(-75%)' },
+          '100%': { transform: 'translateX(-50%)' },
         },
       },
     },

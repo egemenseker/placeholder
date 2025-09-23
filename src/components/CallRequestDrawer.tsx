@@ -74,15 +74,15 @@ export default function CallRequestDrawer({ isOpen, onClose }: CallRequestDrawer
         >
           {/* Header */}
           <div className="flex justify-between items-center p-6 border-b border-gray-200">
-            <div className="flex items-center space-x-3">
+              className="px-6 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
               <Phone className="w-6 h-6 text-warmAmber" />
               <h2 className="text-xl font-bold text-softBlack">Sizi Arayalım</h2>
             </div>
             <button
               onClick={onClose}
-              className="text-gray-500 hover:text-gray-700 transition-colors"
+              className="px-6 py-2 bg-warmAmber hover:bg-darkAmber text-white rounded-lg font-semibold transition-colors"
             >
-              <X className="w-6 h-6" />
+              Talebimi Gönder
             </button>
           </div>
 
@@ -159,8 +159,8 @@ export default function CallRequestDrawer({ isOpen, onClose }: CallRequestDrawer
           </form>
 
           {/* Info Text */}
-          <div className="px-6 pb-6">
-            <div className="bg-lightCream rounded-lg p-4">
+          <div className="px-6 pb-6 mt-4">
+            <div className="bg-yellow-50 border-2 border-yellow-400 rounded-lg p-4">
               <p className="text-sm text-softBlack">
                 <strong>Bilgi:</strong> Talebinizi aldıktan sonra en kısa sürede sizi arayarak 
                 detaylı bilgi vereceğiz.
@@ -168,7 +168,7 @@ export default function CallRequestDrawer({ isOpen, onClose }: CallRequestDrawer
             </div>
           </div>
         </div>
-      </div>
+          <div className="flex justify-end space-x-4 mt-6">
     </>
   );
 }
