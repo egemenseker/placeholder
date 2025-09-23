@@ -15,9 +15,8 @@ export default function CallRequestDrawer({ isOpen, onClose }: CallRequestDrawer
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
-    
+
     if (name === 'phone') {
-      // Only allow digits and limit to 11 characters
       const phoneValue = value.replace(/\D/g, '').slice(0, 11);
       setFormData(prev => ({ ...prev, [name]: phoneValue }));
     } else {
@@ -31,21 +30,19 @@ export default function CallRequestDrawer({ isOpen, onClose }: CallRequestDrawer
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (!formData.fullName.trim()) {
       alert('Lütfen ad soyad giriniz.');
       return;
     }
-    
+
     if (formData.phone.length !== 11 || !formData.phone.startsWith('0')) {
       alert('Telefon numarası 11 haneli olmalı ve 0 ile başlamalıdır.');
       return;
     }
-    
-    // Here you would typically send the data to your backend
+
     alert('Talebiniz alındı! En kısa sürede sizi arayacağız.');
-    
-    // Reset form and close drawer
+
     setFormData({ fullName: '', userType: 'Öğrenciyim', phone: '' });
     onClose();
   };
@@ -74,15 +71,10 @@ export default function CallRequestDrawer({ isOpen, onClose }: CallRequestDrawer
         >
           {/* Header */}
           <div className="flex justify-between items-center p-6 border-b border-gray-200">
-              className="px-6 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
-              <Phone className="w-6 h-6 text-warmAmber" />
-              <h2 className="text-xl font-bold text-softBlack">Sizi Arayalım</h2>
-            </div>
-            <button
-              onClick={onClose}
-              className="px-6 py-2 bg-warmAmber hover:bg-darkAmber text-white rounded-lg font-semibold transition-colors"
-            >
-              Talebimi Gönder
+            <Phone className="w-6 h-6 text-warmAmber" />
+            <h2 className="text-xl font-bold text-softBlack">Sizi Arayalım</h2>
+            <button onClick={onClose}>
+              <X className="w-6 h-6 text-gray-600" />
             </button>
           </div>
 
@@ -168,9 +160,7 @@ export default function CallRequestDrawer({ isOpen, onClose }: CallRequestDrawer
             </div>
           </div>
         </div>
-          <div className="flex justify-end space-x-4 mt-6">
+      </div>
     </>
   );
-}
-  )
 }
