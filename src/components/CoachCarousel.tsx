@@ -22,7 +22,7 @@ export default function CoachCarousel() {
         </h2>
         
         <div className="overflow-hidden">
-          <div className="flex space-x-6 animate-slide-infinite">
+          <div className="flex space-x-6 animate-slide-infinite" style={{ width: 'max-content' }}>
             {infiniteCoaches.map((coach, index) => (
               <button 
                 key={`${coach.id}-${index}`}

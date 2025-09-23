@@ -71,13 +71,13 @@ export default function InfoBoxes() {
               {/* Content */}
               <div className="relative h-full flex flex-col justify-between p-6 text-white">
                 <div>
-                  <h3 className="text-lg font-bold mb-3 leading-tight" style={{ fontFamily: 'cursive' }}>
+                  <h3 className="text-lg font-bold mb-3 leading-tight text-center w-full" style={{ fontFamily: 'cursive' }}>
                     {card.title}
                   </h3>
                 </div>
                 
                 <div>
-                  <p className="text-sm leading-relaxed opacity-90 group-hover:opacity-100 transition-opacity">
+                  <p className="text-base leading-relaxed opacity-90 group-hover:opacity-100 transition-opacity" style={{ textShadow: '1px 1px 2px rgba(0,0,0,0.5)' }}>
                     {card.description}
                   </p>
                 </div>

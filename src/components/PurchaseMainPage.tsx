@@ -86,15 +86,15 @@ export default function PurchaseMainPage({ onBack }: PurchaseMainPageProps) {
               </div>
               
               <div>
-                <label className="block text-sm font-medium text-softBlack mb-2">Mezuniyet Yılı</label>
+                <label className="block text-sm font-medium text-softBlack mb-2">Mezun</label>
                 <select
                   value={selectedGapYear}
                   onChange={(e) => setSelectedGapYear(e.target.value)}
                   className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-warmAmber focus:border-transparent"
                 >
                   <option value="">Tümü</option>
-                  <option value="false">Bu Yıl Mezun</option>
-                  <option value="true">Mezun (Gap Year)</option>
+                  <option value="false">Hayır</option>
+                  <option value="true">Evet</option>
                 </select>
               </div>
             </div>
