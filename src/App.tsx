@@ -6,11 +6,15 @@ import LoginForm from './components/LoginForm';
 import CoachPanel from './components/coach/CoachPanel';
 import AdminPanel from './components/admin/AdminPanel';
 import PurchaseMainPage from './components/PurchaseMainPage';
+import CallRequestDrawer from './components/CallRequestDrawer';
+import CallRequestButton from './components/CallRequestButton';
+import WhatsAppButton from './components/WhatsAppButton';
 
 type AppState = 'homepage' | 'coach-login' | 'admin-login' | 'coach-panel' | 'admin-panel' | 'purchase';
 
 function App() {
   const [currentState, setCurrentState] = useState<AppState>('homepage');
+  const [showCallDrawer, setShowCallDrawer] = useState(false);
 
   const renderCurrentView = () => {
     switch (currentState) {
@@ -45,6 +49,7 @@ function App() {
     }
   };
 
+  const showFloatingButtons = !['admin-panel', 'coach-panel'].includes(currentState);
   return (
     <AppProvider>
       <div className="min-h-screen bg-lightCream">
@@ -59,6 +64,20 @@ function App() {
           />
         )}
         {renderCurrentView()}
+        
+        {/* Floating Buttons - Show on all pages except admin and coach panels */}
+        {showFloatingButtons && (
+          <>
+            <CallRequestButton onClick={() => setShowCallDrawer(true)} />
+            <WhatsAppButton />
+          </>
+        )}
+        
+        {/* Call Request Drawer */}
+        <CallRequestDrawer 
+          isOpen={showCallDrawer} 
+          onClose={() => setShowCallDrawer(false)} 
+        />
       </div>
     </AppProvider>
   );
