@@ -161,9 +161,6 @@ export default function AdminStudents() {
                       <span>Geçmiş Programları Görüntüle</span>
                     </button>
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                    {/* Actions moved to left of student name */}
-                  </td>
                 </tr>
               ))}
             </tbody>

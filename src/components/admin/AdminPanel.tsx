@@ -29,7 +29,8 @@ export default function AdminPanel({ onBack }: AdminPanelProps) {
                 className="flex items-center space-x-2 text-gray-600 hover:text-gray-800"
               >
                 <ArrowLeft className="w-4 h-4" />
-                <span>Ana Sayfaya Dön</span>
+                <span className="hidden md:inline">Ana Sayfaya Dön</span>
+                <span className="md:hidden">Ana Sayfa</span>
               </button>
               <h1 className="text-xl font-bold text-gray-900">Admin Paneli</h1>
             </div>
@@ -38,7 +39,8 @@ export default function AdminPanel({ onBack }: AdminPanelProps) {
               className="flex items-center space-x-2 text-red-600 hover:text-red-700"
             >
               <LogOut className="w-4 h-4" />
-              <span>Çıkış Yap</span>
+              <span className="hidden md:inline">Çıkış Yap</span>
+              <span className="md:hidden">Çıkış</span>
             </button>
           </div>
         </div>
