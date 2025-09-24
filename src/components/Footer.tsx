@@ -6,7 +6,7 @@ export default function Footer() {
     <footer className="bg-softBlack text-white">
       {/* Main Footer Content */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
           {/* Left Section */}
           <div className="flex flex-col items-start space-y-4">
             <div className="flex items-center space-x-3">
@@ -23,10 +23,10 @@ export default function Footer() {
           </div>
 
           {/* Center Section - 3 Columns */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div className="lg:col-span-2 grid grid-cols-1 md:grid-cols-3 gap-6">
             {/* Sunduğumuz Hizmetler */}
             <div>
-              <h3 className="text-warmAmber font-semibold mb-4">Sunduğumuz Hizmetler</h3>
+              <h3 className="text-warmAmber font-semibold mb-4 text-base whitespace-nowrap">Sunduğumuz Hizmetler</h3>
               <ul className="space-y-2">
                 <li>
                   <a href="#" className="text-lightCream hover:text-warmAmber transition-colors">
@@ -38,7 +38,7 @@ export default function Footer() {
 
             {/* Arı Koçluk */}
             <div>
-              <h3 className="text-warmAmber font-semibold mb-4">Arı Koçluk</h3>
+              <h3 className="text-warmAmber font-semibold mb-4 text-base whitespace-nowrap">Arı Koçluk</h3>
               <ul className="space-y-2">
                 <li>
                   <a href="#" className="text-lightCream hover:text-warmAmber transition-colors">
@@ -55,7 +55,7 @@ export default function Footer() {
 
             {/* Sözleşme ve Koşullar */}
             <div>
-              <h3 className="text-warmAmber font-semibold mb-4">Sözleşme ve Koşullar</h3>
+              <h3 className="text-warmAmber font-semibold mb-4 text-base whitespace-nowrap">Sözleşme ve Koşullar</h3>
               <ul className="space-y-2">
                 <li>
                   <a href="#" className="text-lightCream hover:text-warmAmber transition-colors">
@@ -78,7 +78,7 @@ export default function Footer() {
 
           {/* Right Section */}
           <div className="flex flex-col items-start space-y-4">
-            <h3 className="text-warmAmber font-semibold text-lg">Arı Koçluk'u Takip Edin</h3>
+            <h3 className="text-warmAmber font-semibold text-base whitespace-nowrap">Arı Koçluk'u Takip Edin</h3>
             <div className="flex space-x-4">
               <a 
                 href="https://www.instagram.com/serkanpakfiliz.yks?igsh=MXVwM3luZjdoZ3Z1cg%3D%3D&utm_source=qr" 
@@ -89,7 +89,7 @@ export default function Footer() {
                 <Instagram className="w-6 h-6" />
               </a>
               <a 
-                href="#" 
+                href="https://www.youtube.com/channel/UCIsci_KrVnUwu9zrxaAkE1w" 
                 target="_blank" 
                 rel="noopener noreferrer"
                 className="text-lightCream hover:text-red-500 transition-colors"
@@ -125,25 +125,12 @@ export default function Footer() {
       <div className="border-t border-gray-700">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
           {/* Payment Logos */}
-          <div className="flex justify-center items-center space-x-6 mb-4">
-            <div className="text-lightCream text-sm font-medium">Güvenli Ödeme:</div>
-            <div className="flex items-center space-x-4">
-              <div className="bg-white rounded px-2 py-1">
-                <span className="text-blue-600 font-bold text-sm">iyzico</span>
-              </div>
-              <div className="bg-white rounded px-2 py-1">
-                <span className="text-red-600 font-bold text-sm">Mastercard</span>
-              </div>
-              <div className="bg-white rounded px-2 py-1">
-                <span className="text-blue-600 font-bold text-sm">Visa</span>
-              </div>
-              <div className="bg-white rounded px-2 py-1">
-                <span className="text-blue-600 font-bold text-sm">Amex</span>
-              </div>
-              <div className="bg-white rounded px-2 py-1">
-                <span className="text-red-600 font-bold text-sm">Troy</span>
-              </div>
-            </div>
+          <div className="flex justify-center items-center mb-4">
+            <img 
+              src="/paymentservices.png" 
+              alt="Payment Services" 
+              className="h-12 object-contain"
+            />
           </div>
 
           {/* Copyright */}

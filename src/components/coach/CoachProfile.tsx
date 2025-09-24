@@ -1,15 +1,17 @@
 import React, { useState } from 'react';
-import { Camera, Save, Upload } from 'lucide-react';
+import { Camera, Save, Upload, Eye, EyeOff } from 'lucide-react';
 import { useApp } from '../../contexts/AppContext';
 
 export default function CoachProfile() {
   const { user, coaches, updateCoach } = useApp();
   const coach = coaches.find(c => c.id === user?.coachId);
   
+  const [showPassword, setShowPassword] = useState(false);
   const [formData, setFormData] = useState({
     firstName: coach?.firstName || '',
     lastName: coach?.lastName || '',
     email: coach?.email || '',
+    password: coach?.password || '',
     field: coach?.field || 'SAY' as 'EA' | 'SAY' | 'SÖZ' | 'DİL',
     ranking: coach?.ranking || 0,
     description: coach?.description || '',
@@ -122,6 +124,26 @@ export default function CoachProfile() {
               onChange={handleInputChange}
               className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
             />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Şifre</label>
+            <div className="relative">
+              <input
+                type={showPassword ? 'text' : 'password'}
+                name="password"
+                value={formData.password}
+                onChange={handleInputChange}
+                className="w-full border border-gray-300 rounded-lg px-3 py-2 pr-10 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              />
+              <button
+                type="button"
+                onClick={() => setShowPassword(!showPassword)}
+                className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
+              >
+                {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+              </button>
+            </div>
           </div>
 
           <div>
