@@ -17,17 +17,29 @@ export default function TrialSessionForm({ isOpen, onClose }: TrialSessionFormPr
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    
+    // Phone validation
+    if (!formData.phone.startsWith('0') || formData.phone.length !== 11) {
+      alert('Telefon numarası 0 ile başlamalı ve 11 haneli olmalıdır.');
+      return;
+    }
+    
     addTrialSession(formData);
     setFormData({ fullName: '', phone: '', field: 'SAY' });
     onClose();
-    alert('Deneme dersi talebiniz alınmıştır. En kısa sürede sizinle iletişime geçeceğiz.');
+    alert('Ön görüşme talebiniz alınmıştır. En kısa sürede sizinle iletişime geçeceğiz.');
   };
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
-    setFormData(prev => ({
-      ...prev,
-      [e.target.name]: e.target.value
-    }));
+    const { name, value } = e.target;
+    
+    if (name === 'phone') {
+      // Only allow digits and limit to 11 characters
+      const phoneValue = value.replace(/\D/g, '').slice(0, 11);
+      setFormData(prev => ({ ...prev, [name]: phoneValue }));
+    } else {
+      setFormData(prev => ({ ...prev, [name]: value }));
+    }
   };
 
   if (!isOpen) return null;
@@ -36,7 +48,7 @@ export default function TrialSessionForm({ isOpen, onClose }: TrialSessionFormPr
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
       <div className="bg-white rounded-lg p-6 w-full max-w-md mx-4">
         <div className="flex justify-between items-center mb-4">
-          <h2 className="text-xl font-bold text-gray-900">Deneme Dersi Talebi</h2>
+          <h2 className="text-xl font-bold text-gray-900">Ön Görüşme Talebi</h2>
           <button onClick={onClose} className="text-gray-500 hover:text-gray-700">
             <X className="w-6 h-6" />
           </button>
@@ -68,9 +80,14 @@ export default function TrialSessionForm({ isOpen, onClose }: TrialSessionFormPr
               value={formData.phone}
               onChange={handleInputChange}
               required
+              pattern="0[0-9]{10}"
+              maxLength={11}
               className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              placeholder="5xxxxxxxxx"
+              placeholder="05xxxxxxxxx"
             />
+            <p className="text-xs text-gray-500 mt-1">
+              11 haneli telefon numaranızı 0 ile başlayarak giriniz
+            </p>
           </div>
 
           <div>

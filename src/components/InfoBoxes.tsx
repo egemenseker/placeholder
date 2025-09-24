@@ -67,7 +67,7 @@ export default function InfoBoxes() {
                 style={{ backgroundImage: `url('${card.bgImage}')` }}
               />
               <div 
-                className="absolute inset-0 bg-cover bg-center transition-transform duration-300 group-hover:scale-110 group-hover:brightness-110"
+                className="absolute inset-0 bg-cover bg-center transition-transform duration-300 group-hover:scale-110 group-hover:brightness-125"
                 style={{ backgroundImage: `url('${card.bgImage}')` }}
               />
               <div className="absolute inset-0 bg-gradient-to-br from-orange-500/80 via-orange-600/70 to-black/80" />
