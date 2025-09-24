@@ -62,8 +62,12 @@ export default function InfoBoxes() {
               className="relative overflow-hidden rounded-lg shadow-lg aspect-square group cursor-pointer transform transition-transform duration-300 hover:scale-105"
             >
               {/* Background Image with Overlay */}
-              <div 
+              <div
                 className="absolute inset-0 bg-cover bg-center"
+                style={{ backgroundImage: `url('${card.bgImage}')` }}
+              />
+              <div 
+                className="absolute inset-0 bg-cover bg-center transition-transform duration-300 group-hover:scale-110 group-hover:brightness-110"
                 style={{ backgroundImage: `url('${card.bgImage}')` }}
               />
               <div className="absolute inset-0 bg-gradient-to-br from-orange-500/80 via-orange-600/70 to-black/80" />
@@ -71,13 +75,13 @@ export default function InfoBoxes() {
               {/* Content */}
               <div className="relative h-full flex flex-col justify-between p-6 text-white">
                 <div>
-                  <h3 className="text-lg font-bold mb-3 leading-tight text-center w-full" style={{ fontFamily: 'cursive' }}>
+                  <h3 className="text-2xl font-bold mb-3 leading-tight text-center w-full" style={{ fontFamily: 'cursive' }}>
                     {card.title}
                   </h3>
                 </div>
                 
                 <div>
-                  <p className="text-base leading-relaxed opacity-90 group-hover:opacity-100 transition-opacity" style={{ textShadow: '1px 1px 2px rgba(0,0,0,0.5)' }}>
+                  <p className="text-lg leading-relaxed opacity-90 group-hover:opacity-100 transition-opacity" style={{ textShadow: '2px 2px 4px rgba(0,0,0,0.8)' }}>
                     {card.description}
                   </p>
                 </div>

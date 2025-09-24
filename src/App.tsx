@@ -9,6 +9,7 @@ import PurchaseMainPage from './components/PurchaseMainPage';
 import CallRequestDrawer from './components/CallRequestDrawer';
 import CallRequestButton from './components/CallRequestButton';
 import WhatsAppButton from './components/WhatsAppButton';
+import Footer from './components/Footer';
 
 type AppState = 'homepage' | 'coach-login' | 'admin-login' | 'coach-panel' | 'admin-panel' | 'purchase';
 
@@ -78,6 +79,9 @@ function App() {
           isOpen={showCallDrawer} 
           onClose={() => setShowCallDrawer(false)} 
         />
+        
+        {/* Footer - Show on all pages except admin and coach panels */}
+        {!['admin-panel', 'coach-panel'].includes(currentState) && <Footer />}
       </div>
     </AppProvider>
   );

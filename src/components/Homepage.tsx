@@ -30,7 +30,7 @@ export default function Homepage() {
             onClick={() => setShowTrialForm(true)}
             className="bg-lightCream hover:bg-creamWhite text-softBlack px-8 py-4 rounded-lg text-lg font-semibold transform transition-all duration-300 hover:scale-105 shadow-lg"
           >
-            Ücretsiz Deneme Dersi Al
+            Ücretsiz Ön Görüşme Al
           </button>
         </div>
       </section>

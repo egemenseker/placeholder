@@ -47,7 +47,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
     
     if (role === 'coach') {
       const coach = coaches.find(c => c.email === email);
-      if (coach && password === 'coach123') {
+      if (coach && coach.password && password === coach.password) {
         setUser({ id: coach.id, email, role: 'coach', coachId: coach.id });
         return true;
       }
