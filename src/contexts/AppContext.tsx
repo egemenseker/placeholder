@@ -130,14 +130,9 @@ export function AppProvider({ children }: { children: ReactNode }) {
           .from('coaches')
           .select('*')
           .eq('email', email)
-          .maybeSingle();
+          .single();
         
-        if (error) {
-          console.error('Coach login error:', error);
-          return false;
-        }
-        
-        if (!coach || coach.password !== password) {
+        if (error || !coach || coach.password !== password) {
           return false;
         }
         
