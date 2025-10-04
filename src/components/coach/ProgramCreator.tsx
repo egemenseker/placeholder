@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { ArrowLeft, Plus, Check, ChevronLeft, ChevronRight, MoreVertical, Trash2, Edit2, Download } from 'lucide-react';
+import { ArrowLeft, Plus, Check, ChevronLeft, ChevronRight, MoreVertical, Trash2, CreditCard as Edit2, Download } from 'lucide-react';
 import { useApp } from '../../contexts/AppContext';
 import { Task, DayProgram } from '../../types';
 
