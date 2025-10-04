@@ -67,7 +67,7 @@ export default function InfoBoxes() {
                 style={{ backgroundImage: `url('${card.bgImage}')` }}
               />
               <div className="absolute inset-0 bg-gradient-to-br from-orange-500/80 via-orange-600/70 to-black/80" />
-              <div className="absolute inset-0 bg-gradient-to-br from-yellow-400/40 via-amber-500/30 to-black/60" />
+              <div className="absolute inset-0 bg-gradient-to-br from-yellow-400/80 via-amber-500/70 to-black/80" />
               
               {/* Content */}
               <div className="relative h-full flex flex-col justify-between p-6 text-white">
