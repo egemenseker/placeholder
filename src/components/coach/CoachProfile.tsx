@@ -8,19 +8,19 @@ export default function CoachProfile() {
   
   const [showPassword, setShowPassword] = useState(false);
   const [formData, setFormData] = useState({
-    firstname: coach?.firstname || '',
-    lastname: coach?.lastname || '',
+    firstName: coach?.firstName || '',
+    lastName: coach?.lastName || '',
     email: coach?.email || '',
     password: coach?.password || '',
     field: coach?.field || 'SAY' as 'EA' | 'SAY' | 'SÖZ' | 'DİL',
     ranking: coach?.ranking || 0,
     description: coach?.description || '',
-    hasgapyear: coach?.hasgapyear || false,
-    tytscore: coach?.tytscore || 0,
+    hasGapYear: coach?.hasGapYear || false,
+    tytScore: coach?.tytScore || 0,
     university: coach?.university || '',
     department: coach?.department || '',
-    attendedprivateinstitution: coach?.attendedprivateinstitution || false,
-    quotafull: coach?.quotafull || false,
+    attendedPrivateInstitution: coach?.attendedPrivateInstitution || false,
+    quotaFull: coach?.quotaFull || false,
     price: coach?.price || 0,
   });
 
@@ -31,7 +31,7 @@ export default function CoachProfile() {
       reader.onload = (event) => {
         const imageUrl = event.target?.result as string;
         if (coach) {
-          updateCoach(coach.id, { profilephoto: imageUrl });
+          updateCoach(coach.id, { profilePhoto: imageUrl });
           alert('Profil fotoğrafı güncellendi!');
         }
       };
@@ -71,7 +71,7 @@ export default function CoachProfile() {
         <div className="flex items-center space-x-6">
           <div className="relative">
             <img
-             src={coach.profilephoto || 'https://images.pexels.com/photos/220453/pexels-photo-220453.jpeg?auto=compress&cs=tinysrgb&w=200'}
+              src={coach.profilePhoto || 'https://images.pexels.com/photos/220453/pexels-photo-220453.jpeg?auto=compress&cs=tinysrgb&w=200'}
               alt="Profile"
               className="w-24 h-24 rounded-full object-cover"
             />
@@ -97,8 +97,8 @@ export default function CoachProfile() {
             <label className="block text-sm font-medium text-gray-700 mb-1">Ad</label>
             <input
               type="text"
-              name="firstname"
-              value={formData.firstname}
+              name="firstName"
+              value={formData.firstName}
               onChange={handleInputChange}
               className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
             />
@@ -108,8 +108,8 @@ export default function CoachProfile() {
             <label className="block text-sm font-medium text-gray-700 mb-1">Soyad</label>
             <input
               type="text"
-             name="lastname"
-             value={formData.lastname}
+              name="lastName"
+              value={formData.lastName}
               onChange={handleInputChange}
               className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
             />
@@ -176,8 +176,8 @@ export default function CoachProfile() {
             <label className="block text-sm font-medium text-gray-700 mb-1">İlk TYT Neti</label>
             <input
               type="number"
-             name="tytscore"
-             value={formData.tytscore}
+              name="tytScore"
+              value={formData.tytScore}
               onChange={handleInputChange}
               className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
             />
@@ -212,13 +212,13 @@ export default function CoachProfile() {
           <div className="flex items-center">
             <input
               type="checkbox"
-             id="hasgapyear"
-             name="hasgapyear"
-             checked={formData.hasgapyear}
+              id="hasGapYear"
+              name="hasGapYear"
+              checked={formData.hasGapYear}
               onChange={handleInputChange}
               className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
             />
-           <label htmlFor="hasgapyear" className="ml-2 block text-sm text-gray-900">
+            <label htmlFor="hasGapYear" className="ml-2 block text-sm text-gray-900">
               Mezun
             </label>
           </div>
@@ -255,15 +255,15 @@ export default function CoachProfile() {
         {/* Description */}
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-1">Kendiniz Hakkında</label>
-           id="quotafull"
-           name="quotafull"
-           checked={formData.quotafull}
+          <textarea
+            name="description"
+            value={formData.description}
             onChange={handleInputChange}
             rows={4}
             className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
             placeholder="Kendinizden, deneyimlerinizden ve eğitim yaklaşımınızdan bahsedin..."
           />
-         <label htmlFor="quotafull" className="ml-2 block text-sm text-gray-900">
+        </div>
 
         {/* Save Button */}
         <div className="flex justify-end">
@@ -278,6 +278,4 @@ export default function CoachProfile() {
       </form>
     </div>
   );
-}
-  )
 }
