@@ -13,17 +13,17 @@ export default function AddCoachModal({ onClose }: AddCoachModalProps) {
   const [formData, setFormData] = useState({
     email: '',
     password: '',
-    firstname: '',
-    lastname: '',
+    firstName: '',
+    lastName: '',
     field: 'SAY' as 'EA' | 'SAY' | 'SÖZ' | 'DİL',
     ranking: 0,
     description: '',
-    hasgapyear: false,
-    tytscore: 0,
+    hasGapYear: false,
+    tytScore: 0,
     university: '',
     department: '',
-    attendedprivateinstitution: false,
-    quotafull: false,
+    attendedPrivateInstitution: false,
+    quotaFull: false,
     price: 0,
   });
 
@@ -69,8 +69,8 @@ export default function AddCoachModal({ onClose }: AddCoachModalProps) {
     
     const coachData = {
       ...formData,
-      registereddate: new Date().toISOString().split('T')[0],
-      profilephoto: 'https://images.pexels.com/photos/220453/pexels-photo-220453.jpeg?auto=compress&cs=tinysrgb&w=400',
+      registeredDate: new Date().toISOString().split('T')[0],
+      profilePhoto: 'https://images.pexels.com/photos/220453/pexels-photo-220453.jpeg?auto=compress&cs=tinysrgb&w=400',
     };
     
     addCoach(coachData);
@@ -168,8 +168,8 @@ export default function AddCoachModal({ onClose }: AddCoachModalProps) {
                   <label className="block text-sm font-medium text-gray-700 mb-1">Ad*</label>
                   <input
                     type="text"
-                    name="firstname"
-                    value={formData.firstname}
+                    name="firstName"
+                    value={formData.firstName}
                     onChange={handleInputChange}
                     className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                   />
@@ -179,8 +179,8 @@ export default function AddCoachModal({ onClose }: AddCoachModalProps) {
                   <label className="block text-sm font-medium text-gray-700 mb-1">Soyad*</label>
                   <input
                     type="text"
-                    name="lastname"
-                    value={formData.lastname}
+                    name="lastName"
+                    value={formData.lastName}
                     onChange={handleInputChange}
                     className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                   />
@@ -216,8 +216,8 @@ export default function AddCoachModal({ onClose }: AddCoachModalProps) {
                   <label className="block text-sm font-medium text-gray-700 mb-1">İlk TYT Neti</label>
                   <input
                     type="number"
-                    name="tytscore"
-                    value={formData.tytscore}
+                    name="tytScore"
+                    value={formData.tytScore}
                     onChange={handleInputChange}
                     className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                   />
@@ -261,13 +261,13 @@ export default function AddCoachModal({ onClose }: AddCoachModalProps) {
                 <div className="flex items-center">
                   <input
                     type="checkbox"
-                    id="hasgapyear"
-                    name="hasgapyear"
-                    checked={formData.hasgapyear}
+                    id="hasGapYear"
+                    name="hasGapYear"
+                    checked={formData.hasGapYear}
                     onChange={handleInputChange}
                     className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
                   />
-                  <label htmlFor="hasgapyear" className="ml-2 block text-sm text-gray-900">
+                  <label htmlFor="hasGapYear" className="ml-2 block text-sm text-gray-900">
                     Mezun
                   </label>
                 </div>
@@ -275,13 +275,13 @@ export default function AddCoachModal({ onClose }: AddCoachModalProps) {
                 <div className="flex items-center">
                   <input
                     type="checkbox"
-                    id="attendedprivateinstitution"
-                    name="attendedprivateinstitution"
-                    checked={formData.attendedprivateinstitution}
+                    id="attendedPrivateInstitution"
+                    name="attendedPrivateInstitution"
+                    checked={formData.attendedPrivateInstitution}
                     onChange={handleInputChange}
                     className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
                   />
-                  <label htmlFor="attendedprivateinstitution" className="ml-2 block text-sm text-gray-900">
+                  <label htmlFor="attendedPrivateInstitution" className="ml-2 block text-sm text-gray-900">
                     Dershaneye gitti
                   </label>
                 </div>
@@ -289,13 +289,13 @@ export default function AddCoachModal({ onClose }: AddCoachModalProps) {
                 <div className="flex items-center">
                   <input
                     type="checkbox"
-                    id="quotafull"
-                    name="quotafull"
-                    checked={formData.quotafull}
+                    id="quotaFull"
+                    name="quotaFull"
+                    checked={formData.quotaFull}
                     onChange={handleInputChange}
                     className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
                   />
-                  <label htmlFor="quotafull" className="ml-2 block text-sm text-gray-900">
+                  <label htmlFor="quotaFull" className="ml-2 block text-sm text-gray-900">
                     Kontenjan dolu
                   </label>
                 </div>
