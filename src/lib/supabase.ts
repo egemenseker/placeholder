@@ -16,154 +16,154 @@ export interface Database {
       coaches: {
         Row: {
           id: string
-          firstName: string
-          lastName: string
+          firstname: string
+          lastname: string
           email: string
           password?: string
           field: 'EA' | 'SAY' | 'SÖZ' | 'DİL'
           ranking: number
           description: string
-          hasGapYear: boolean
-          profilePhoto?: string
-          tytScore: number
+          hasgapyear: boolean
+          profilephoto?: string
+          tytscore: number
           university: string
           department: string
-          attendedPrivateInstitution: boolean
-          quotaFull: boolean
+          attendedprivateinstitution: boolean
+          quotafull: boolean
           price: number
-          registeredDate: string
-          adminNotes?: string
+          registereddate: string
+          adminnotes?: string
           created_at?: string
         }
         Insert: {
           id?: string
-          firstName: string
-          lastName: string
+          firstname: string
+          lastname: string
           email: string
           password?: string
           field: 'EA' | 'SAY' | 'SÖZ' | 'DİL'
           ranking: number
           description: string
-          hasGapYear: boolean
-          profilePhoto?: string
-          tytScore: number
+          hasgapyear: boolean
+          profilephoto?: string
+          tytscore: number
           university: string
           department: string
-          attendedPrivateInstitution: boolean
-          quotaFull: boolean
+          attendedprivateinstitution: boolean
+          quotafull: boolean
           price: number
-          registeredDate: string
-          adminNotes?: string
+          registereddate: string
+          adminnotes?: string
         }
         Update: {
           id?: string
-          firstName?: string
-          lastName?: string
+          firstname?: string
+          lastname?: string
           email?: string
           password?: string
           field?: 'EA' | 'SAY' | 'SÖZ' | 'DİL'
           ranking?: number
           description?: string
-          hasGapYear?: boolean
-          profilePhoto?: string
-          tytScore?: number
+          hasgapyear?: boolean
+          profilephoto?: string
+          tytscore?: number
           university?: string
           department?: string
-          attendedPrivateInstitution?: boolean
-          quotaFull?: boolean
+          attendedprivateinstitution?: boolean
+          quotafull?: boolean
           price?: number
-          registeredDate?: string
-          adminNotes?: string
+          registereddate?: string
+          adminnotes?: string
         }
       }
       students: {
         Row: {
           id: string
-          firstName: string
-          lastName: string
+          firstname: string
+          lastname: string
           phone: string
           field: 'EA' | 'SAY' | 'SÖZ' | 'DİL'
-          coachId: string
-          hasPaid: boolean
-          profilePhoto?: string
-          registeredDate: string
+          coachid: string
+          haspaid: boolean
+          profilephoto?: string
+          registereddate: string
           notes: string
           created_at?: string
         }
         Insert: {
           id?: string
-          firstName: string
-          lastName: string
+          firstname: string
+          lastname: string
           phone: string
           field: 'EA' | 'SAY' | 'SÖZ' | 'DİL'
-          coachId: string
-          hasPaid: boolean
-          profilePhoto?: string
-          registeredDate: string
+          coachid: string
+          haspaid: boolean
+          profilephoto?: string
+          registereddate: string
           notes: string
         }
         Update: {
           id?: string
-          firstName?: string
-          lastName?: string
+          firstname?: string
+          lastname?: string
           phone?: string
           field?: 'EA' | 'SAY' | 'SÖZ' | 'DİL'
-          coachId?: string
-          hasPaid?: boolean
-          profilePhoto?: string
-          registeredDate?: string
+          coachid?: string
+          haspaid?: boolean
+          profilephoto?: string
+          registereddate?: string
           notes?: string
         }
       }
       programs: {
         Row: {
           id: string
-          studentId: string
-          coachId: string
-          weekStart: string
+          studentid: string
+          coachid: string
+          weekstart: string
           days: any
-          createdAt: string
+          createdat: string
           created_at?: string
         }
         Insert: {
           id?: string
-          studentId: string
-          coachId: string
-          weekStart: string
+          studentid: string
+          coachid: string
+          weekstart: string
           days: any
-          createdAt: string
+          createdat: string
         }
         Update: {
           id?: string
-          studentId?: string
-          coachId?: string
-          weekStart?: string
+          studentid?: string
+          coachid?: string
+          weekstart?: string
           days?: any
-          createdAt?: string
+          createdat?: string
         }
       }
       trial_sessions: {
         Row: {
           id: string
-          fullName: string
+          fullname: string
           phone: string
           field: 'EA' | 'SAY' | 'SÖZ' | 'DİL'
-          createdAt: string
+          createdat: string
           created_at?: string
         }
         Insert: {
           id?: string
-          fullName: string
+          fullname: string
           phone: string
           field: 'EA' | 'SAY' | 'SÖZ' | 'DİL'
-          createdAt: string
+          createdat: string
         }
         Update: {
           id?: string
-          fullName?: string
+          fullname?: string
           phone?: string
           field?: 'EA' | 'SAY' | 'SÖZ' | 'DİL'
-          createdAt?: string
+          createdat?: string
         }
       }
     }
