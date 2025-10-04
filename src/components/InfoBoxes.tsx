@@ -59,37 +59,32 @@ export default function InfoBoxes() {
           {infoCards.map((card, index) => (
             <div
               key={index}
-              className="relative overflow-hidden rounded-xl shadow-md hover:shadow-lg aspect-square group transition-all duration-300"
+              className="relative overflow-hidden rounded-lg shadow-lg aspect-square group"
             >
               {/* Background Image with Overlay */}
               <div 
-                className="absolute inset-0 bg-cover bg-center object-cover object-center transition-transform duration-300 ease-linear group-hover:scale-105 group-hover:brightness-105 overflow-hidden"
+                className="absolute inset-0 bg-cover bg-center transition-transform duration-300 group-hover:scale-110 group-hover:brightness-125 overflow-hidden"
                 style={{ backgroundImage: `url('${card.bgImage}')` }}
               />
-              <div className="absolute inset-0 bg-gradient-to-br from-amber-200/40 via-amber-300/30 to-amber-500/40" />
-              
-              {/* Text Readability Gradient */}
-              <div className="absolute inset-0 bg-gradient-to-t from-black/25 via-transparent to-transparent" />
+              <div className="absolute inset-0 bg-gradient-to-br from-orange-500/80 via-orange-600/70 to-black/80" />
               
               {/* Content */}
               <div className="relative h-full flex flex-col justify-between p-6 text-white">
                 <div>
-                  <h3 className="text-2xl md:text-3xl font-bold mb-3 leading-tight text-center w-full text-white" 
-                      style={{ 
-                        fontFamily: 'cursive',
-                        textShadow: '0 2px 4px rgba(0,0,0,0.6), 0 1px 2px rgba(0,0,0,0.8)'
-                      }}>
+                  <h3 className="text-2xl font-bold mb-3 leading-tight text-center w-full" style={{ fontFamily: 'cursive' }}>
                     {card.title}
                   </h3>
                 </div>
                 
                 <div>
-                  <p className="text-base md:text-lg leading-relaxed text-white font-medium opacity-95 group-hover:opacity-100 transition-opacity" 
-                     style={{ textShadow: '0 1px 3px rgba(0,0,0,0.7), 0 2px 6px rgba(0,0,0,0.5)' }}>
+                  <p className="text-lg leading-relaxed opacity-90 group-hover:opacity-100 transition-opacity" style={{ textShadow: '2px 2px 4px rgba(0,0,0,0.8)' }}>
                     {card.description}
                   </p>
                 </div>
               </div>
+              
+              {/* Subtle Pattern Overlay */}
+              <div className="absolute inset-0 opacity-10 bg-gradient-to-br from-transparent via-white/20 to-transparent" />
             </div>
           ))}
         </div>
