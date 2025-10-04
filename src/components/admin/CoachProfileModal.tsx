@@ -10,12 +10,12 @@ interface CoachProfileModalProps {
 export default function CoachProfileModal({ coachId, onClose }: CoachProfileModalProps) {
   const { coaches, updateCoach } = useApp();
   const coach = coaches.find(c => c.id === coachId);
-  const [adminNotes, setAdminNotes] = useState(coach?.adminNotes || '');
+  const [adminNotes, setAdminNotes] = useState(coach?.adminnotes || '');
 
   if (!coach) return null;
 
   const handleSaveNotes = () => {
-    updateCoach(coachId, { adminNotes });
+    updateCoach(coachId, { adminnotes: adminNotes });
     alert('Admin notları kaydedildi!');
   };
 
@@ -28,7 +28,7 @@ export default function CoachProfileModal({ coachId, onClose }: CoachProfileModa
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
       <div className="bg-white rounded-lg max-w-4xl w-full mx-4 max-h-[90vh] overflow-y-auto">
         <div className="sticky top-0 bg-white border-b px-6 py-4 flex justify-between items-center">
-          <h2 className="text-xl font-bold text-gray-900">Koç Profili - {coach.firstName} {coach.lastName}</h2>
+          <h2 className="text-xl font-bold text-gray-900">Koç Profili - {coach.firstname} {coach.lastname}</h2>
           <button onClick={onClose} className="text-gray-500 hover:text-gray-700">
             <X className="w-6 h-6" />
           </button>
@@ -40,19 +40,19 @@ export default function CoachProfileModal({ coachId, onClose }: CoachProfileModa
             <div className="space-y-6">
               <div className="flex items-start space-x-6">
                 <img
-                  src={coach.profilePhoto || 'https://images.pexels.com/photos/220453/pexels-photo-220453.jpeg?auto=compress&cs=tinysrgb&w=200'}
-                  alt={`${coach.firstName} ${coach.lastName}`}
+                  src={coach.profilephoto || 'https://images.pexels.com/photos/220453/pexels-photo-220453.jpeg?auto=compress&cs=tinysrgb&w=200'}
+                  alt={`${coach.firstname} ${coach.lastname}`}
                   className="w-32 h-32 rounded-lg object-cover"
                 />
                 <div className="flex-1">
                   <h3 className="text-2xl font-bold text-gray-900 mb-2">
-                    {coach.firstName} {coach.lastName}
+                    {coach.firstname} {coach.lastname}
                   </h3>
                   <div className="space-y-2 text-gray-700">
                     <p><strong>E-posta:</strong> {coach.email}</p>
                     <p><strong>Alan:</strong> {getFieldName(coach.field)}</p>
                     <p><strong>YKS Sıralaması:</strong> {coach.ranking}</p>
-                    <p><strong>İlk TYT Neti:</strong> {coach.tytScore}</p>
+                    <p><strong>İlk TYT Neti:</strong> {coach.tytscore}</p>
                   </div>
                 </div>
               </div>
@@ -62,15 +62,15 @@ export default function CoachProfileModal({ coachId, onClose }: CoachProfileModa
                   <h4 className="font-semibold text-gray-900 mb-2">Eğitim Bilgileri</h4>
                   <p><strong>Üniversite:</strong> {coach.university}</p>
                   <p><strong>Bölüm:</strong> {coach.department}</p>
-                  <p><strong>Mezuniyet:</strong> {coach.hasGapYear ? 'Mezun' : 'Bu Yıl Mezun'}</p>
-                  <p><strong>Özel Dershane:</strong> {coach.attendedPrivateInstitution ? 'Evet' : 'Hayır'}</p>
+                  <p><strong>Mezuniyet:</strong> {coach.hasgapyear ? 'Mezun' : 'Bu Yıl Mezun'}</p>
+                  <p><strong>Özel Dershane:</strong> {coach.attendedprivateinstitution ? 'Evet' : 'Hayır'}</p>
                 </div>
 
                 <div className="bg-gray-50 p-4 rounded-lg">
                   <h4 className="font-semibold text-gray-900 mb-2">Durum Bilgileri</h4>
                   <p><strong>Aylık Ücret:</strong> ₺{coach.price.toLocaleString('tr-TR')}</p>
-                  <p><strong>Kontenjan:</strong> {coach.quotaFull ? 'Dolu' : 'Müsait'}</p>
-                  <p><strong>Kayıt Tarihi:</strong> {new Date(coach.registeredDate).toLocaleDateString('tr-TR')}</p>
+                  <p><strong>Kontenjan:</strong> {coach.quotafull ? 'Dolu' : 'Müsait'}</p>
+                  <p><strong>Kayıt Tarihi:</strong> {new Date(coach.registereddate).toLocaleDateString('tr-TR')}</p>
                 </div>
               </div>
 

@@ -1,34 +1,34 @@
 export interface Coach {
   id: string;
-  firstName: string;
-  lastName: string;
+  firstname: string;
+  lastname: string;
   email: string;
   password?: string;
   field: 'EA' | 'SAY' | 'SÖZ' | 'DİL';
   ranking: number;
   description: string;
-  hasGapYear: boolean;
-  profilePhoto?: string;
-  tytScore: number;
+  hasgapyear: boolean;
+  profilephoto?: string;
+  tytscore: number;
   university: string;
   department: string;
-  attendedPrivateInstitution: boolean;
-  quotaFull: boolean;
+  attendedprivateinstitution: boolean;
+  quotafull: boolean;
   price: number;
-  registeredDate: string;
-  adminNotes?: string;
+  registereddate: string;
+  adminnotes?: string;
 }
 
 export interface Student {
   id: string;
-  firstName: string;
-  lastName: string;
+  firstname: string;
+  lastname: string;
   phone: string;
   field: 'EA' | 'SAY' | 'SÖZ' | 'DİL';
-  coachId: string;
-  hasPaid: boolean;
-  profilePhoto?: string;
-  registeredDate: string;
+  coachid: string;
+  haspaid: boolean;
+  profilephoto?: string;
+  registereddate: string;
   notes: string;
 }
 
@@ -48,17 +48,17 @@ export interface DayProgram {
 
 export interface Program {
   id: string;
-  studentId: string;
-  coachId: string;
-  weekStart: string;
+  studentid: string;
+  coachid: string;
+  weekstart: string;
   days: DayProgram[];
-  createdAt: string;
+  createdat: string;
 }
 
 export interface TrialSession {
   id: string;
-  fullName: string;
+  fullname: string;
   phone: string;
   field: 'EA' | 'SAY' | 'SÖZ' | 'DİL';
-  createdAt: string;
+  createdat: string;
 }
