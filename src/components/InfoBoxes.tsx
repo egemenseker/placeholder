@@ -30,22 +30,22 @@ const infoCards = [
   {
     title: 'PEKİ KOÇLA ÇALIŞMAYA BAŞLADIKTAN SONRASI?',
     description: 'İlk görüşmede 1. sınıftan 12. sınıfa kadarki süreciniz değerlendirilir, sonrasında seviyeniz belirlenip kaynak tavsiyeleri ile süreç başlar.',
-    bgImage: 'https://images.pexels.com/photos/4050299/pexels-photo-4050299.jpeg?auto=compress&cs=tinysrgb&w=400'
+    bgImage: '/kaynakTavsiyesipng.png'
   },
   {
     title: 'GÖRÜŞMELER NASIL GERÇEKLEŞİYOR?',
     description: 'Haftada 1 olacak şekilde Google Meets platformu üzerinden sınav süreciniz koçlarınız ile değerlendirilir ve 7/24 WhatsApp desteği ile koç her daim yanınızda.',
-    bgImage: 'https://images.pexels.com/photos/4145153/pexels-photo-4145153.jpeg?auto=compress&cs=tinysrgb&w=400'
+    bgImage: '/dersCalismakpng.png'
   },
   {
     title: 'KOÇUMLA ANLAŞAMAZSAM?',
     description: 'Sınav sürecinde her senaryonun bizim tarafımızdan senin lehine olması için düşünülmesi, dönemimizdeki başlıca etken.',
-    bgImage: 'https://images.pexels.com/photos/3184465/pexels-photo-3184465.jpeg?auto=compress&cs=tinysrgb&w=400'
+    bgImage: '/motivasyonpng.png'
   },
   {
     title: 'İLK ETAPTAKİ PROGRAM HAZIRLAMA SÜRECİ',
     description: 'Koçunla ilk görüşmenden sonra koçunun talebine göre 3-6 aylık bir program hazırlanır ve programların en sağlıklı şekilde hazırlanması sağlanır.',
-    bgImage: 'https://images.pexels.com/photos/590016/pexels-photo-590016.jpeg?auto=compress&cs=tinysrgb&w=400'
+    bgImage: '/programNiteligipng.png'
   }
 ];
 
@@ -62,12 +62,8 @@ export default function InfoBoxes() {
               className="relative overflow-hidden rounded-lg shadow-lg aspect-square group"
             >
               {/* Background Image with Overlay */}
-              <div
-                className="absolute inset-0 bg-cover bg-center"
-                style={{ backgroundImage: `url('${card.bgImage}')` }}
-              />
               <div 
-                className="absolute inset-0 bg-cover bg-center transition-transform duration-300 group-hover:scale-110 group-hover:brightness-125"
+                className="absolute inset-0 bg-cover bg-center transition-transform duration-300 group-hover:scale-110 group-hover:brightness-125 overflow-hidden"
                 style={{ backgroundImage: `url('${card.bgImage}')` }}
               />
               <div className="absolute inset-0 bg-gradient-to-br from-orange-500/80 via-orange-600/70 to-black/80" />
