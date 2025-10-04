@@ -15,12 +15,12 @@ export default function CoachProfile() {
     field: coach?.field || 'SAY' as 'EA' | 'SAY' | 'SÖZ' | 'DİL',
     ranking: coach?.ranking || 0,
     description: coach?.description || '',
-    hasGapYear: coach?.hasGapYear || false,
+    hasgapyear: coach?.hasGapYear || false,
     tytScore: coach?.tytScore || 0,
     university: coach?.university || '',
     department: coach?.department || '',
-    attendedPrivateInstitution: coach?.attendedPrivateInstitution || false,
-    quotaFull: coach?.quotaFull || false,
+    attendedprivateinstitution: coach?.attendedPrivateInstitution || false,
+    quotafull: coach?.quotaFull || false,
     price: coach?.price || 0,
   });
 
@@ -212,13 +212,13 @@ export default function CoachProfile() {
           <div className="flex items-center">
             <input
               type="checkbox"
-              id="hasGapYear"
-              name="hasGapYear"
-              checked={formData.hasGapYear}
+              id="hasgapyear"
+              name="hasgapyear"
+              checked={formData.hasgapyear}
               onChange={handleInputChange}
               className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
             />
-            <label htmlFor="hasGapYear" className="ml-2 block text-sm text-gray-900">
+            <label htmlFor="hasgapyear" className="ml-2 block text-sm text-gray-900">
               Mezun
             </label>
           </div>
@@ -226,13 +226,13 @@ export default function CoachProfile() {
           <div className="flex items-center">
             <input
               type="checkbox"
-              id="attendedPrivateInstitution"
-              name="attendedPrivateInstitution"
-              checked={formData.attendedPrivateInstitution}
+              id="attendedprivateinstitution"
+              name="attendedprivateinstitution"
+              checked={formData.attendedprivateinstitution}
               onChange={handleInputChange}
               className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
             />
-            <label htmlFor="attendedPrivateInstitution" className="ml-2 block text-sm text-gray-900">
+            <label htmlFor="attendedprivateinstitution" className="ml-2 block text-sm text-gray-900">
               Dershaneye gittim
             </label>
           </div>
@@ -240,13 +240,13 @@ export default function CoachProfile() {
           <div className="flex items-center">
             <input
               type="checkbox"
-              id="quotaFull"
-              name="quotaFull"
-              checked={formData.quotaFull}
+              id="quotafull"
+              name="quotafull"
+              checked={formData.quotafull}
               onChange={handleInputChange}
               className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
             />
-            <label htmlFor="quotaFull" className="ml-2 block text-sm text-gray-900">
+            <label htmlFor="quotafull" className="ml-2 block text-sm text-gray-900">
               Kontenjan dolu
             </label>
           </div>

@@ -23,6 +23,8 @@ export default tseslint.config(
         'warn',
         { allowConstantExport: true },
       ],
+      'no-undef': 'error',
+      'react/jsx-no-undef': 'error',
     },
   }
 );

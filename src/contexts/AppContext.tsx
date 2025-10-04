@@ -43,7 +43,27 @@ export function AppProvider({ children }: { children: ReactNode }) {
     try {
       const { data, error } = await supabase
         .from('coaches')
-        .select('*')
+        .select(`
+          id,
+          firstname,
+          lastname,
+          email,
+          password,
+          field,
+          ranking,
+          description,
+          hasgapyear,
+          profilephoto,
+          tytscore,
+          university,
+          department,
+          attendedprivateinstitution,
+          quotafull,
+          price,
+          registereddate,
+          adminnotes,
+          created_at
+        `)
         .order('registereddate', { ascending: false });
       
       if (error) throw error;
@@ -80,7 +100,19 @@ export function AppProvider({ children }: { children: ReactNode }) {
     try {
       const { data, error } = await supabase
         .from('students')
-        .select('*')
+        .select(`
+          id,
+          firstname,
+          lastname,
+          phone,
+          field,
+          coachid,
+          haspaid,
+          profilephoto,
+          registereddate,
+          notes,
+          created_at
+        `)
         .order('registereddate', { ascending: false });
       
       if (error) throw error;
@@ -109,7 +141,15 @@ export function AppProvider({ children }: { children: ReactNode }) {
     try {
       const { data, error } = await supabase
         .from('programs')
-        .select('*')
+        .select(`
+          id,
+          studentid,
+          coachid,
+          weekstart,
+          days,
+          createdat,
+          created_at
+        `)
         .order('createdat', { ascending: false });
       
       if (error) throw error;
@@ -134,7 +174,14 @@ export function AppProvider({ children }: { children: ReactNode }) {
     try {
       const { data, error } = await supabase
         .from('trial_sessions')
-        .select('*')
+        .select(`
+          id,
+          fullname,
+          phone,
+          field,
+          createdat,
+          created_at
+        `)
         .order('createdat', { ascending: false });
       
       if (error) throw error;

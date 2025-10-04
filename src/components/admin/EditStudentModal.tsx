@@ -17,7 +17,7 @@ export default function EditStudentModal({ studentId, onClose }: EditStudentModa
     phone: student?.phone || '',
     field: student?.field || 'SAY' as 'EA' | 'SAY' | 'SÖZ' | 'DİL',
     coachId: student?.coachId || '',
-    hasPaid: student?.hasPaid || false,
+    haspaid: student?.hasPaid || false,
     notes: student?.notes || '',
   });
 
@@ -122,13 +122,13 @@ export default function EditStudentModal({ studentId, onClose }: EditStudentModa
           <div className="flex items-center">
             <input
               type="checkbox"
-              id="hasPaid"
-              name="hasPaid"
-              checked={formData.hasPaid}
+              id="haspaid"
+              name="haspaid"
+              checked={formData.haspaid}
               onChange={handleInputChange}
               className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
             />
-            <label htmlFor="hasPaid" className="ml-2 block text-sm text-gray-900">
+            <label htmlFor="haspaid" className="ml-2 block text-sm text-gray-900">
               Ödeme yapıldı
             </label>
           </div>
