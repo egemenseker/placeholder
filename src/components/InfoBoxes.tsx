@@ -30,7 +30,7 @@ const infoCards = [
   {
     title: 'PEKİ KOÇLA ÇALIŞMAYA BAŞLADIKTAN SONRASI?',
     description: 'İlk görüşmede 1. sınıftan 12. sınıfa kadarki süreciniz değerlendirilir, sonrasında seviyeniz belirlenip kaynak tavsiyeleri ile süreç başlar.',
-    bgImage: '/pekipng.png'
+    bgImage: '/peki...png.png'
   },
   {
     title: 'GÖRÜŞMELER NASIL GERÇEKLEŞİYOR?',
@@ -59,41 +59,32 @@ export default function InfoBoxes() {
           {infoCards.map((card, index) => (
             <div
               key={index}
-              className="relative overflow-hidden rounded-xl shadow-md hover:shadow-lg aspect-square group transition-shadow duration-300"
+              className="relative overflow-hidden rounded-lg shadow-lg aspect-square group"
             >
-              {/* Background Image - Single Clean Layer */}
+              {/* Background Image with Overlay */}
               <div 
-                className="absolute inset-0 bg-cover bg-center object-cover object-center transition-transform duration-300 ease-linear group-hover:scale-105 group-hover:brightness-105"
+                className="absolute inset-0 bg-cover bg-center transition-transform duration-300 group-hover:scale-110 group-hover:brightness-125 overflow-hidden"
                 style={{ backgroundImage: `url('${card.bgImage}')` }}
               />
-              
-              {/* Subtle Text Background Gradient */}
-              <div className="absolute inset-0 bg-gradient-to-t from-black/18 via-transparent to-transparent" />
-              
-              {/* Honey/Amber Gradient Overlay */}
-              <div className="absolute inset-0 bg-gradient-to-br from-amber-200/30 via-amber-400/20 to-amber-600/30" />
+              <div className="absolute inset-0 bg-gradient-to-br from-orange-500/80 via-orange-600/70 to-black/80" />
               
               {/* Content */}
-              <div className="relative h-full flex flex-col justify-between p-6 text-white z-10">
+              <div className="relative h-full flex flex-col justify-between p-6 text-white">
                 <div>
-                  <h3 className="text-3xl font-bold mb-3 leading-tight text-center w-full" style={{ fontFamily: 'cursive', textShadow: '0 2px 4px rgba(0,0,0,0.4)' }}>
+                  <h3 className="text-2xl font-bold mb-3 leading-tight text-center w-full" style={{ fontFamily: 'cursive' }}>
                     {card.title}
                   </h3>
                 </div>
                 
                 <div>
-                  <p className="text-xl leading-relaxed opacity-95 group-hover:opacity-100 transition-opacity" style={{ textShadow: '0 1px 2px rgba(0,0,0,0.25)' }}>
+                  <p className="text-lg leading-relaxed opacity-90 group-hover:opacity-100 transition-opacity" style={{ textShadow: '2px 2px 4px rgba(0,0,0,0.8)' }}>
                     {card.description}
                   </p>
                 </div>
-                
-                {/* Icon positioned at bottom-right */}
-                <div className="absolute bottom-4 right-4 opacity-60 group-hover:opacity-80 transition-opacity">
-                  <div className="w-8 h-8 bg-white/20 rounded-full flex items-center justify-center backdrop-blur-sm">
-                    <div className="w-4 h-4 bg-white/60 rounded-sm"></div>
-                  </div>
-                </div>
               </div>
+              
+              {/* Subtle Pattern Overlay */}
+              <div className="absolute inset-0 opacity-10 bg-gradient-to-br from-transparent via-white/20 to-transparent" />
             </div>
           ))}
         </div>
