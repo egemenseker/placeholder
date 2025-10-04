@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { MoreVertical, User, Eye, Calendar, FileText } from 'lucide-react';
 import { useApp } from '../../contexts/AppContext';
 import StudentNotesModal from './StudentNotesModal';
+import StudentProgramsModal from '../admin/StudentProgramsModal';
 
 interface CoachStudentsProps {
   onCreateProgram: (studentId: string) => void;
@@ -11,6 +12,7 @@ export default function CoachStudents({ onCreateProgram }: CoachStudentsProps) {
   const { user, students, coaches, programs } = useApp();
   const [selectedStudentId, setSelectedStudentId] = useState<string | null>(null);
   const [showNotesModal, setShowNotesModal] = useState<string | null>(null);
+  const [showProgramsModal, setShowProgramsModal] = useState<string | null>(null);
 
   const coachStudents = students.filter(student => student.coachId === user?.coachId);
   const currentCoach = coaches.find(c => c.id === user?.coachId);
@@ -112,7 +114,7 @@ export default function CoachStudents({ onCreateProgram }: CoachStudentsProps) {
                                 </button>
                                 <button
                                   onClick={() => {
-                                    alert(`${student.firstName}'in geçmiş programları gösteriliyor...`);
+                                    setShowProgramsModal(student.id);
                                     setSelectedStudentId(null);
                                   }}
                                   className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 w-full"
@@ -168,6 +170,12 @@ export default function CoachStudents({ onCreateProgram }: CoachStudentsProps) {
         </div>
       )}
 
+      {showProgramsModal && (
+        <StudentProgramsModal
+          studentId={showProgramsModal}
+          onClose={() => setShowProgramsModal(null)}
+        />
+      )}
       {showNotesModal && (
         <StudentNotesModal
           studentId={showNotesModal}

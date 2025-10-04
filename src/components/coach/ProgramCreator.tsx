@@ -99,8 +99,89 @@ export default function ProgramCreator({ studentId, onBack }: ProgramCreatorProp
     newWeekStart.setDate(currentWeekStart.getDate() + (direction === 'next' ? 7 : -7));
     setCurrentWeekStart(newWeekStart);
     
+    // Check if there's an existing program for this week
+    const existingProgram = programs.find(p => 
+      p.studentId === studentId && 
+      p.coachId === user?.coachId && 
+      p.weekStart === newWeekStart.toISOString().split('T')[0]
+    );
+    
     const dayNames = ['Pazartesi', 'Salı', 'Çarşamba', 'Perşembe', 'Cuma', 'Cumartesi', 'Pazar'];
-    setDays(Array.from({ length: 7 }, (_, i) => {
+    
+    if (existingProgram) {
+      // Load existing program data
+      setDays(existingProgram.days);
+    } else {
+      // Create empty days for new week
+      setDays(Array.from({ length: 7 }, (_, i) => {
+        const date = new Date(newWeekStart);
+        date.setDate(newWeekStart.getDate() + i);
+        return {
+          date: date.toISOString().split('T')[0],
+          dayName: dayNames[i],
+          tasks: []
+        };
+      }));
+    }
+  };
+
+  const saveProgram = () => {
+    if (!user?.coachId) return;
+    
+    // Check if program already exists for this week
+    const existingProgram = programs.find(p => 
+      p.studentId === studentId && 
+      p.coachId === user.coachId && 
+      p.weekStart === currentWeekStart.toISOString().split('T')[0]
+    );
+    
+    if (existingProgram) {
+      // Update existing program
+      updateProgram(existingProgram.id, { days });
+      alert('Program başarıyla güncellendi!');
+    } else {
+      // Create new program
+      const program = {
+        studentId,
+        coachId: user.coachId,
+        weekStart: currentWeekStart.toISOString().split('T')[0],
+        days,
+        createdAt: new Date().toISOString()
+      };
+      
+      addProgram(program);
+      alert('Program başarıyla kaydedildi!');
+    }
+  };
+
+  const getCurrentWeekProgram = () => {
+    return programs.find(p => 
+      p.studentId === studentId && 
+      p.coachId === user?.coachId && 
+      p.weekStart === currentWeekStart.toISOString().split('T')[0]
+    );
+  };
+
+  const isCurrentWeek = () => {
+    const today = new Date();
+    const dayOfWeek = today.getDay();
+    const monday = new Date(today);
+    monday.setDate(today.getDate() - dayOfWeek + (dayOfWeek === 0 ? -6 : 1));
+    return currentWeekStart.toDateString() === monday.toDateString();
+  };
+
+  // Load existing program data when component mounts or week changes
+  React.useEffect(() => {
+    const existingProgram = programs.find(p => 
+      p.studentId === studentId && 
+      p.coachId === user?.coachId && 
+      p.weekStart === currentWeekStart.toISOString().split('T')[0]
+    );
+    
+    if (existingProgram) {
+      setDays(existingProgram.days);
+    } else {
+      const dayNames = ['Pazartesi', 'Salı', 'Çarşamba', 'Perşembe', 'Cuma', 'Cumartesi', 'Pazar'];
       const date = new Date(newWeekStart);
       date.setDate(newWeekStart.getDate() + i);
       return {
@@ -108,23 +189,17 @@ export default function ProgramCreator({ studentId, onBack }: ProgramCreatorProp
         dayName: dayNames[i],
         tasks: []
       };
-    }));
-  };
-
-  const saveProgram = () => {
-    if (!user?.coachId) return;
-    
-    const program = {
-      studentId,
-      coachId: user.coachId,
-      weekStart: currentWeekStart.toISOString().split('T')[0],
-      days,
-      createdAt: new Date().toISOString()
-    };
-    
-    addProgram(program);
-    alert('Program başarıyla kaydedildi!');
-  };
+      setDays(Array.from({ length: 7 }, (_, i) => {
+        const date = new Date(currentWeekStart);
+        date.setDate(currentWeekStart.getDate() + i);
+        return {
+          date: date.toISOString().split('T')[0],
+          dayName: dayNames[i],
+          tasks: []
+        };
+      }));
+    }
+  }, [currentWeekStart, programs, studentId, user?.coachId]);
 
   const exportToPDF = () => {
     // This would integrate with a PDF generation library
@@ -225,6 +300,22 @@ export default function ProgramCreator({ studentId, onBack }: ProgramCreatorProp
                   className={`p-2 rounded-full transition-colors ${
                     isReviewMode ? 'bg-green-600 text-white' : 'bg-gray-200 text-gray-600 hover:bg-gray-300'
                   }`}
+          {/* Program Status Indicator */}
+          <div className="mb-4">
+            {getCurrentWeekProgram() ? (
+              <div className="bg-green-50 border border-green-200 rounded-lg p-3">
+                <p className="text-sm text-green-800">
+                  <strong>Bu hafta için program mevcut.</strong> Değişiklik yapabilir ve güncelleyebilirsiniz.
+                </p>
+              </div>
+            ) : (
+              <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
+                <p className="text-sm text-blue-800">
+                  <strong>Bu hafta için yeni program oluşturuluyor.</strong> Görevleri ekleyip kaydedin.
+                </p>
+              </div>
+            )}
+          </div>
                   title="Günü Tamamla"
                 >
                   <Check className="w-4 h-4" />
