@@ -16,7 +16,7 @@ export default function Homepage() {
       <section ref={heroRef} className="relative bg-gradient-to-r from-warmAmber to-honeyYellow py-20">
         <div 
           className="absolute inset-0 bg-cover bg-center opacity-20"
-          style={{ backgroundImage: "url('/koclarimizNasilpng.png')" }}
+          style={{ backgroundImage: "url('/ChatGPT Image 4 Eki 2025 16_29_31.png')" }}
         />
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <h1 className="text-4xl md:text-6xl font-bold text-white mb-6">

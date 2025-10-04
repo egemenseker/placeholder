@@ -30,22 +30,22 @@ const infoCards = [
   {
     title: 'PEKİ KOÇLA ÇALIŞMAYA BAŞLADIKTAN SONRASI?',
     description: 'İlk görüşmede 1. sınıftan 12. sınıfa kadarki süreciniz değerlendirilir, sonrasında seviyeniz belirlenip kaynak tavsiyeleri ile süreç başlar.',
-    bgImage: '/kaynakTavsiyesipng.png'
+    bgImage: '/peki...png.png'
   },
   {
     title: 'GÖRÜŞMELER NASIL GERÇEKLEŞİYOR?',
     description: 'Haftada 1 olacak şekilde Google Meets platformu üzerinden sınav süreciniz koçlarınız ile değerlendirilir ve 7/24 WhatsApp desteği ile koç her daim yanınızda.',
-    bgImage: '/dersCalismakpng.png'
+    bgImage: '/gorusmelerNasilpng.png'
   },
   {
     title: 'KOÇUMLA ANLAŞAMAZSAM?',
     description: 'Sınav sürecinde her senaryonun bizim tarafımızdan senin lehine olması için düşünülmesi, dönemimizdeki başlıca etken.',
-    bgImage: '/motivasyonpng.png'
+    bgImage: '/kocumlaAnlasamazsampng.png'
   },
   {
     title: 'İLK ETAPTAKİ PROGRAM HAZIRLAMA SÜRECİ',
     description: 'Koçunla ilk görüşmenden sonra koçunun talebine göre 3-6 aylık bir program hazırlanır ve programların en sağlıklı şekilde hazırlanması sağlanır.',
-    bgImage: '/programNiteligipng.png'
+    bgImage: '/ilkEtaptakipng.png'
   }
 ];
 
