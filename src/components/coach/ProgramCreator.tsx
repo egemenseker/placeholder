@@ -300,22 +300,6 @@ export default function ProgramCreator({ studentId, onBack }: ProgramCreatorProp
                   className={`p-2 rounded-full transition-colors ${
                     isReviewMode ? 'bg-green-600 text-white' : 'bg-gray-200 text-gray-600 hover:bg-gray-300'
                   }`}
-          {/* Program Status Indicator */}
-          <div className="mb-4">
-            {getCurrentWeekProgram() ? (
-              <div className="bg-green-50 border border-green-200 rounded-lg p-3">
-                <p className="text-sm text-green-800">
-                  <strong>Bu hafta için program mevcut.</strong> Değişiklik yapabilir ve güncelleyebilirsiniz.
-                </p>
-              </div>
-            ) : (
-              <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
-                <p className="text-sm text-blue-800">
-                  <strong>Bu hafta için yeni program oluşturuluyor.</strong> Görevleri ekleyip kaydedin.
-                </p>
-              </div>
-            )}
-          </div>
                   title="Günü Tamamla"
                 >
                   <Check className="w-4 h-4" />
