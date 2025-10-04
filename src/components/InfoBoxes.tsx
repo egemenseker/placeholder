@@ -5,27 +5,27 @@ const infoCards = [
   {
     title: 'KAYNAK TAVSİYESİ',
     description: 'Kitabevimizin olmasının getirdiği her seviyeye uygun bilgi birikimimiz ve koçlarımız size kaynak önerirken hep benliğini iletişimde olacaklar.',
-    bgImage: 'https://images.pexels.com/photos/159711/books-bookstore-book-reading-159711.jpeg?auto=compress&cs=tinysrgb&w=400'
+    bgImage: '/kaynakTavsiyesipng.png'
   },
   {
     title: 'DERS ÇALIŞMAK',
     description: 'Size hazırlanacak olan ders çalışma programları ile isteseniz de kaytarma odaklı olamayacaksınız.',
-    bgImage: 'https://images.pexels.com/photos/301926/pexels-photo-301926.jpeg?auto=compress&cs=tinysrgb&w=400'
+    bgImage: '/dersCalismakpng.png'
   },
   {
     title: 'MOTİVASYON',
     description: 'Motivasyon temeli pamuk ipliğine bağlıdır, asıl motorunuz disiplin! Motivasyon için siz disiplinle uğraşmadan şüpheniz olmasın :)',
-    bgImage: 'https://images.pexels.com/photos/1181533/pexels-photo-1181533.jpeg?auto=compress&cs=tinysrgb&w=400'
+    bgImage: '/motivasyonpng.png'
   },
   {
     title: 'PROGRAM NİTELİĞİ',
     description: 'Programlarınızın tamamı 3-6 ay aralığında olmanız gereken noktaya hizmet edecek şekilde haftalık olarak anbean hazırlanıp herhangi bir aksilikte anında reaksiyon alınır.',
-    bgImage: 'https://images.pexels.com/photos/6238297/pexels-photo-6238297.jpeg?auto=compress&cs=tinysrgb&w=400'
+    bgImage: '/programNiteligipng.png'
   },
   {
     title: 'KOÇLARIMIZ NASIL?',
     description: 'Koçlarımızın tamamı eğitim hayatları boyunca olumlu olumsuz tecrübelerini aktarmak için can atıyorlar.',
-    bgImage: 'https://images.pexels.com/photos/5212317/pexels-photo-5212317.jpeg?auto=compress&cs=tinysrgb&w=400'
+    bgImage: '/koclarimizNasilpng.png'
   },
   {
     title: 'PEKİ KOÇLA ÇALIŞMAYA BAŞLADIKTAN SONRASI?',
