@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { ArrowLeft, Plus, Check, ChevronLeft, ChevronRight, MoreVertical, Trash2, Download } from 'lucide-react';
+import jsPDF from 'jspdf';
 import { useApp } from '../../contexts/AppContext';
 import { Task, DayProgram } from '../../types';
 
@@ -154,8 +155,139 @@ export default function ProgramCreator({ studentId, onBack }: ProgramCreatorProp
   };
 
   const exportToPDF = () => {
-    // This would integrate with a PDF generation library
-    alert('PDF export özelliği eklendi! Program PDF olarak indirilecek.');
+    if (!student) return;
+
+    try {
+      const doc = new jsPDF();
+      const pageWidth = doc.internal.pageSize.getWidth();
+      const margin = 20;
+      let yPosition = margin;
+
+      // Helper function to add text with word wrapping
+      const addText = (text: string, x: number, y: number, maxWidth?: number, fontSize = 10) => {
+        doc.setFontSize(fontSize);
+        if (maxWidth) {
+          const lines = doc.splitTextToSize(text, maxWidth);
+          doc.text(lines, x, y);
+          return y + (lines.length * fontSize * 0.4);
+        } else {
+          doc.text(text, x, y);
+          return y + (fontSize * 0.4);
+        }
+      };
+
+      // Title
+      doc.setFontSize(18);
+      doc.setFont('helvetica', 'bold');
+      yPosition = addText('Haftalık Çalışma Programı', margin, yPosition, undefined, 18);
+      yPosition += 10;
+
+      // Student and week info
+      doc.setFontSize(12);
+      doc.setFont('helvetica', 'normal');
+      yPosition = addText(`Öğrenci: ${student.firstName} ${student.lastName}`, margin, yPosition, undefined, 12);
+      yPosition += 5;
+      yPosition = addText(`Hafta: ${currentWeekStart.toLocaleDateString('tr-TR')} - ${addDays(currentWeekStart, 6).toLocaleDateString('tr-TR')}`, margin, yPosition, undefined, 12);
+      yPosition += 5;
+      yPosition = addText(`Oluşturulma Tarihi: ${new Date().toLocaleDateString('tr-TR')}`, margin, yPosition, undefined, 12);
+      yPosition += 15;
+
+      // Days and tasks
+      (days || []).forEach((day, dayIndex) => {
+        // Check if we need a new page
+        if (yPosition > 250) {
+          doc.addPage();
+          yPosition = margin;
+        }
+
+        // Day header
+        doc.setFontSize(14);
+        doc.setFont('helvetica', 'bold');
+        yPosition = addText(`${day.dayName} - ${new Date(day.date).toLocaleDateString('tr-TR')}`, margin, yPosition, undefined, 14);
+        yPosition += 8;
+
+        // Tasks
+        if (!day.tasks || day.tasks.length === 0) {
+          doc.setFontSize(10);
+          doc.setFont('helvetica', 'italic');
+          yPosition = addText('Görev bulunmuyor', margin + 10, yPosition, undefined, 10);
+          yPosition += 8;
+        } else {
+          day.tasks.forEach((task, taskIndex) => {
+            doc.setFontSize(10);
+            doc.setFont('helvetica', 'normal');
+            
+            // Task status symbol
+            const statusSymbol = task.completed ? '✓' : '○';
+            doc.text(statusSymbol, margin + 5, yPosition);
+            
+            // Task details
+            let taskText = task.name || 'İsimsiz Görev';
+            if (task.courseName) {
+              taskText += ` (${task.courseName})`;
+            }
+            if (task.duration) {
+              taskText += ` - ${task.duration}`;
+            }
+            
+            yPosition = addText(taskText, margin + 15, yPosition, pageWidth - margin - 25, 10);
+            yPosition += 3;
+          });
+        }
+        yPosition += 8;
+      });
+
+      // Statistics
+      if (yPosition > 220) {
+        doc.addPage();
+        yPosition = margin;
+      }
+
+      yPosition += 10;
+      doc.setFontSize(12);
+      doc.setFont('helvetica', 'bold');
+      yPosition = addText('Program İstatistikleri', margin, yPosition, undefined, 12);
+      yPosition += 8;
+
+      const totalTasks = (days || []).reduce((total, day) => total + (day.tasks?.length || 0), 0);
+      const completedTasks = (days || []).reduce((total, day) => 
+        total + (day.tasks?.filter(task => task.completed).length || 0), 0
+      );
+      const incompleteTasks = totalTasks - completedTasks;
+
+      doc.setFontSize(10);
+      doc.setFont('helvetica', 'normal');
+      yPosition = addText(`Toplam Görev: ${totalTasks}`, margin + 10, yPosition, undefined, 10);
+      yPosition += 5;
+      yPosition = addText(`Tamamlanan: ${completedTasks}`, margin + 10, yPosition, undefined, 10);
+      yPosition += 5;
+      yPosition = addText(`Tamamlanmayan: ${incompleteTasks}`, margin + 10, yPosition, undefined, 10);
+      
+      if (totalTasks > 0) {
+        const completionRate = Math.round((completedTasks / totalTasks) * 100);
+        yPosition += 5;
+        yPosition = addText(`Tamamlanma Oranı: %${completionRate}`, margin + 10, yPosition, undefined, 10);
+      }
+
+      // Footer
+      const pageCount = doc.getNumberOfPages();
+      for (let i = 1; i <= pageCount; i++) {
+        doc.setPage(i);
+        doc.setFontSize(8);
+        doc.setFont('helvetica', 'normal');
+        doc.text(`Sayfa ${i} / ${pageCount}`, pageWidth - margin - 20, doc.internal.pageSize.getHeight() - 10);
+        doc.text('Arı Koçluk - Haftalık Program', margin, doc.internal.pageSize.getHeight() - 10);
+      }
+
+      // Save the PDF
+      const fileName = `${student.firstName}_${student.lastName}_Program_${currentWeekStart.toISOString().split('T')[0]}.pdf`;
+      doc.save(fileName);
+      
+      alert('Program PDF olarak başarıyla indirildi!');
+    } catch (error) {
+      console.error('PDF oluşturma hatası:', error);
+      alert('PDF oluşturulurken bir hata oluştu!');
+    }
   };
 
   if (!student) {
