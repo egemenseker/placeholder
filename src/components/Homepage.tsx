@@ -13,22 +13,27 @@ export default function Homepage() {
   return (
     <div className="min-h-screen bg-lightCream">
       {/* Hero Section - Trial Session */}
-      <section ref={heroRef} className="relative bg-gradient-to-r from-warmAmber to-honeyYellow py-20">
+      <section ref={heroRef} className="relative py-20">
         <div 
-          className="absolute inset-0 bg-cover bg-center opacity-20"
-          style={{ backgroundImage: "url('/ChatGPT Image 4 Eki 2025 16_29_31.png')" }}
+          className="absolute inset-0 bg-cover bg-center bg-no-repeat"
+          style={{ 
+            backgroundImage: "url('/ChatGPT Image 4 Eki 2025 16_29_31 copy.png')",
+            backgroundRepeat: 'no-repeat',
+            backgroundSize: 'cover',
+            backgroundPosition: 'center center'
         />
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <h1 className="text-4xl md:text-6xl font-bold text-white mb-6">
+          <h1 className="text-4xl md:text-6xl font-bold text-white mb-6" style={{ textShadow: '2px 2px 8px rgba(0,0,0,0.8)' }}>
             YKS Hedefinize <span className="text-lightCream">Arı Koçluk</span> ile Ulaşın
           </h1>
-          <p className="text-xl text-white opacity-90 mb-8 max-w-3xl mx-auto">
+          <p className="text-xl text-white mb-8 max-w-3xl mx-auto" style={{ textShadow: '2px 2px 6px rgba(0,0,0,0.8)' }}>
             Arı Koçluk'un uzman koçlarıyla kişiselleştirilmiş eğitim programları ve birebir destek ile 
             hayalinizdeki üniversiteye yerleşin.
           </p>
           <button
             onClick={() => setShowTrialForm(true)}
             className="bg-lightCream hover:bg-creamWhite text-softBlack px-8 py-4 rounded-lg text-lg font-semibold transform transition-all duration-300 hover:scale-105 shadow-lg"
+            style={{ boxShadow: '0 4px 12px rgba(0,0,0,0.3)' }}
           >
             Ücretsiz Ön Görüşme Al
           </button>
