@@ -61,7 +61,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
       const { data, error } = await supabase
         .from('students')
         .select('*')
-        .order('registereddate', { ascending: false });
+        .order('registeredDate', { ascending: false });
       
       if (error) throw error;
       setStudents(data || []);
@@ -75,7 +75,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
       const { data, error } = await supabase
         .from('programs')
         .select('*')
-        .order('createdat', { ascending: false });
+        .order('createdAt', { ascending: false });
       
       if (error) throw error;
       setPrograms(data || []);
@@ -89,7 +89,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
       const { data, error } = await supabase
         .from('trial_sessions')
         .select('*')
-        .order('createdat', { ascending: false });
+        .order('createdAt', { ascending: false });
       
       if (error) throw error;
       setTrialSessions(data || []);
@@ -357,7 +357,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
       setLoading(true);
       const sessionWithTimestamp = {
         ...session,
-        createdat: new Date().toISOString()
+        createdAt: new Date().toISOString()
       };
       
       const { data, error } = await supabase
