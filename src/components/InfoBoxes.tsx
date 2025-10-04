@@ -78,7 +78,7 @@ export default function InfoBoxes() {
                 </div>
                 
                 <div>
-                  <p className="text-lg leading-relaxed opacity-90 group-hover:opacity-100 transition-opacity" style={{ textShadow: '2px 2px 4px rgba(0,0,0,0.8)' }}>
+                  <p className="text-lg leading-relaxed opacity-90 group-hover:opacity-100 transition-opacity font-bold" style={{ textShadow: '2px 2px 4px rgba(0,0,0,0.8), -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000, 1px 1px 0 #000' }}>
                     {card.description}
                   </p>
                 </div>
