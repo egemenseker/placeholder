@@ -57,6 +57,69 @@ export default function ProgramCreator({ studentId, onBack }: ProgramCreatorProp
   const [isReviewMode, setIsReviewMode] = useState(false);
   const [taskReviewStates, setTaskReviewStates] = useState<Record<string, 'neutral' | 'completed' | 'failed'>>({});
 
+  // Helper function to get the visual state of a task
+  const getTaskVisualState = (dayIndex: number, task: Task): 'neutral' | 'completed' | 'failed' => {
+    if (isReviewMode) {
+      const taskKey = `${dayIndex}-${task.id}`;
+      return taskReviewStates[taskKey] || 'neutral';
+    }
+    return task.completed ? 'completed' : 'neutral';
+  };
+
+  // Helper function to get CSS classes for a task based on its state
+  const getTaskClasses = (visualState: 'neutral' | 'completed' | 'failed', reviewMode: boolean): string => {
+    const baseClasses = 'border rounded-lg p-3 transition-all duration-200';
+    
+    if (!reviewMode) {
+      // Non-interactive mode - no hover effects or cursor pointer
+      if (visualState === 'completed') {
+        return `${baseClasses} bg-green-50 border-green-200`;
+      }
+      return `${baseClasses} border-gray-200`;
+    }
+    
+    // Interactive review mode
+    const interactiveClasses = 'cursor-pointer hover:shadow-md';
+    
+    switch (visualState) {
+      case 'completed':
+        return `${baseClasses} ${interactiveClasses} bg-green-50 border-green-200 hover:bg-green-100`;
+      case 'failed':
+        return `${baseClasses} ${interactiveClasses} bg-red-100 border-red-400 hover:bg-red-200`;
+      case 'neutral':
+      default:
+        return `${baseClasses} ${interactiveClasses} border-gray-200 hover:bg-gray-50`;
+    }
+  };
+
+  // Helper function to handle task review state cycling
+  const handleTaskReviewToggle = (dayIndex: number, taskId: string) => {
+    if (!isReviewMode) return;
+    
+    const taskKey = `${dayIndex}-${taskId}`;
+    const currentState = taskReviewStates[taskKey] || 'neutral';
+    
+    let nextState: 'neutral' | 'completed' | 'failed';
+    switch (currentState) {
+      case 'neutral':
+        nextState = 'completed';
+        break;
+      case 'completed':
+        nextState = 'failed';
+        break;
+      case 'failed':
+        nextState = 'neutral';
+        break;
+      default:
+        nextState = 'neutral';
+    }
+    
+    setTaskReviewStates(prev => ({
+      ...prev,
+      [taskKey]: nextState
+    }));
+  };
+
   // Initialize empty 7-day window
   const initializeEmpty7DayWindow = (windowStart: Date): DayProgram[] => {
     const dayNames = ['Pazar', 'Pazartesi', 'Salı', 'Çarşamba', 'Perşembe', 'Cuma', 'Cumartesi'];
