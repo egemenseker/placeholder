@@ -92,8 +92,8 @@ export default function ProgramCreator({ studentId, onBack }: ProgramCreatorProp
     }
   };
 
-  // Helper function to handle task review state cycling
-  const handleTaskReviewToggle = (dayIndex: number, taskId: string) => {
+  // Helper function to handle review mode toggle
+  const handleToggleReviewMode = async () => {
     if (!isReviewMode) return;
     
     const taskKey = `${dayIndex}-${taskId}`;
@@ -203,8 +203,32 @@ export default function ProgramCreator({ studentId, onBack }: ProgramCreatorProp
     
     // Initialize task review states when data loads
     if (isReviewMode) {
-      const newTaskReviewStates: Record<string, 'neutral' | 'completed' | 'failed'> = {};
-      displayedDays.forEach((day, dayIndex) => {
+      // Deactivating review mode - update task completion status and save changes
+      const updatedDays = days.map((day, dayIndex) => ({
+        ...day,
+        tasks: day.tasks.map(task => {
+          const taskKey = `${dayIndex}-${task.id}`;
+          const reviewState = taskReviewStates[taskKey] || 'neutral';
+          return {
+            ...task,
+            completed: reviewState === 'completed'
+          };
+        })
+      }));
+      
+      // Update local state
+      setDays(updatedDays);
+      
+      // Save to database with updated data
+      try {
+        await saveProgram(updatedDays);
+      } catch (error) {
+        console.error('Error saving program:', error);
+        alert('Program kaydedilirken bir hata oluştu!');
+      }
+      
+      // Clear review states
+      setTaskReviewStates({});
         day.tasks?.forEach(task => {
           const taskKey = `${dayIndex}-${task.id}`;
           newTaskReviewStates[taskKey] = task.completed ? 'completed' : 'neutral';
@@ -265,7 +289,7 @@ export default function ProgramCreator({ studentId, onBack }: ProgramCreatorProp
     setCurrentWindowStart(prev => addDays(prev, direction === 'next' ? 1 : -1));
   };
 
-  const saveProgram = async () => {
+  const saveProgram = async (currentDays: DayProgram[] = days) => {
     if (!user?.coachId || !student) return;
     
     try {
@@ -273,7 +297,7 @@ export default function ProgramCreator({ studentId, onBack }: ProgramCreatorProp
       const programWeeksMap = new Map<string, DayProgram[]>();
       
       // Process each day in the current display
-      days.forEach(day => {
+      currentDays.forEach(day => {
         const dayDate = new Date(day.date);
         const canonicalWeekStart = getCanonicalWeekStart(dayDate);
         const weekStartKey = formatLocalDate(canonicalWeekStart);
@@ -698,7 +722,7 @@ export default function ProgramCreator({ studentId, onBack }: ProgramCreatorProp
                 <span>PDF İndir</span>
               </button>
               <button
-                onClick={saveProgram}
+                onClick={() => saveProgram(days)}
                 className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
               >
                 {existingProgram ? 'Güncelle' : 'Kaydet'}
