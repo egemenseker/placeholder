@@ -661,19 +661,22 @@ export default function ProgramCreator({ studentId, onBack }: ProgramCreatorProp
 
         {/* Program Status Indicator */}
         <div className="mb-4">
-          {existingProgram ? (
-            <div className="bg-green-50 border border-green-200 rounded-lg p-3">
-              <p className="text-green-800 text-sm">
-                ✅ Bu tarih aralığı için program mevcut - Düzenleyebilirsiniz
-              </p>
-            </div>
-          ) : (
-            <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
-              <p className="text-blue-800 text-sm">
-                📝 Bu tarih aralığı için yeni program oluşturuluyor
-              </p>
-            </div>
-          )}
+          {(() => {
+            const totalTasks = (days || []).reduce((total, day) => total + (day.tasks?.length || 0), 0);
+            return totalTasks > 0 ? (
+              <div className="bg-green-50 border border-green-200 rounded-lg p-3">
+                <p className="text-green-800 text-sm">
+                  ✅ Bu tarih aralığı için program mevcut - Düzenleyebilirsiniz
+                </p>
+              </div>
+            ) : (
+              <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
+                <p className="text-blue-800 text-sm">
+                  📝 Bu tarih aralığı için yeni program oluşturuluyor
+                </p>
+              </div>
+            );
+          })()}
         </div>
 
         {/* Calendar Grid */}
