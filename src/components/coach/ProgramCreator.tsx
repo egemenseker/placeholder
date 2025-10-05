@@ -16,63 +16,63 @@ const addDays = (date: Date, days: number): Date => {
   return newDate;
 };
 
-// Helper function to normalize date to midnight
-const normalizeDate = (date: Date): Date => {
-  const normalized = new Date(date);
-  normalized.setHours(0, 0, 0, 0);
-  return normalized;
+// Helper function to get Monday of current week
+const getMondayOfWeek = (date: Date): Date => {
+  const dayOfWeek = date.getDay();
+  const monday = new Date(date);
+  monday.setDate(date.getDate() - dayOfWeek + (dayOfWeek === 0 ? -6 : 1));
+  monday.setHours(0, 0, 0, 0); // Normalize to midnight
+  return monday;
 };
 
 export default function ProgramCreator({ studentId, onBack }: ProgramCreatorProps) {
   const { students, programs, addProgram, updateProgram, user } = useApp();
   const student = students?.find(s => s.id === studentId);
   
-  const [anchorDate, setAnchorDate] = useState(() => normalizeDate(new Date()));
+  const [currentWeekStart, setCurrentWeekStart] = useState(() => getMondayOfWeek(new Date()));
   const [days, setDays] = useState<DayProgram[]>([]);
   const [selectedTask, setSelectedTask] = useState<{ dayIndex: number; taskId: string } | null>(null);
   const [isReviewMode, setIsReviewMode] = useState(false);
 
-  // Initialize empty 7-day window
-  const initializeEmpty7Days = (startDate: Date): DayProgram[] => {
+  // Initialize empty week
+  const initializeEmptyWeek = (weekStart: Date): DayProgram[] => {
     const dayNames = ['Pazartesi', 'Salı', 'Çarşamba', 'Perşembe', 'Cuma', 'Cumartesi', 'Pazar'];
     return Array.from({ length: 7 }, (_, i) => {
-      const date = addDays(startDate, i);
-      const dayOfWeek = date.getDay();
-      const dayName = dayNames[dayOfWeek === 0 ? 6 : dayOfWeek - 1]; // Adjust for Sunday = 0
+      const date = addDays(weekStart, i);
       return {
         date: date.toISOString().split('T')[0],
-        dayName: dayName,
+        dayName: dayNames[i],
         tasks: []
       };
     });
   };
 
-  // Get current 7-day window program
-  const getCurrent7DayProgram = () => {
+  // Get current week program
+  const getCurrentWeekProgram = () => {
     if (!programs || !user?.coachId) return null;
     return programs.find(p => 
       p.studentId === studentId && 
       p.coachId === user.coachId && 
-      p.weekStart === anchorDate.toISOString().split('T')[0]
+      p.weekStart === currentWeekStart.toISOString().split('T')[0]
     );
   };
 
-  // Check if viewing current day
-  const isCurrentDay = () => {
-    const today = normalizeDate(new Date());
-    return anchorDate.toDateString() === today.toDateString();
+  // Check if viewing current week
+  const isCurrentWeek = () => {
+    const today = getMondayOfWeek(new Date());
+    return currentWeekStart.toDateString() === today.toDateString();
   };
 
-  // Load program data when anchor date changes
+  // Load program data when week changes
   useEffect(() => {
-    const existingProgram = getCurrent7DayProgram();
+    const existingProgram = getCurrentWeekProgram();
     
     if (existingProgram && existingProgram.days) {
       setDays(existingProgram.days);
     } else {
-      setDays(initializeEmpty7Days(anchorDate));
+      setDays(initializeEmptyWeek(currentWeekStart));
     }
-  }, [anchorDate, programs, studentId, user?.coachId]);
+  }, [currentWeekStart, programs, studentId, user?.coachId]);
 
   const addTask = (dayIndex: number) => {
     const newTask: Task = {
@@ -121,15 +121,15 @@ export default function ProgramCreator({ studentId, onBack }: ProgramCreatorProp
     }
   };
 
-  const navigateDay = (direction: 'prev' | 'next') => {
-    setAnchorDate(prev => addDays(prev, direction === 'next' ? 1 : -1));
+  const navigateWeek = (direction: 'prev' | 'next') => {
+    setCurrentWeekStart(prev => addDays(prev, direction === 'next' ? 7 : -7));
   };
 
   const saveProgram = async () => {
     if (!user?.coachId || !student) return;
     
     try {
-      const existingProgram = getCurrent7DayProgram();
+      const existingProgram = getCurrentWeekProgram();
       
       if (existingProgram) {
         // Update existing program
@@ -140,7 +140,7 @@ export default function ProgramCreator({ studentId, onBack }: ProgramCreatorProp
         const program = {
           studentId,
           coachId: user.coachId,
-          weekStart: anchorDate.toISOString().split('T')[0],
+          weekStart: currentWeekStart.toISOString().split('T')[0],
           days,
           createdAt: new Date().toISOString()
         };
@@ -160,11 +160,10 @@ export default function ProgramCreator({ studentId, onBack }: ProgramCreatorProp
     try {
       // Create a printable version of the current view
       const printElement = createPrintableElement();
-      const endDate = addDays(anchorDate, 6);
-
+      
       const opt = {
         margin: [10, 10, 10, 10],
-        filename: `${student.firstName}_${student.lastName}_Program_${anchorDate.toISOString().split('T')[0]}.pdf`,
+        filename: `${student.firstName}_${student.lastName}_Program_${currentWeekStart.toISOString().split('T')[0]}.pdf`,
         image: { type: 'jpeg', quality: 0.98 },
         html2canvas: { 
           scale: 2,
@@ -192,7 +191,6 @@ export default function ProgramCreator({ studentId, onBack }: ProgramCreatorProp
   };
 
   const createPrintableElement = () => {
-    const endDate = addDays(anchorDate, 6);
     const printDiv = document.createElement('div');
     printDiv.style.position = 'absolute';
     printDiv.style.left = '-9999px';
@@ -411,7 +409,7 @@ export default function ProgramCreator({ studentId, onBack }: ProgramCreatorProp
         <div class="print-header">
           <div class="print-title">Haftalık Çalışma Programı</div>
           <div class="print-subtitle">Öğrenci: ${student.firstName} ${student.lastName}</div>
-          <div class="print-subtitle">Tarih Aralığı: ${anchorDate.toLocaleDateString('tr-TR')} - ${endDate.toLocaleDateString('tr-TR')}</div>
+          <div class="print-subtitle">Hafta: ${currentWeekStart.toLocaleDateString('tr-TR')} - ${addDays(currentWeekStart, 6).toLocaleDateString('tr-TR')}</div>
           <div class="print-subtitle">Oluşturulma Tarihi: ${new Date().toLocaleDateString('tr-TR')}</div>
         </div>
         
@@ -492,7 +490,7 @@ export default function ProgramCreator({ studentId, onBack }: ProgramCreatorProp
     );
   }
 
-  const existingProgram = getCurrent7DayProgram();
+  const existingProgram = getCurrentWeekProgram();
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -536,22 +534,22 @@ export default function ProgramCreator({ studentId, onBack }: ProgramCreatorProp
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
         <div className="flex justify-between items-center mb-6">
           <h2 className="text-2xl font-bold text-gray-900">
-            7 Günlük Program
+            Haftalık Program
           </h2>
           <div className="flex items-center space-x-4">
             <button
-              onClick={() => navigateDay('prev')}
+              onClick={() => navigateWeek('prev')}
               className="p-2 rounded-lg border hover:bg-gray-50 transition-colors"
             >
               <ChevronLeft className="w-5 h-5" />
             </button>
             <span className="text-lg font-medium">
-              {anchorDate.toLocaleDateString('tr-TR')} - {
-                addDays(anchorDate, 6).toLocaleDateString('tr-TR')
+              {currentWeekStart.toLocaleDateString('tr-TR')} - {
+                addDays(currentWeekStart, 6).toLocaleDateString('tr-TR')
               }
             </span>
             <button
-              onClick={() => navigateDay('next')}
+              onClick={() => navigateWeek('next')}
               className="p-2 rounded-lg border hover:bg-gray-50 transition-colors"
             >
               <ChevronRight className="w-5 h-5" />
@@ -564,13 +562,13 @@ export default function ProgramCreator({ studentId, onBack }: ProgramCreatorProp
           {existingProgram ? (
             <div className="bg-green-50 border border-green-200 rounded-lg p-3">
               <p className="text-green-800 text-sm">
-                ✅ Bu tarih aralığı için program mevcut - Düzenleyebilirsiniz
+                ✅ Bu hafta için program mevcut - Düzenleyebilirsiniz
               </p>
             </div>
           ) : (
             <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
               <p className="text-blue-800 text-sm">
-                📝 Bu tarih aralığı için yeni program oluşturuluyor
+                📝 Bu hafta için yeni program oluşturuluyor
               </p>
             </div>
           )}
