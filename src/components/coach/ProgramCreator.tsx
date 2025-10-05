@@ -59,10 +59,12 @@ export default function ProgramCreator({ studentId, onBack }: ProgramCreatorProp
 
   // Helper function to get the visual state of a task
   const getTaskVisualState = (dayIndex: number, task: Task): 'neutral' | 'completed' | 'failed' => {
+    // In review mode, use the temporary review states
     if (isReviewMode) {
       const taskKey = `${dayIndex}-${task.id}`;
       return taskReviewStates[taskKey] || task.status || 'neutral';
     }
+    // Not in review mode, always show the saved status
     return task.status || (task.completed ? 'completed' : 'neutral');
   };
 
@@ -70,26 +72,30 @@ export default function ProgramCreator({ studentId, onBack }: ProgramCreatorProp
   const getTaskClasses = (visualState: 'neutral' | 'completed' | 'failed', reviewMode: boolean): string => {
     const baseClasses = 'border rounded-lg p-3 transition-all duration-200';
 
-    if (!reviewMode) {
-      // Non-interactive mode - no hover effects or cursor pointer
-      if (visualState === 'completed') {
-        return `${baseClasses} bg-green-100 border-green-300`;
-      }
-      return `${baseClasses} bg-white border-gray-200`;
-    }
-
-    // Interactive review mode
-    const interactiveClasses = 'cursor-pointer hover:shadow-md';
-
+    // Always show colors regardless of review mode
+    let colorClasses = '';
     switch (visualState) {
       case 'completed':
-        return `${baseClasses} ${interactiveClasses} bg-green-100 border-green-300 hover:bg-green-200`;
+        colorClasses = 'bg-green-100 border-green-300';
+        break;
       case 'failed':
-        return `${baseClasses} ${interactiveClasses} bg-red-100 border-red-300 hover:bg-red-200`;
+        colorClasses = 'bg-red-100 border-red-300';
+        break;
       case 'neutral':
       default:
-        return `${baseClasses} ${interactiveClasses} bg-white border-gray-200 hover:bg-gray-50`;
+        colorClasses = 'bg-white border-gray-200';
+        break;
     }
+
+    // Only add interactive classes when in review mode
+    if (reviewMode) {
+      const interactiveClasses = 'cursor-pointer hover:shadow-md';
+      const hoverEffect = visualState === 'completed' ? 'hover:bg-green-200' :
+                          visualState === 'failed' ? 'hover:bg-red-200' : 'hover:bg-gray-50';
+      return `${baseClasses} ${colorClasses} ${interactiveClasses} ${hoverEffect}`;
+    }
+
+    return `${baseClasses} ${colorClasses}`;
   };
 
   // Helper function to handle task click in review mode
