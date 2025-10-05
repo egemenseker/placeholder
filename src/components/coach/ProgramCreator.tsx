@@ -55,6 +55,7 @@ export default function ProgramCreator({ studentId, onBack }: ProgramCreatorProp
   const [days, setDays] = useState<DayProgram[]>([]);
   const [selectedTask, setSelectedTask] = useState<{ dayIndex: number; taskId: string } | null>(null);
   const [isReviewMode, setIsReviewMode] = useState(false);
+  const [taskReviewStates, setTaskReviewStates] = useState<Record<string, 'neutral' | 'completed' | 'failed'>>({});
 
   // Initialize empty 7-day window
   const initializeEmpty7DayWindow = (windowStart: Date): DayProgram[] => {
@@ -136,6 +137,18 @@ export default function ProgramCreator({ studentId, onBack }: ProgramCreatorProp
     }
     
     setDays(displayedDays);
+    
+    // Initialize task review states when data loads
+    if (isReviewMode) {
+      const newTaskReviewStates: Record<string, 'neutral' | 'completed' | 'failed'> = {};
+      displayedDays.forEach((day, dayIndex) => {
+        day.tasks?.forEach(task => {
+          const taskKey = `${dayIndex}-${task.id}`;
+          newTaskReviewStates[taskKey] = task.completed ? 'completed' : 'neutral';
+        });
+      });
+      setTaskReviewStates(newTaskReviewStates);
+    }
   }, [currentWindowStart, programs, studentId, user?.coachId]);
 
   const addTask = (dayIndex: number) => {
@@ -716,40 +729,52 @@ export default function ProgramCreator({ studentId, onBack }: ProgramCreatorProp
                 {(day.tasks || []).map((task) => (
                   <div
                     key={task.id}
-                    className={`border rounded-lg p-3 cursor-pointer transition-all ${
-                      task.completed 
-                        ? 'bg-green-50 border-green-200' 
-                        : isReviewMode && !task.completed
-                        ? 'bg-red-50 border-red-200'
-                        : 'border-gray-200 hover:border-green-300 hover:bg-green-50'
-                    }`}
-                    onClick={() => toggleTaskCompletion(dayIndex, task.id)}
+                    className={getTaskClasses(getTaskVisualState(dayIndex, task), isReviewMode)}
+                    onClick={() => handleTaskReviewToggle(dayIndex, task.id)}
                   >
                     <div className="flex justify-between items-start">
                       <div className="flex-1 min-w-0">
-                        <input
+                        <textarea
                           type="text"
                           value={task.name || ''}
                           onChange={(e) => updateTask(dayIndex, task.id, { name: e.target.value })}
                           placeholder="Görev adı"
-                          className="w-full text-sm font-medium bg-transparent border-none focus:outline-none"
+                          className="w-full text-sm font-medium bg-transparent border-none focus:outline-none resize-none overflow-hidden"
+                          rows={1}
                           onClick={(e) => e.stopPropagation()}
+                          onInput={(e) => {
+                            const target = e.target as HTMLTextAreaElement;
+                            target.style.height = 'auto';
+                            target.style.height = target.scrollHeight + 'px';
+                          }}
                         />
-                        <input
+                        <textarea
                           type="text"
                           value={task.duration || ''}
                           onChange={(e) => updateTask(dayIndex, task.id, { duration: e.target.value })}
                           placeholder="Süre"
-                          className="w-full text-xs text-gray-600 bg-transparent border-none focus:outline-none mt-1"
+                          className="w-full text-xs text-gray-600 bg-transparent border-none focus:outline-none mt-1 resize-none overflow-hidden"
+                          rows={1}
                           onClick={(e) => e.stopPropagation()}
+                          onInput={(e) => {
+                            const target = e.target as HTMLTextAreaElement;
+                            target.style.height = 'auto';
+                            target.style.height = target.scrollHeight + 'px';
+                          }}
                         />
-                        <input
+                        <textarea
                           type="text"
                           value={task.courseName || ''}
                           onChange={(e) => updateTask(dayIndex, task.id, { courseName: e.target.value })}
                           placeholder="Ders adı"
-                          className="w-full text-xs text-gray-500 bg-transparent border-none focus:outline-none mt-1"
+                          className="w-full text-xs text-gray-500 bg-transparent border-none focus:outline-none mt-1 resize-none overflow-hidden"
+                          rows={1}
                           onClick={(e) => e.stopPropagation()}
+                          onInput={(e) => {
+                            const target = e.target as HTMLTextAreaElement;
+                            target.style.height = 'auto';
+                            target.style.height = target.scrollHeight + 'px';
+                          }}
                         />
                       </div>
                       
