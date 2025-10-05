@@ -1,7 +1,5 @@
 import React, { useState } from 'react';
 import { useApp } from './contexts/AppContext';
-import { AppProvider } from './contexts/AppContext';
-import ErrorBoundary from './components/ErrorBoundary';
 import Header from './components/Header';
 import Homepage from './components/Homepage';
 import LoginForm from './components/LoginForm';
@@ -54,38 +52,34 @@ function App() {
 
   const showFloatingButtons = !['admin-panel', 'coach-panel'].includes(currentState);
   return (
-    <ErrorBoundary>
-      <AppProvider>
-        <div className="min-h-screen bg-lightCream">
-          {/* Show header on all pages except admin and coach panels */}
-          {!['admin-panel', 'coach-panel'].includes(currentState) && (
-            <Header 
-              onLoginClick={() => setCurrentState('unified-login')}
-              onPurchaseClick={() => setCurrentState('purchase')}
-              onLogoClick={() => setCurrentState('homepage')}
-            />
-          )}
-          {renderCurrentView()}
-          
-          {/* Floating Buttons - Show on all pages except admin and coach panels */}
-          {showFloatingButtons && (
-            <>
-              <CallRequestButton onClick={() => setShowCallDrawer(true)} />
-              <WhatsAppButton />
-            </>
-          )}
-          
-          {/* Call Request Drawer */}
-          <CallRequestDrawer 
-            isOpen={showCallDrawer} 
-            onClose={() => setShowCallDrawer(false)} 
-          />
-          
-          {/* Footer - Show on all pages except admin and coach panels */}
-          {!['admin-panel', 'coach-panel'].includes(currentState) && <Footer />}
-        </div>
-      </AppProvider>
-    </ErrorBoundary>
+    <div className="min-h-screen bg-lightCream">
+      {/* Show header on all pages except admin and coach panels */}
+      {!['admin-panel', 'coach-panel'].includes(currentState) && (
+        <Header 
+          onLoginClick={() => setCurrentState('unified-login')}
+          onPurchaseClick={() => setCurrentState('purchase')}
+          onLogoClick={() => setCurrentState('homepage')}
+        />
+      )}
+      {renderCurrentView()}
+      
+      {/* Floating Buttons - Show on all pages except admin and coach panels */}
+      {showFloatingButtons && (
+        <>
+          <CallRequestButton onClick={() => setShowCallDrawer(true)} />
+          <WhatsAppButton />
+        </>
+      )}
+      
+      {/* Call Request Drawer */}
+      <CallRequestDrawer 
+        isOpen={showCallDrawer} 
+        onClose={() => setShowCallDrawer(false)} 
+      />
+      
+      {/* Footer - Show on all pages except admin and coach panels */}
+      {!['admin-panel', 'coach-panel'].includes(currentState) && <Footer />}
+    </div>
   );
 }
 
