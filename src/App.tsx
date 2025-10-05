@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useApp } from './contexts/AppContext';
 import { AppProvider } from './contexts/AppContext';
 import ErrorBoundary from './components/ErrorBoundary';
 import Header from './components/Header';
