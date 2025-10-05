@@ -55,6 +55,7 @@ export default function ProgramCreator({ studentId, onBack }: ProgramCreatorProp
   const [days, setDays] = useState<DayProgram[]>([]);
   const [selectedTask, setSelectedTask] = useState<{ dayIndex: number; taskId: string } | null>(null);
   const [isReviewMode, setIsReviewMode] = useState(false);
+  const [taskReviewStates, setTaskReviewStates] = useState<Record<string, 'neutral' | 'completed' | 'failed'>>({});
 
   // Initialize empty 7-day window
   const initializeEmpty7DayWindow = (windowStart: Date): DayProgram[] => {
@@ -179,9 +180,61 @@ export default function ProgramCreator({ studentId, onBack }: ProgramCreatorProp
   };
 
   const toggleTaskCompletion = (dayIndex: number, taskId: string) => {
-    const currentTask = days[dayIndex]?.tasks?.find(t => t.id === taskId);
-    if (currentTask) {
-      updateTask(dayIndex, taskId, { completed: !currentTask.completed });
+    if (isReviewMode) {
+      // In review mode, cycle through three states: neutral → completed → failed → neutral
+      const currentState = taskReviewStates[taskId] || 'neutral';
+      let nextState: 'neutral' | 'completed' | 'failed';
+      
+      switch (currentState) {
+        case 'neutral':
+          nextState = 'completed';
+          break;
+        case 'completed':
+          nextState = 'failed';
+          break;
+        case 'failed':
+          nextState = 'neutral';
+          break;
+        default:
+          nextState = 'neutral';
+      }
+      
+      setTaskReviewStates(prev => ({
+        ...prev,
+        [taskId]: nextState
+      }));
+      
+      // Update the actual task completion based on review state
+      updateTask(dayIndex, taskId, { completed: nextState === 'completed' });
+    } else {
+      // In normal mode, just toggle completion
+      const currentTask = days[dayIndex]?.tasks?.find(t => t.id === taskId);
+      if (currentTask) {
+        updateTask(dayIndex, taskId, { completed: !currentTask.completed });
+      }
+    }
+  };
+
+  // Get the visual state for a task (considering review mode)
+  const getTaskVisualState = (task: Task) => {
+    if (isReviewMode) {
+      return taskReviewStates[task.id] || 'neutral';
+    }
+    return task.completed ? 'completed' : 'neutral';
+  };
+
+  // Get CSS classes for task based on its visual state
+  const getTaskClasses = (task: Task) => {
+    const visualState = getTaskVisualState(task);
+    
+    switch (visualState) {
+      case 'completed':
+        return 'bg-green-50 border-green-200';
+      case 'failed':
+        return 'bg-red-100 border-red-400';
+      case 'neutral':
+      default:
+        return 'border-gray-200 hover:border-green-300 hover:bg-green-50';
     }
   };
 
@@ -716,13 +769,7 @@ export default function ProgramCreator({ studentId, onBack }: ProgramCreatorProp
                 {(day.tasks || []).map((task) => (
                   <div
                     key={task.id}
-                    className={`border rounded-lg p-3 cursor-pointer transition-all ${
-                      task.completed 
-                        ? 'bg-green-50 border-green-200' 
-                        : isReviewMode && !task.completed
-                        ? 'bg-red-50 border-red-200'
-                        : 'border-gray-200 hover:border-green-300 hover:bg-green-50'
-                    }`}
+                    className={`border rounded-lg p-3 cursor-pointer transition-all ${getTaskClasses(task)}`}
                     onClick={() => toggleTaskCompletion(dayIndex, task.id)}
                   >
                     <div className="flex justify-between items-start">
