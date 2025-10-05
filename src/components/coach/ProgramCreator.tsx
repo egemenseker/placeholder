@@ -40,7 +40,7 @@ export default function ProgramCreator({ studentId, onBack }: ProgramCreatorProp
       const dayOfWeek = date.getDay(); // 0 = Sunday, 1 = Monday, ..., 6 = Saturday
       const dayName = dayNames[dayOfWeek]; // Direct mapping now that array starts with Sunday
       return {
-        date: date.toISOString().split('T')[0],
+        date: formatLocalDate(date),
         dayName: dayName,
         tasks: []
       };
@@ -53,7 +53,7 @@ export default function ProgramCreator({ studentId, onBack }: ProgramCreatorProp
     return programs.find(p => 
       p.studentId === studentId && 
       p.coachId === user.coachId && 
-      p.weekStart === currentWindowStart.toISOString().split('T')[0]
+      p.weekStart === formatLocalDate(currentWindowStart)
     );
   };
 
@@ -140,7 +140,7 @@ export default function ProgramCreator({ studentId, onBack }: ProgramCreatorProp
         const program = {
           studentId,
           coachId: user.coachId,
-          weekStart: currentWindowStart.toISOString().split('T')[0],
+          weekStart: formatLocalDate(currentWindowStart),
           days,
           createdAt: new Date().toISOString()
         };
@@ -163,7 +163,7 @@ export default function ProgramCreator({ studentId, onBack }: ProgramCreatorProp
       
       const opt = {
         margin: [10, 10, 10, 10],
-        filename: `${student.firstName}_${student.lastName}_Program_${currentWindowStart.toISOString().split('T')[0]}.pdf`,
+        filename: `${student.firstName}_${student.lastName}_Program_${formatLocalDate(currentWindowStart)}.pdf`,
         image: { type: 'jpeg', quality: 0.98 },
         html2canvas: { 
           scale: 2,
@@ -409,7 +409,7 @@ export default function ProgramCreator({ studentId, onBack }: ProgramCreatorProp
         <div class="print-header">
           <div class="print-title">Haftalık Çalışma Programı</div>
           <div class="print-subtitle">Öğrenci: ${student.firstName} ${student.lastName}</div>
-          <div class="print-subtitle">Program: ${currentWindowStart.toLocaleDateString('tr-TR')} - ${addDays(currentWindowStart, 6).toLocaleDateString('tr-TR')}</div>
+          <div class="print-subtitle">Program: ${formatLocalDate(currentWindowStart)} - ${formatLocalDate(addDays(currentWindowStart, 6))}</div>
           <div class="print-subtitle">Oluşturulma Tarihi: ${new Date().toLocaleDateString('tr-TR')}</div>
         </div>
         
