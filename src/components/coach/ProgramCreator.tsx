@@ -31,6 +31,22 @@ const normalizeDate = (date: Date): Date => {
   return new Date(date.getFullYear(), date.getMonth(), date.getDate());
 };
 
+// Helper function to check if a date falls within a range (inclusive)
+const isDateInRange = (date: Date, startDate: Date, endDate: Date): boolean => {
+  const normalizedDate = normalizeDate(date);
+  const normalizedStart = normalizeDate(startDate);
+  const normalizedEnd = normalizeDate(endDate);
+  return normalizedDate >= normalizedStart && normalizedDate <= normalizedEnd;
+};
+
+// Helper function to get the canonical week start (Monday) for any given date
+const getCanonicalWeekStart = (date: Date): Date => {
+  const normalized = normalizeDate(date);
+  const dayOfWeek = normalized.getDay(); // 0 = Sunday, 1 = Monday, ..., 6 = Saturday
+  const daysToSubtract = dayOfWeek === 0 ? 6 : dayOfWeek - 1; // Convert Sunday (0) to 6, others to dayOfWeek - 1
+  return addDays(normalized, -daysToSubtract);
+};
+
 export default function ProgramCreator({ studentId, onBack }: ProgramCreatorProps) {
   const { students, programs, addProgram, updateProgram, user } = useApp();
   const student = students?.find(s => s.id === studentId);
@@ -73,13 +89,53 @@ export default function ProgramCreator({ studentId, onBack }: ProgramCreatorProp
 
   // Load program data when window changes
   useEffect(() => {
-    const existingProgram = getCurrentWindowProgram();
+    // Initialize empty 7-day window
+    const displayedDays = initializeEmpty7DayWindow(currentWindowStart);
     
-    if (existingProgram && existingProgram.days) {
-      setDays(existingProgram.days);
-    } else {
-      setDays(initializeEmpty7DayWindow(currentWindowStart));
+    // Calculate the end date of the current display window
+    const displayWindowEnd = addDays(currentWindowStart, 6);
+    
+    // Find all programs that overlap with the current display window
+    if (programs && user?.coachId) {
+      const relevantPrograms = programs.filter(p => 
+        p.studentId === studentId && 
+        p.coachId === user.coachId
+      );
+      
+      // For each relevant program, check if it overlaps with our display window
+      relevantPrograms.forEach(program => {
+        const programStart = new Date(program.weekStart);
+        const programEnd = addDays(programStart, 6);
+        
+        // Check if this program's week overlaps with our display window
+        const hasOverlap = isDateInRange(programStart, currentWindowStart, displayWindowEnd) ||
+                          isDateInRange(programEnd, currentWindowStart, displayWindowEnd) ||
+                          isDateInRange(currentWindowStart, programStart, programEnd) ||
+                          isDateInRange(displayWindowEnd, programStart, programEnd);
+        
+        if (hasOverlap && program.days) {
+          // Merge tasks from overlapping program days into our display
+          program.days.forEach(programDay => {
+            const programDayDate = new Date(programDay.date);
+            
+            // Check if this specific day falls within our display window
+            if (isDateInRange(programDayDate, currentWindowStart, displayWindowEnd)) {
+              // Find the corresponding day in our display window
+              const displayDayIndex = displayedDays.findIndex(displayDay => 
+                displayDay.date === formatLocalDate(programDayDate)
+              );
+              
+              if (displayDayIndex !== -1 && programDay.tasks) {
+                // Merge tasks into the display day
+                displayedDays[displayDayIndex].tasks = [...programDay.tasks];
+              }
+            }
+          });
+        }
+      });
     }
+    
+    setDays(displayedDays);
   }, [currentWindowStart, programs, studentId, user?.coachId]);
 
   const addTask = (dayIndex: number) => {
@@ -137,25 +193,63 @@ export default function ProgramCreator({ studentId, onBack }: ProgramCreatorProp
     if (!user?.coachId || !student) return;
     
     try {
-      const existingProgram = getCurrentWindowProgram();
+      // Group days by their canonical week start
+      const programWeeksMap = new Map<string, DayProgram[]>();
       
-      if (existingProgram) {
-        // Update existing program
-        await updateProgram(existingProgram.id, { days });
-        alert('Program başarıyla güncellendi!');
-      } else {
-        // Create new program
-        const program = {
-          studentId,
-          coachId: user.coachId,
-          weekStart: formatLocalDate(currentWindowStart),
-          days,
-          createdAt: new Date().toISOString()
-        };
+      // Process each day in the current display
+      days.forEach(day => {
+        const dayDate = new Date(day.date);
+        const canonicalWeekStart = getCanonicalWeekStart(dayDate);
+        const weekStartKey = formatLocalDate(canonicalWeekStart);
         
-        await addProgram(program);
-        alert('Program başarıyla kaydedildi!');
+        if (!programWeeksMap.has(weekStartKey)) {
+          // Initialize a complete 7-day week starting from canonical Monday
+          const weekDays = initializeEmpty7DayWindow(canonicalWeekStart);
+          programWeeksMap.set(weekStartKey, weekDays);
+        }
+        
+        // Find the correct day index within the canonical week
+        const weekDays = programWeeksMap.get(weekStartKey)!;
+        const dayIndex = weekDays.findIndex(weekDay => weekDay.date === day.date);
+        
+        if (dayIndex !== -1) {
+          // Update the day with current tasks
+          weekDays[dayIndex] = { ...day };
+        }
+      });
+      
+      // Save each program week
+      const savePromises: Promise<void>[] = [];
+      
+      for (const [weekStartKey, weekDays] of programWeeksMap.entries()) {
+        // Check if a program already exists for this week
+        const existingProgram = programs?.find(p => 
+          p.studentId === studentId && 
+          p.coachId === user.coachId && 
+          p.weekStart === weekStartKey
+        );
+        
+        if (existingProgram) {
+          // Update existing program
+          savePromises.push(updateProgram(existingProgram.id, { days: weekDays }));
+        } else {
+          // Create new program
+          const newProgram = {
+            studentId,
+            coachId: user.coachId,
+            weekStart: weekStartKey,
+            days: weekDays,
+            createdAt: new Date().toISOString()
+          };
+          savePromises.push(addProgram(newProgram));
+        }
       }
+      
+      // Wait for all save operations to complete
+      await Promise.all(savePromises);
+      
+      const weekCount = programWeeksMap.size;
+      alert(`Program başarıyla ${weekCount > 1 ? `${weekCount} hafta için ` : ''}kaydedildi!`);
     } catch (error) {
       console.error('Program kaydetme hatası:', error);
       alert('Program kaydedilirken bir hata oluştu!');
