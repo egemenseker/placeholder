@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useApp } from './contexts/AppContext';
 import Header from './components/Header';
 import Homepage from './components/Homepage';
@@ -11,12 +12,20 @@ import CallRequestButton from './components/CallRequestButton';
 import WhatsAppButton from './components/WhatsAppButton';
 import Footer from './components/Footer';
 
-type AppState = 'homepage' | 'unified-login' | 'coach-panel' | 'admin-panel' | 'purchase';
+type AppState = 'homepage' | 'direct-login' | 'coach-panel' | 'admin-panel' | 'purchase';
 
 function App() {
   const { user } = useApp();
   const [currentState, setCurrentState] = useState<AppState>('homepage');
   const [showCallDrawer, setShowCallDrawer] = useState(false);
+
+  // Check URL path on component mount
+  useEffect(() => {
+    const path = window.location.pathname;
+    if (path === '/login') {
+      setCurrentState('direct-login');
+    }
+  }, []);
 
   const renderCurrentView = () => {
     switch (currentState) {
@@ -24,7 +33,7 @@ function App() {
         return (
           <Homepage />
         );
-      case 'unified-login':
+      case 'direct-login':
         return (
           <LoginForm
             onBack={() => setCurrentState('homepage')}
@@ -56,7 +65,6 @@ function App() {
       {/* Show header on all pages except admin and coach panels */}
       {!['admin-panel', 'coach-panel'].includes(currentState) && (
         <Header 
-          onLoginClick={() => setCurrentState('unified-login')}
           onPurchaseClick={() => setCurrentState('purchase')}
           onLogoClick={() => setCurrentState('homepage')}
         />

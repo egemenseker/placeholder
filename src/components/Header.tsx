@@ -2,12 +2,11 @@ import React from 'react';
 import { Instagram, MessageCircle } from 'lucide-react';
 
 interface HeaderProps {
-  onLoginClick?: () => void;
   onPurchaseClick?: () => void;
   onLogoClick?: () => void;
 }
 
-export default function Header({ onLoginClick, onPurchaseClick, onLogoClick }: HeaderProps) {
+export default function Header({ onPurchaseClick, onLogoClick }: HeaderProps) {
   return (
     <header className="bg-white shadow-sm sticky top-0 z-30">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -29,9 +28,6 @@ export default function Header({ onLoginClick, onPurchaseClick, onLogoClick }: H
           <nav className="flex flex-col md:flex-row space-y-2 md:space-y-0 md:space-x-8 text-sm md:text-base">
             <button onClick={onLogoClick} className="text-softBlack hover:text-warmAmber transition-colors hidden md:block font-bold">
               Ana Sayfa
-            </button>
-            <button onClick={onLoginClick} className="text-softBlack hover:text-warmAmber transition-colors font-bold">
-              Giriş Yap
             </button>
             <button onClick={onPurchaseClick} className="text-softBlack hover:text-warmAmber transition-colors font-bold">
               Koçluk Paketi Satın Al
