@@ -69,26 +69,26 @@ export default function ProgramCreator({ studentId, onBack }: ProgramCreatorProp
   // Helper function to get CSS classes for a task based on its state
   const getTaskClasses = (visualState: 'neutral' | 'completed' | 'failed', reviewMode: boolean): string => {
     const baseClasses = 'border rounded-lg p-3 transition-all duration-200';
-    
+
     if (!reviewMode) {
       // Non-interactive mode - no hover effects or cursor pointer
       if (visualState === 'completed') {
-        return `${baseClasses} bg-green-50 border-green-200`;
+        return `${baseClasses} bg-green-100 border-green-300`;
       }
-      return `${baseClasses} border-gray-200`;
+      return `${baseClasses} bg-white border-gray-200`;
     }
-    
+
     // Interactive review mode
     const interactiveClasses = 'cursor-pointer hover:shadow-md';
-    
+
     switch (visualState) {
       case 'completed':
-        return `${baseClasses} ${interactiveClasses} bg-green-50 border-green-200 hover:bg-green-100`;
+        return `${baseClasses} ${interactiveClasses} bg-green-100 border-green-300 hover:bg-green-200`;
       case 'failed':
-        return `${baseClasses} ${interactiveClasses} bg-red-100 border-red-400 hover:bg-red-200`;
+        return `${baseClasses} ${interactiveClasses} bg-red-100 border-red-300 hover:bg-red-200`;
       case 'neutral':
       default:
-        return `${baseClasses} ${interactiveClasses} border-gray-200 hover:bg-gray-50`;
+        return `${baseClasses} ${interactiveClasses} bg-white border-gray-200 hover:bg-gray-50`;
     }
   };
 
@@ -99,6 +99,7 @@ export default function ProgramCreator({ studentId, onBack }: ProgramCreatorProp
     const taskKey = `${dayIndex}-${taskId}`;
     const currentState = taskReviewStates[taskKey] || 'neutral';
 
+    // Cycle order: neutral (white) → completed (green) → failed (red) → neutral (white)
     let nextState: 'neutral' | 'completed' | 'failed';
     switch (currentState) {
       case 'neutral':
@@ -821,50 +822,68 @@ export default function ProgramCreator({ studentId, onBack }: ProgramCreatorProp
                   <div
                     key={task.id}
                     className={getTaskClasses(getTaskVisualState(dayIndex, task), isReviewMode)}
-                    onClick={() => handleTaskReviewToggle(dayIndex, task.id)}
+                    onClick={() => isReviewMode && handleTaskReviewToggle(dayIndex, task.id)}
                   >
                     <div className="flex justify-between items-start">
                       <div className="flex-1 min-w-0">
                         <textarea
-                          type="text"
                           value={task.name || ''}
                           onChange={(e) => updateTask(dayIndex, task.id, { name: e.target.value })}
                           placeholder="Görev adı"
                           className="w-full text-sm font-medium bg-transparent border-none focus:outline-none resize-none overflow-hidden"
                           rows={1}
+                          disabled={isReviewMode}
                           onClick={(e) => e.stopPropagation()}
                           onInput={(e) => {
                             const target = e.target as HTMLTextAreaElement;
                             target.style.height = 'auto';
                             target.style.height = target.scrollHeight + 'px';
                           }}
+                          ref={(el) => {
+                            if (el) {
+                              el.style.height = 'auto';
+                              el.style.height = el.scrollHeight + 'px';
+                            }
+                          }}
                         />
                         <textarea
-                          type="text"
                           value={task.duration || ''}
                           onChange={(e) => updateTask(dayIndex, task.id, { duration: e.target.value })}
                           placeholder="Süre"
                           className="w-full text-xs text-gray-600 bg-transparent border-none focus:outline-none mt-1 resize-none overflow-hidden"
                           rows={1}
+                          disabled={isReviewMode}
                           onClick={(e) => e.stopPropagation()}
                           onInput={(e) => {
                             const target = e.target as HTMLTextAreaElement;
                             target.style.height = 'auto';
                             target.style.height = target.scrollHeight + 'px';
                           }}
+                          ref={(el) => {
+                            if (el) {
+                              el.style.height = 'auto';
+                              el.style.height = el.scrollHeight + 'px';
+                            }
+                          }}
                         />
                         <textarea
-                          type="text"
                           value={task.courseName || ''}
                           onChange={(e) => updateTask(dayIndex, task.id, { courseName: e.target.value })}
                           placeholder="Ders adı"
                           className="w-full text-xs text-gray-500 bg-transparent border-none focus:outline-none mt-1 resize-none overflow-hidden"
                           rows={1}
+                          disabled={isReviewMode}
                           onClick={(e) => e.stopPropagation()}
                           onInput={(e) => {
                             const target = e.target as HTMLTextAreaElement;
                             target.style.height = 'auto';
                             target.style.height = target.scrollHeight + 'px';
+                          }}
+                          ref={(el) => {
+                            if (el) {
+                              el.style.height = 'auto';
+                              el.style.height = el.scrollHeight + 'px';
+                            }
                           }}
                         />
                       </div>
