@@ -38,6 +38,7 @@ export interface Task {
   duration: string;
   courseName: string;
   completed: boolean;
+  status?: 'neutral' | 'completed' | 'failed';
 }
 
 export interface DayProgram {

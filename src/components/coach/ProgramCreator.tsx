@@ -61,9 +61,9 @@ export default function ProgramCreator({ studentId, onBack }: ProgramCreatorProp
   const getTaskVisualState = (dayIndex: number, task: Task): 'neutral' | 'completed' | 'failed' => {
     if (isReviewMode) {
       const taskKey = `${dayIndex}-${task.id}`;
-      return taskReviewStates[taskKey] || 'neutral';
+      return taskReviewStates[taskKey] || task.status || 'neutral';
     }
-    return task.completed ? 'completed' : 'neutral';
+    return task.status || (task.completed ? 'completed' : 'neutral');
   };
 
   // Helper function to get CSS classes for a task based on its state
@@ -207,7 +207,7 @@ export default function ProgramCreator({ studentId, onBack }: ProgramCreatorProp
     displayedDays.forEach((day, dayIndex) => {
       day.tasks?.forEach(task => {
         const taskKey = `${dayIndex}-${task.id}`;
-        newTaskReviewStates[taskKey] = task.completed ? 'completed' : 'neutral';
+        newTaskReviewStates[taskKey] = task.status || (task.completed ? 'completed' : 'neutral');
       });
     });
     setTaskReviewStates(newTaskReviewStates);
@@ -266,30 +266,41 @@ export default function ProgramCreator({ studentId, onBack }: ProgramCreatorProp
 
   const saveProgram = async (currentDays: DayProgram[] = days) => {
     if (!user?.coachId || !student) return;
-    
+
     try {
       // Group days by their canonical week start
       const programWeeksMap = new Map<string, DayProgram[]>();
-      
+
       // Process each day in the current display
-      currentDays.forEach(day => {
+      currentDays.forEach((day, originalDayIndex) => {
         const dayDate = new Date(day.date);
         const canonicalWeekStart = getCanonicalWeekStart(dayDate);
         const weekStartKey = formatLocalDate(canonicalWeekStart);
-        
+
         if (!programWeeksMap.has(weekStartKey)) {
           // Initialize a complete 7-day week starting from canonical Monday
           const weekDays = initializeEmpty7DayWindow(canonicalWeekStart);
           programWeeksMap.set(weekStartKey, weekDays);
         }
-        
+
         // Find the correct day index within the canonical week
         const weekDays = programWeeksMap.get(weekStartKey)!;
         const dayIndex = weekDays.findIndex(weekDay => weekDay.date === day.date);
-        
+
         if (dayIndex !== -1) {
+          // Update tasks with their review states before saving
+          const updatedTasks = day.tasks?.map(task => {
+            const taskKey = `${originalDayIndex}-${task.id}`;
+            const reviewState = taskReviewStates[taskKey];
+            return {
+              ...task,
+              status: reviewState || task.status || 'neutral',
+              completed: reviewState === 'completed' || (!reviewState && task.completed)
+            };
+          }) || [];
+
           // Update the day with current tasks
-          weekDays[dayIndex] = { ...day };
+          weekDays[dayIndex] = { ...day, tasks: updatedTasks };
         }
       });
       
