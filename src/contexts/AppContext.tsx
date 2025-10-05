@@ -239,17 +239,17 @@ export function AppProvider({ children }: { children: ReactNode }) {
     refreshData();
   }, []);
 
-  const login = async (email: string, password: string): Promise<boolean> => {
+  const login = async (email: string, password: string): Promise<{ success: boolean; role?: 'admin' | 'coach' }> => {
     // First, try admin login
     if (email === 'admin@yks.com' && password === 'admin123') {
       setUser({ id: 'admin', email, role: 'admin' });
-      return true;
+      return { success: true, role: 'admin' };
     }
     
     // If admin login fails, try coach login
     if (!supabase) {
       console.warn('Supabase client not initialized, cannot authenticate coach');
-      return false;
+      return { success: false };
     }
     
     try {
@@ -263,13 +263,13 @@ export function AppProvider({ children }: { children: ReactNode }) {
       
       if (data && data.password === password) {
         setUser({ id: data.id, email, role: 'coach', coachId: data.id });
-        return true;
+        return { success: true, role: 'coach' };
       }
     } catch (error) {
       console.error('Login error:', error);
     }
     
-    return false;
+    return { success: false };
   };
 
   const logout = () => {

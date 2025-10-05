@@ -20,13 +20,9 @@ export default function LoginForm({ onBack, onSuccess }: LoginFormProps) {
     setError('');
 
     try {
-      const success = await login(email, password);
-      if (success) {
-        onSuccess();
-      } else {
-        setError('E-posta veya şifre hatalı!');
-      }
-    } catch (err) {
+      const result = await login(email, password);
+      if (result.success && result.role) {
+        onSuccess(result.role);
       setError('Bir hata oluştu!');
     } finally {
       setLoading(false);
