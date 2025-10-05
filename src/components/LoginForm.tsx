@@ -23,6 +23,10 @@ export default function LoginForm({ onBack, onSuccess }: LoginFormProps) {
       const result = await login(email, password);
       if (result.success && result.role) {
         onSuccess(result.role);
+      } else {
+        setError('Bir hata oluştu!');
+      }
+    } catch {
       setError('Bir hata oluştu!');
     } finally {
       setLoading(false);
