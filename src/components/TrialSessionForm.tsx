@@ -17,6 +17,13 @@ export default function TrialSessionForm({ isOpen, onClose }: TrialSessionFormPr
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    
+    // Validate phone number
+    if (!formData.phone.startsWith('0') || formData.phone.length !== 11) {
+      alert('Telefon numarası 0 ile başlamalı ve 11 haneli olmalıdır.');
+      return;
+    }
+    
     addTrialSession(formData);
     setFormData({ fullName: '', phone: '', field: 'SAY' });
     onClose();
@@ -37,13 +44,6 @@ export default function TrialSessionForm({ isOpen, onClose }: TrialSessionFormPr
 
   if (!isOpen) return null;
 
-    
-    // Validate phone number
-    if (!formData.phone.startsWith('0') || formData.phone.length !== 11) {
-      alert('Telefon numarası 0 ile başlamalı ve 11 haneli olmalıdır.');
-      return;
-    }
-    
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
       <div className="bg-white rounded-lg p-6 w-full max-w-md mx-4">

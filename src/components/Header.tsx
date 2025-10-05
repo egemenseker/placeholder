@@ -29,17 +29,17 @@ export default function Header({ showDebugButtons, onCoachPanelClick, onAdminPan
 
           {/* Navigation */}
           <nav className="flex flex-col md:flex-row space-y-2 md:space-y-0 md:space-x-8 text-sm md:text-base">
-            <button onClick={onLogoClick} className="text-softBlack hover:text-warmAmber transition-colors hidden md:block">
+            <button onClick={onLogoClick} className="text-softBlack hover:text-warmAmber transition-colors hidden md:block font-bold">
               Ana Sayfa
             </button>
-            <button onClick={onPurchaseClick} className="text-softBlack hover:text-warmAmber transition-colors">
+            <button onClick={onPurchaseClick} className="text-softBlack hover:text-warmAmber transition-colors font-bold">
               Koçluk Paketi Satın Al
             </button>
             <a 
               href="https://forms.gle/ZQZzmRPK9vE5rCBG8" 
               target="_blank" 
               rel="noopener noreferrer"
-              className="text-softBlack hover:text-warmAmber transition-colors"
+              className="text-softBlack hover:text-warmAmber transition-colors font-bold"
             >
               Koç Olmak İster Misin?
             </a>
