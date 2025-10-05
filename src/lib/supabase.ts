@@ -3,11 +3,26 @@ import { createClient } from '@supabase/supabase-js'
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL
 const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY
 
+// Validate environment variables
+let supabase: any = null;
+
 if (!supabaseUrl || !supabaseAnonKey) {
-  throw new Error('Missing Supabase environment variables')
+  console.warn('⚠️ Supabase environment variables missing:');
+  console.warn('- VITE_SUPABASE_URL:', supabaseUrl ? '✓' : '✗ Missing');
+  console.warn('- VITE_SUPABASE_ANON_KEY:', supabaseAnonKey ? '✓' : '✗ Missing');
+  console.warn('Please check your .env file and restart the dev server.');
+} else if (!supabaseUrl.startsWith('https://') || supabaseUrl.endsWith('/')) {
+  console.warn('⚠️ Invalid VITE_SUPABASE_URL format. Expected: https://<ref>.supabase.co');
+} else {
+  try {
+    supabase = createClient(supabaseUrl, supabaseAnonKey);
+    console.log('✅ Supabase client initialized successfully');
+  } catch (error) {
+    console.error('❌ Failed to initialize Supabase client:', error);
+  }
 }
 
-export const supabase = createClient(supabaseUrl, supabaseAnonKey)
+export { supabase };
 
 // Database types
 export interface Database {

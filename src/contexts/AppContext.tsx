@@ -40,6 +40,11 @@ export function AppProvider({ children }: { children: ReactNode }) {
 
   // Load data from Supabase
   const loadCoaches = async () => {
+    if (!supabase) {
+      console.warn('Supabase client not initialized, skipping loadCoaches');
+      return;
+    }
+    
     try {
       const { data, error } = await supabase
         .from('coaches')
@@ -97,6 +102,11 @@ export function AppProvider({ children }: { children: ReactNode }) {
   };
 
   const loadStudents = async () => {
+    if (!supabase) {
+      console.warn('Supabase client not initialized, skipping loadStudents');
+      return;
+    }
+    
     try {
       const { data, error } = await supabase
         .from('students')
@@ -138,6 +148,11 @@ export function AppProvider({ children }: { children: ReactNode }) {
   };
 
   const loadPrograms = async () => {
+    if (!supabase) {
+      console.warn('Supabase client not initialized, skipping loadPrograms');
+      return;
+    }
+    
     try {
       const { data, error } = await supabase
         .from('programs')
@@ -171,6 +186,11 @@ export function AppProvider({ children }: { children: ReactNode }) {
   };
 
   const loadTrialSessions = async () => {
+    if (!supabase) {
+      console.warn('Supabase client not initialized, skipping loadTrialSessions');
+      return;
+    }
+    
     try {
       const { data, error } = await supabase
         .from('trial_sessions')
@@ -202,6 +222,11 @@ export function AppProvider({ children }: { children: ReactNode }) {
   };
 
   const refreshData = async () => {
+    if (!supabase) {
+      console.warn('Supabase client not initialized, skipping data refresh');
+      return;
+    }
+    
     await Promise.all([
       loadCoaches(),
       loadStudents(),
@@ -221,6 +246,11 @@ export function AppProvider({ children }: { children: ReactNode }) {
     }
     
     if (role === 'coach') {
+      if (!supabase) {
+        console.warn('Supabase client not initialized, cannot authenticate coach');
+        return false;
+      }
+      
       try {
         const { data, error } = await supabase
           .from('coaches')
@@ -247,6 +277,10 @@ export function AppProvider({ children }: { children: ReactNode }) {
   };
 
   const addCoach = async (coach: Omit<Coach, 'id'>) => {
+    if (!supabase) {
+      throw new Error('Supabase client not initialized');
+    }
+    
     try {
       // Convert camelCase to flat case for Supabase
       const { data, error } = await supabase
@@ -280,6 +314,10 @@ export function AppProvider({ children }: { children: ReactNode }) {
   };
 
   const updateCoach = async (id: string, updatedCoach: Partial<Coach>) => {
+    if (!supabase) {
+      throw new Error('Supabase client not initialized');
+    }
+    
     try {
       // Convert camelCase to flat case for Supabase
       const updateData: any = {};
@@ -314,6 +352,10 @@ export function AppProvider({ children }: { children: ReactNode }) {
   };
 
   const deleteCoach = async (id: string) => {
+    if (!supabase) {
+      throw new Error('Supabase client not initialized');
+    }
+    
     try {
       const { error } = await supabase
         .from('coaches')
@@ -329,6 +371,10 @@ export function AppProvider({ children }: { children: ReactNode }) {
   };
 
   const addStudent = async (student: Omit<Student, 'id'>) => {
+    if (!supabase) {
+      throw new Error('Supabase client not initialized');
+    }
+    
     try {
       // Convert camelCase to flat case for Supabase
       const { data, error } = await supabase
@@ -355,6 +401,10 @@ export function AppProvider({ children }: { children: ReactNode }) {
   };
 
   const updateStudent = async (id: string, updatedStudent: Partial<Student>) => {
+    if (!supabase) {
+      throw new Error('Supabase client not initialized');
+    }
+    
     try {
       // Convert camelCase to flat case for Supabase
       const updateData: any = {};
@@ -382,6 +432,10 @@ export function AppProvider({ children }: { children: ReactNode }) {
   };
 
   const deleteStudent = async (id: string) => {
+    if (!supabase) {
+      throw new Error('Supabase client not initialized');
+    }
+    
     try {
       const { error } = await supabase
         .from('students')
@@ -397,6 +451,10 @@ export function AppProvider({ children }: { children: ReactNode }) {
   };
 
   const assignStudentToCoach = async (studentId: string, coachId: string) => {
+    if (!supabase) {
+      throw new Error('Supabase client not initialized');
+    }
+    
     try {
       const { error } = await supabase
         .from('students')
@@ -412,6 +470,10 @@ export function AppProvider({ children }: { children: ReactNode }) {
   };
 
   const addProgram = async (program: Omit<Program, 'id'>) => {
+    if (!supabase) {
+      throw new Error('Supabase client not initialized');
+    }
+    
     try {
       // Convert camelCase to flat case for Supabase
       const { data, error } = await supabase
@@ -434,6 +496,10 @@ export function AppProvider({ children }: { children: ReactNode }) {
   };
 
   const updateProgram = async (id: string, updatedProgram: Partial<Program>) => {
+    if (!supabase) {
+      throw new Error('Supabase client not initialized');
+    }
+    
     try {
       // Convert camelCase to flat case for Supabase
       const updateData: any = {};
@@ -457,6 +523,10 @@ export function AppProvider({ children }: { children: ReactNode }) {
   };
 
   const addTrialSession = async (session: Omit<TrialSession, 'id' | 'createdAt'>) => {
+    if (!supabase) {
+      throw new Error('Supabase client not initialized');
+    }
+    
     try {
       // Convert camelCase to flat case for Supabase
       const { data, error } = await supabase
