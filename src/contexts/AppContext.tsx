@@ -15,7 +15,7 @@ interface AppContextType {
   students: Student[];
   programs: Program[];
   trialSessions: TrialSession[];
-  login: (email: string, password: string, role: 'admin' | 'coach') => Promise<boolean>;
+  login: (email: string, password: string) => Promise<boolean>;
   logout: () => void;
   addCoach: (coach: Omit<Coach, 'id'>) => void;
   updateCoach: (id: string, coach: Partial<Coach>) => void;
@@ -239,34 +239,34 @@ export function AppProvider({ children }: { children: ReactNode }) {
     refreshData();
   }, []);
 
-  const login = async (email: string, password: string, role: 'admin' | 'coach'): Promise<boolean> => {
-    if (role === 'admin' && email === 'admin@yks.com' && password === 'admin123') {
+  const login = async (email: string, password: string): Promise<boolean> => {
+    // First, try admin login
+    if (email === 'admin@yks.com' && password === 'admin123') {
       setUser({ id: 'admin', email, role: 'admin' });
       return true;
     }
     
-    if (role === 'coach') {
-      if (!supabase) {
-        console.warn('Supabase client not initialized, cannot authenticate coach');
-        return false;
-      }
+    // If admin login fails, try coach login
+    if (!supabase) {
+      console.warn('Supabase client not initialized, cannot authenticate coach');
+      return false;
+    }
+    
+    try {
+      const { data, error } = await supabase
+        .from('coaches')
+        .select('*')
+        .eq('email', email)
+        .maybeSingle();
       
-      try {
-        const { data, error } = await supabase
-          .from('coaches')
-          .select('*')
-          .eq('email', email)
-          .maybeSingle();
-        
-        if (error) throw error;
-        
-        if (data && data.password === password) {
-          setUser({ id: data.id, email, role: 'coach', coachId: data.id });
-          return true;
-        }
-      } catch (error) {
-        console.error('Login error:', error);
+      if (error) throw error;
+      
+      if (data && data.password === password) {
+        setUser({ id: data.id, email, role: 'coach', coachId: data.id });
+        return true;
       }
+    } catch (error) {
+      console.error('Login error:', error);
     }
     
     return false;

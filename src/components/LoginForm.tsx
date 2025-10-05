@@ -3,12 +3,11 @@ import { ArrowLeft, Lock, User } from 'lucide-react';
 import { useApp } from '../contexts/AppContext';
 
 interface LoginFormProps {
-  role: 'admin' | 'coach';
   onBack: () => void;
   onSuccess: () => void;
 }
 
-export default function LoginForm({ role, onBack, onSuccess }: LoginFormProps) {
+export default function LoginForm({ onBack, onSuccess }: LoginFormProps) {
   const { login } = useApp();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -21,11 +20,11 @@ export default function LoginForm({ role, onBack, onSuccess }: LoginFormProps) {
     setError('');
 
     try {
-      const success = await login(email, password, role);
+      const success = await login(email, password);
       if (success) {
         onSuccess();
       } else {
-        setError('Giriş bilgileri hatalı!');
+        setError('E-posta veya şifre hatalı!');
       }
     } catch (err) {
       setError('Bir hata oluştu!');
@@ -48,14 +47,10 @@ export default function LoginForm({ role, onBack, onSuccess }: LoginFormProps) {
         <div className="bg-white rounded-lg shadow-md p-8">
           <div className="text-center mb-8">
             <div className="bg-blue-600 p-3 rounded-full inline-block mb-4">
-              {role === 'admin' ? (
-                <Lock className="w-8 h-8 text-white" />
-              ) : (
-                <User className="w-8 h-8 text-white" />
-              )}
+              <User className="w-8 h-8 text-white" />
             </div>
             <h2 className="text-2xl font-bold text-gray-900">
-              {role === 'admin' ? 'Admin Paneli' : 'Koç Paneli'}
+              Giriş Yap
             </h2>
             <p className="text-gray-600 mt-2">
               Devam etmek için giriş yapınız
@@ -73,7 +68,7 @@ export default function LoginForm({ role, onBack, onSuccess }: LoginFormProps) {
                 onChange={(e) => setEmail(e.target.value)}
                 required
                 className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                placeholder={role === 'admin' ? 'admin@yks.com' : 'koç e-postanız'}
+                placeholder="E-posta adresiniz"
               />
             </div>
 
@@ -87,7 +82,7 @@ export default function LoginForm({ role, onBack, onSuccess }: LoginFormProps) {
                 onChange={(e) => setPassword(e.target.value)}
                 required
                 className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                placeholder={role === 'admin' ? 'admin123' : 'coach123'}
+                placeholder="Şifreniz"
               />
             </div>
 
@@ -104,15 +99,6 @@ export default function LoginForm({ role, onBack, onSuccess }: LoginFormProps) {
             </button>
           </form>
 
-          {/* Debug Info */}
-          <div className="mt-6 p-4 bg-gray-100 rounded-lg text-sm text-gray-600">
-            <p className="font-semibold mb-2">Demo Giriş Bilgileri:</p>
-            {role === 'admin' ? (
-              <p>E-posta: admin@yks.com<br />Şifre: admin123</p>
-            ) : (
-              <p>Herhangi bir koçun e-postası<br />Şifre: coach123</p>
-            )}
-          </div>
         </div>
       </div>
     </div>

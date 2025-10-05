@@ -2,14 +2,12 @@ import React from 'react';
 import { Instagram, MessageCircle } from 'lucide-react';
 
 interface HeaderProps {
-  showDebugButtons?: boolean;
-  onCoachPanelClick?: () => void;
-  onAdminPanelClick?: () => void;
+  onLoginClick?: () => void;
   onPurchaseClick?: () => void;
   onLogoClick?: () => void;
 }
 
-export default function Header({ showDebugButtons, onCoachPanelClick, onAdminPanelClick, onPurchaseClick, onLogoClick }: HeaderProps) {
+export default function Header({ onLoginClick, onPurchaseClick, onLogoClick }: HeaderProps) {
   return (
     <header className="bg-white shadow-sm sticky top-0 z-30">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -32,6 +30,9 @@ export default function Header({ showDebugButtons, onCoachPanelClick, onAdminPan
             <button onClick={onLogoClick} className="text-softBlack hover:text-warmAmber transition-colors hidden md:block font-bold">
               Ana Sayfa
             </button>
+            <button onClick={onLoginClick} className="text-softBlack hover:text-warmAmber transition-colors font-bold">
+              Giriş Yap
+            </button>
             <button onClick={onPurchaseClick} className="text-softBlack hover:text-warmAmber transition-colors font-bold">
               Koçluk Paketi Satın Al
             </button>
@@ -44,24 +45,6 @@ export default function Header({ showDebugButtons, onCoachPanelClick, onAdminPan
               Koç Olmak İster Misin?
             </a>
           </nav>
-
-          {/* Debug Buttons */}
-          {showDebugButtons && (
-            <div className="absolute left-4 top-20 flex space-x-2 z-50">
-              <button
-                onClick={onCoachPanelClick}
-                className="px-3 py-1 text-sm bg-warmAmber text-white rounded hover:bg-darkAmber transition-colors shadow-lg"
-              >
-                Koç Paneli
-              </button>
-              <button
-                onClick={onAdminPanelClick}
-                className="px-3 py-1 text-sm bg-beeOrange text-white rounded hover:bg-orange-600 transition-colors shadow-lg"
-              >
-                Admin Paneli
-              </button>
-            </div>
-          )}
 
           {/* Social Icons */}
           <div className="flex flex-col md:flex-row items-center space-y-2 md:space-y-0 md:space-x-4">

@@ -12,9 +12,10 @@ import CallRequestButton from './components/CallRequestButton';
 import WhatsAppButton from './components/WhatsAppButton';
 import Footer from './components/Footer';
 
-type AppState = 'homepage' | 'coach-login' | 'admin-login' | 'coach-panel' | 'admin-panel' | 'purchase';
+type AppState = 'homepage' | 'unified-login' | 'coach-panel' | 'admin-panel' | 'purchase';
 
 function App() {
+  const { user } = useApp();
   const [currentState, setCurrentState] = useState<AppState>('homepage');
   const [showCallDrawer, setShowCallDrawer] = useState(false);
 
@@ -24,20 +25,19 @@ function App() {
         return (
           <Homepage />
         );
-      case 'coach-login':
+      case 'unified-login':
         return (
           <LoginForm
-            role="coach"
             onBack={() => setCurrentState('homepage')}
-            onSuccess={() => setCurrentState('coach-panel')}
-          />
-        );
-      case 'admin-login':
-        return (
-          <LoginForm
-            role="admin"
-            onBack={() => setCurrentState('homepage')}
-            onSuccess={() => setCurrentState('admin-panel')}
+            onSuccess={() => {
+              if (user?.role === 'admin') {
+                setCurrentState('admin-panel');
+              } else if (user?.role === 'coach') {
+                setCurrentState('coach-panel');
+              } else {
+                setCurrentState('homepage');
+              }
+            }}
           />
         );
       case 'coach-panel':
@@ -59,9 +59,7 @@ function App() {
           {/* Show header on all pages except admin and coach panels */}
           {!['admin-panel', 'coach-panel'].includes(currentState) && (
             <Header 
-              showDebugButtons={currentState === 'homepage'}
-              onCoachPanelClick={() => setCurrentState('coach-login')}
-              onAdminPanelClick={() => setCurrentState('admin-login')}
+              onLoginClick={() => setCurrentState('unified-login')}
               onPurchaseClick={() => setCurrentState('purchase')}
               onLogoClick={() => setCurrentState('homepage')}
             />
