@@ -92,13 +92,13 @@ export default function ProgramCreator({ studentId, onBack }: ProgramCreatorProp
     }
   };
 
-  // Helper function to handle review mode toggle
-  const handleToggleReviewMode = async () => {
+  // Helper function to handle task click in review mode
+  const handleTaskReviewToggle = (dayIndex: number, taskId: string) => {
     if (!isReviewMode) return;
-    
+
     const taskKey = `${dayIndex}-${taskId}`;
     const currentState = taskReviewStates[taskKey] || 'neutral';
-    
+
     let nextState: 'neutral' | 'completed' | 'failed';
     switch (currentState) {
       case 'neutral':
@@ -113,7 +113,7 @@ export default function ProgramCreator({ studentId, onBack }: ProgramCreatorProp
       default:
         nextState = 'neutral';
     }
-    
+
     setTaskReviewStates(prev => ({
       ...prev,
       [taskKey]: nextState
@@ -155,40 +155,40 @@ export default function ProgramCreator({ studentId, onBack }: ProgramCreatorProp
   useEffect(() => {
     // Initialize empty 7-day window
     const displayedDays = initializeEmpty7DayWindow(currentWindowStart);
-    
+
     // Calculate the end date of the current display window
     const displayWindowEnd = addDays(currentWindowStart, 6);
-    
+
     // Find all programs that overlap with the current display window
     if (programs && user?.coachId) {
-      const relevantPrograms = programs.filter(p => 
-        p.studentId === studentId && 
+      const relevantPrograms = programs.filter(p =>
+        p.studentId === studentId &&
         p.coachId === user.coachId
       );
-      
+
       // For each relevant program, check if it overlaps with our display window
       relevantPrograms.forEach(program => {
         const programStart = new Date(program.weekStart);
         const programEnd = addDays(programStart, 6);
-        
+
         // Check if this program's week overlaps with our display window
         const hasOverlap = isDateInRange(programStart, currentWindowStart, displayWindowEnd) ||
                           isDateInRange(programEnd, currentWindowStart, displayWindowEnd) ||
                           isDateInRange(currentWindowStart, programStart, programEnd) ||
                           isDateInRange(displayWindowEnd, programStart, programEnd);
-        
+
         if (hasOverlap && program.days) {
           // Merge tasks from overlapping program days into our display
           program.days.forEach(programDay => {
             const programDayDate = new Date(programDay.date);
-            
+
             // Check if this specific day falls within our display window
             if (isDateInRange(programDayDate, currentWindowStart, displayWindowEnd)) {
               // Find the corresponding day in our display window
-              const displayDayIndex = displayedDays.findIndex(displayDay => 
+              const displayDayIndex = displayedDays.findIndex(displayDay =>
                 displayDay.date === formatLocalDate(programDayDate)
               );
-              
+
               if (displayDayIndex !== -1 && programDay.tasks) {
                 // Merge tasks into the display day
                 displayedDays[displayDayIndex].tasks = [...programDay.tasks];
@@ -198,44 +198,18 @@ export default function ProgramCreator({ studentId, onBack }: ProgramCreatorProp
         }
       });
     }
-    
+
     setDays(displayedDays);
-    
+
     // Initialize task review states when data loads
-    if (isReviewMode) {
-      // Deactivating review mode - update task completion status and save changes
-      const updatedDays = days.map((day, dayIndex) => ({
-        ...day,
-        tasks: day.tasks.map(task => {
-          const taskKey = `${dayIndex}-${task.id}`;
-          const reviewState = taskReviewStates[taskKey] || 'neutral';
-          return {
-            ...task,
-            completed: reviewState === 'completed'
-          };
-        })
-      }));
-      
-      // Update local state
-      setDays(updatedDays);
-      
-      // Save to database with updated data
-      try {
-        await saveProgram(updatedDays);
-      } catch (error) {
-        console.error('Error saving program:', error);
-        alert('Program kaydedilirken bir hata oluştu!');
-      }
-      
-      // Clear review states
-      setTaskReviewStates({});
-        day.tasks?.forEach(task => {
-          const taskKey = `${dayIndex}-${task.id}`;
-          newTaskReviewStates[taskKey] = task.completed ? 'completed' : 'neutral';
-        });
+    const newTaskReviewStates: Record<string, 'neutral' | 'completed' | 'failed'> = {};
+    displayedDays.forEach((day, dayIndex) => {
+      day.tasks?.forEach(task => {
+        const taskKey = `${dayIndex}-${task.id}`;
+        newTaskReviewStates[taskKey] = task.completed ? 'completed' : 'neutral';
       });
-      setTaskReviewStates(newTaskReviewStates);
-    }
+    });
+    setTaskReviewStates(newTaskReviewStates);
   }, [currentWindowStart, programs, studentId, user?.coachId]);
 
   const addTask = (dayIndex: number) => {
@@ -801,7 +775,37 @@ export default function ProgramCreator({ studentId, onBack }: ProgramCreatorProp
                   <Plus className="w-4 h-4" />
                 </button>
                 <button
-                  onClick={() => setIsReviewMode(!isReviewMode)}
+                  onClick={async () => {
+                    if (isReviewMode) {
+                      // Deactivating review mode - update task completion status and save changes
+                      const updatedDays = days.map((day, dayIdx) => ({
+                        ...day,
+                        tasks: day.tasks.map(task => {
+                          const taskKey = `${dayIdx}-${task.id}`;
+                          const reviewState = taskReviewStates[taskKey] || 'neutral';
+                          return {
+                            ...task,
+                            completed: reviewState === 'completed'
+                          };
+                        })
+                      }));
+
+                      // Update local state
+                      setDays(updatedDays);
+
+                      // Save to database with updated data
+                      try {
+                        await saveProgram(updatedDays);
+                      } catch (error) {
+                        console.error('Error saving program:', error);
+                        alert('Program kaydedilirken bir hata oluştu!');
+                      }
+
+                      // Clear review states
+                      setTaskReviewStates({});
+                    }
+                    setIsReviewMode(!isReviewMode);
+                  }}
                   className={`p-2 rounded-full transition-colors ${
                     isReviewMode ? 'bg-green-600 text-white' : 'bg-gray-200 text-gray-600 hover:bg-gray-300'
                   }`}
