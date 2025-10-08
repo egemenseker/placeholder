@@ -50,6 +50,7 @@ export default function ProgramCreator({ studentId, onBack }: ProgramCreatorProp
   const student = students?.find(s => s.id === studentId);
 
   const exportRef = useRef<HTMLDivElement>(null);
+  const pdfRef = useRef<HTMLDivElement>(null);
   const [currentWindowStart, setCurrentWindowStart] = useState(() => normalizeDate(new Date()));
   const [days, setDays] = useState<DayProgram[]>([]);
   const [selectedTask, setSelectedTask] = useState<{ dayIndex: number; taskId: string } | null>(null);
@@ -248,138 +249,65 @@ export default function ProgramCreator({ studentId, onBack }: ProgramCreatorProp
     }
   };
 
-  const exportToPDF = async () => {
-    if (!student || !exportRef.current) return;
-    try {
-      const opt = {
-        margin: [5, 5, 5, 5],
-        filename: `${student.firstName}_${student.lastName}_Program_${formatLocalDate(currentWindowStart)}.pdf`,
-        image: { type: 'jpeg', quality: 0.98 },
-        html2canvas: {
-          scale: 2,
-          useCORS: true,
-          allowTaint: true,
-          backgroundColor: '#ffffff',
-          logging: false,
-          onclone: (clonedDoc: Document) => {
-            const root = clonedDoc.querySelector('[data-export-root]') as HTMLElement | null;
-            const origRoot = exportRef.current!;
-            if (!root || !origRoot) return;
+ const exportToPDF = async () => {
+  if (!student || !pdfRef.current) return;
+  const opt = {
+    margin: [5, 5, 5, 5],
+    filename: `${student.firstName}_${student.lastName}_Program_${formatLocalDate(currentWindowStart)}.pdf`,
+    image: { type: 'jpeg', quality: 0.98 },
+    html2canvas: {
+      scale: 2,
+      useCORS: true,
+      backgroundColor: '#ffffff',
+      foreignObjectRendering: true,
+      logging: false,
+    },
+    jsPDF: { unit: 'mm', format: 'a4', orientation: 'landscape', compress: true },
+  } as const;
 
-            Object.assign(root.style, { width: '1400px', background: '#ffffff', padding: '20px', boxSizing: 'border-box' });
+  await html2pdf().set(opt).from(pdfRef.current).save();
+};
+function ExportView({ days }: { days: DayProgram[] }) {
+  return (
+    <div
+      ref={pdfRef}
+      data-export-root
+      style={{
+        position: 'fixed', left: -99999, top: 0, width: 1400,
+        background: '#fff', padding: 20, boxSizing: 'border-box'
+      }}
+    >
+      <h1 style={{ fontSize: 24, fontWeight: 700, marginBottom: 12 }}>Haftalık Çalışma Programı</h1>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7,1fr)', gap: 16 }}>
+        {days.map((d, i) => (
+          <div key={i} style={{ background: '#fff', border: '1px solid #e5e7eb', borderRadius: 8, padding: 12 }}>
+            <div style={{ textAlign: 'center', marginBottom: 8 }}>
+              <div style={{ fontWeight: 700 }}>{d.dayName}</div>
+              <div style={{ fontSize: 12, color: '#6b7280' }}>{new Date(d.date).toLocaleDateString('tr-TR')}</div>
+            </div>
+            {(d.tasks || []).length === 0 && (
+              <div style={{ textAlign: 'center', color: '#9ca3af', fontSize: 12 }}>Henüz görev eklenmemiş</div>
+            )}
+            {(d.tasks || []).map(t => (
+              <div key={t.id} style={{ border: '1px solid #e5e7eb', borderRadius: 8, padding: 8, marginBottom: 8 }}>
+                <div style={{ fontSize: 14, fontWeight: 600, whiteSpace: 'pre-wrap', wordBreak: 'break-word', lineHeight: 1.5 }}>
+                  {t.name || ''}
+                </div>
+                <div style={{ fontSize: 12, color: '#4b5563', whiteSpace: 'pre-wrap', wordBreak: 'break-word', lineHeight: 1.5 }}>
+                  {t.duration || ''}
+                </div>
+                <div style={{ fontSize: 12, color: '#6b7280', whiteSpace: 'pre-wrap', wordBreak: 'break-word', lineHeight: 1.5 }}>
+                  {t.courseName || ''}
+                </div>
+              </div>
+            ))}
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
 
-            const header = clonedDoc.createElement('div');
-            header.style.cssText = 'text-align:center;margin-bottom:20px;padding-bottom:15px;border-bottom:3px solid #FFBF00;';
-            header.innerHTML = `
-              <h1 style="font-size:24px;font-weight:700;color:#2D2D2D;margin-bottom:8px;">Haftalık Çalışma Programı</h1>
-              <p style="font-size:14px;color:#666;margin:3px 0;">Öğrenci: ${student.firstName} ${student.lastName}</p>
-              <p style="font-size:14px;color:#666;margin:3px 0;">Program: ${formatLocalDate(currentWindowStart)} - ${formatLocalDate(addDays(currentWindowStart, 6))}</p>
-              <p style="font-size:14px;color:#666;margin:3px 0;">Oluşturulma Tarihi: ${new Date().toLocaleDateString('tr-TR')}</p>
-            `;
-            root.insertBefore(header, root.firstChild);
-
-            const origContainers = Array.from(origRoot.querySelectorAll('.flex-1.min-w-0')) as HTMLElement[];
-            const clonedContainers = Array.from(root.querySelectorAll('.flex-1.min-w-0')) as HTMLElement[];
-
-            clonedContainers.forEach((container, idx) => {
-              const origContainer = origContainers[idx];
-              if (!origContainer) return;
-
-              const areas = Array.from(origContainer.querySelectorAll('textarea')) as HTMLTextAreaElement[];
-              const name = areas[0]?.value || areas[0]?.placeholder || '';
-              const dur = areas[1]?.value || areas[1]?.placeholder || '';
-              const crs = areas[2]?.value || areas[2]?.placeholder || '';
-
-              container.innerHTML = '';
-              container.style.minWidth = 'unset';
-              container.style.overflow = 'visible';
-              container.style.flex = '1';
-              container.style.padding = '4px';
-              container.style.display = 'block';
-
-              if (name.trim()) {
-                const n = clonedDoc.createElement('div');
-                n.textContent = name;
-                n.style.cssText = 'font-size:14px;font-weight:600;color:#1f2937;white-space:pre-wrap;word-break:break-word;line-height:1.6;overflow:visible;padding:2px 0;margin-bottom:4px;display:block;';
-                container.appendChild(n);
-              }
-
-              if (dur.trim()) {
-                const d = clonedDoc.createElement('div');
-                d.textContent = dur;
-                d.style.cssText = 'font-size:12px;color:#4b5563;white-space:pre-wrap;word-break:break-word;line-height:1.5;overflow:visible;padding:2px 0;margin-bottom:2px;display:block;';
-                container.appendChild(d);
-              }
-
-              if (crs.trim()) {
-                const c = clonedDoc.createElement('div');
-                c.textContent = crs;
-                c.style.cssText = 'font-size:12px;color:#6b7280;white-space:pre-wrap;word-break:break-word;line-height:1.5;overflow:visible;padding:2px 0;display:block;';
-                container.appendChild(c);
-              }
-
-              const card = container.closest('[class*="border"]') as HTMLElement | null;
-              if (card) {
-                card.style.overflow = 'visible';
-                card.style.minHeight = 'auto';
-                card.style.height = 'auto';
-                card.style.maxHeight = 'none';
-              }
-
-              const flexParent = container.parentElement as HTMLElement | null;
-              if (flexParent) {
-                flexParent.style.overflow = 'visible';
-                flexParent.style.height = 'auto';
-                flexParent.style.alignItems = 'flex-start';
-              }
-            });
-
-            root.querySelectorAll('button, svg').forEach(n => n.remove());
-
-            root.querySelectorAll('*').forEach((el) => {
-              const element = el as HTMLElement;
-              element.style.overflow = 'visible !important';
-              element.style.textOverflow = 'clip';
-              element.style.whiteSpace = 'normal';
-
-              if (element.style.height && element.style.height !== 'auto') {
-                element.style.minHeight = element.style.height;
-                element.style.height = 'auto';
-              }
-            });
-
-            root.querySelectorAll('.space-y-2 > *').forEach((el) => {
-              const element = el as HTMLElement;
-              element.style.overflow = 'visible !important';
-              element.style.padding = '12px';
-              element.style.minHeight = '80px';
-              element.style.height = 'auto';
-            });
-
-            root.querySelectorAll('.flex').forEach((el) => {
-              const element = el as HTMLElement;
-              element.style.overflow = 'visible';
-              element.style.alignItems = 'flex-start';
-            });
-
-            (root.style as any).opacity = '1';
-          },
-        },
-        jsPDF: { unit: 'mm', format: 'a4', orientation: 'landscape', compress: true },
-      } as const;
-
-      const worker: any = html2pdf().set(opt).from(exportRef.current).toCanvas();
-      const canvas: HTMLCanvasElement = await worker.get('canvas');
-      if (!canvas || canvas.width === 0 || canvas.height === 0) {
-        alert('PDF kaynağı boş görünüyor. DOM kopyası oluşturulamadı.');
-        return;
-      }
-      await worker.toPdf().save();
-    } catch (e) {
-      console.error('PDF oluşturma hatası:', e);
-      alert('PDF oluşturulurken bir hata oluştu.');
-    }
-  };
 
   if (!student) {
     return (
@@ -608,6 +536,8 @@ export default function ProgramCreator({ studentId, onBack }: ProgramCreatorProp
           ))}
         </div>
       </div>
+      <ExportView days={days} />
+
     </div>
   );
 }
