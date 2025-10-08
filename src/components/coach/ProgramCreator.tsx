@@ -291,25 +291,28 @@ export default function ProgramCreator({ studentId, onBack }: ProgramCreatorProp
               const crs = areas[2]?.value || areas[2]?.placeholder || '';
 
               container.innerHTML = '';
+              container.style.minWidth = 'unset';
+              container.style.overflow = 'visible';
+              container.style.flex = '1';
 
               if (name.trim()) {
                 const n = clonedDoc.createElement('div');
                 n.textContent = name;
-                n.style.cssText = 'font-size:14px;font-weight:600;color:#1f2937;white-space:pre-wrap;word-break:break-word;line-height:1.4;';
+                n.style.cssText = 'font-size:14px;font-weight:600;color:#1f2937;white-space:pre-wrap;word-break:break-word;line-height:1.5;overflow:visible;';
                 container.appendChild(n);
               }
 
               if (dur.trim()) {
                 const d = clonedDoc.createElement('div');
                 d.textContent = dur;
-                d.style.cssText = 'margin-top:4px;font-size:12px;color:#4b5563;white-space:pre-wrap;word-break:break-word;line-height:1.3;';
+                d.style.cssText = 'margin-top:6px;font-size:12px;color:#4b5563;white-space:pre-wrap;word-break:break-word;line-height:1.4;overflow:visible;';
                 container.appendChild(d);
               }
 
               if (crs.trim()) {
                 const c = clonedDoc.createElement('div');
                 c.textContent = crs;
-                c.style.cssText = 'margin-top:2px;font-size:12px;color:#6b7280;white-space:pre-wrap;word-break:break-word;line-height:1.3;';
+                c.style.cssText = 'margin-top:4px;font-size:12px;color:#6b7280;white-space:pre-wrap;word-break:break-word;line-height:1.4;overflow:visible;';
                 container.appendChild(c);
               }
 
@@ -317,10 +320,36 @@ export default function ProgramCreator({ studentId, onBack }: ProgramCreatorProp
               if (card) {
                 card.style.overflow = 'visible';
                 card.style.minHeight = 'auto';
+                card.style.height = 'auto';
+                card.style.maxHeight = 'none';
+              }
+
+              const flexParent = container.parentElement as HTMLElement | null;
+              if (flexParent) {
+                flexParent.style.overflow = 'visible';
+                flexParent.style.height = 'auto';
+                flexParent.style.alignItems = 'flex-start';
               }
             });
 
             root.querySelectorAll('button, svg').forEach(n => n.remove());
+
+            root.querySelectorAll('*').forEach((el) => {
+              const element = el as HTMLElement;
+              const computed = window.getComputedStyle(element);
+              if (computed.overflow === 'hidden' || computed.overflow === 'clip') {
+                element.style.overflow = 'visible';
+              }
+              if (computed.textOverflow === 'ellipsis') {
+                element.style.textOverflow = 'unset';
+              }
+            });
+
+            root.querySelectorAll('[class*="rounded"]').forEach((el) => {
+              const element = el as HTMLElement;
+              element.style.overflow = 'visible';
+            });
+
             (root.style as any).opacity = '1';
           },
         },
