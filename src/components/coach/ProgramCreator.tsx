@@ -363,15 +363,18 @@ export default function ProgramCreator({ studentId, onBack }: ProgramCreatorProp
         allowTaint: true,
         backgroundColor: '#ffffff',
         logging: false,
-       onclone: (clonedDoc: Document) => {
+      onclone: (clonedDoc: Document) => {
   const root = clonedDoc.querySelector('[data-export-root]') as HTMLElement | null;
-  if (!root) return;
+  const origRoot = exportRef.current!;
+  if (!root || !origRoot) return;
 
-  // PDF düzeni için güvenli kap
-  root.style.width = '1400px';
-  root.style.background = '#ffffff';
-  root.style.padding = '20px';
-  root.style.boxSizing = 'border-box';
+  // PDF düzeni
+  Object.assign(root.style, {
+    width: '1400px',
+    background: '#ffffff',
+    padding: '20px',
+    boxSizing: 'border-box',
+  });
 
   // Header
   const header = clonedDoc.createElement('div');
@@ -379,46 +382,8 @@ export default function ProgramCreator({ studentId, onBack }: ProgramCreatorProp
   header.innerHTML = `
     <h1 style="font-size:24px;font-weight:700;color:#2D2D2D;margin-bottom:8px;">Haftalık Çalışma Programı</h1>
     <p style="font-size:14px;color:#666;margin:3px 0;">Öğrenci: ${student.firstName} ${student.lastName}</p>
-    <p style="font-size:14px;color:#666;margin:3px 0;">Program: ${formatLocalDate(currentWindowStart)} - ${formatLocalDate(addDays(currentWindowStart, 6))}</p>
-    <p style="font-size:14px;color:#666;margin:3px 0;">Oluşturulma Tarihi: ${new Date().toLocaleDateString('tr-TR')}</p>
-  `;
-  root.insertBefore(header, root.firstChild);
+    <p style="font-size:14
 
-  // Her görev kartındaki 3 textarea'yı statik 3 div'e çevir
-  root.querySelectorAll('.flex-1.min-w-0').forEach((container) => {
-    const areas = Array.from(container.querySelectorAll('textarea')) as HTMLTextAreaElement[];
-    if (areas.length === 0) return;
-
-    const name = (areas[0]?.value || areas[0]?.placeholder || '').trim();
-    const dur  = (areas[1]?.value || areas[1]?.placeholder || '').trim();
-    const crs  = (areas[2]?.value || areas[2]?.placeholder || '').trim();
-
-    // Temizle
-    container.innerHTML = '';
-
-    // İsim
-    const n = clonedDoc.createElement('div');
-    n.textContent = name || 'Görev adı';
-    n.style.cssText = 'font-size:14px;font-weight:600;white-space:pre-wrap;word-break:break-word;';
-    container.appendChild(n);
-
-    // Süre
-    const d = clonedDoc.createElement('div');
-    d.textContent = dur || 'Süre';
-    d.style.cssText = 'margin-top:4px;font-size:12px;color:#4b5563;white-space:pre-wrap;word-break:break-word;';
-    container.appendChild(d);
-
-    // Ders adı
-    const c = clonedDoc.createElement('div');
-    c.textContent = crs || 'Ders adı';
-    c.style.cssText = 'margin-top:2px;font-size:12px;color:#6b7280;white-space:pre-wrap;word-break:break-word;';
-    container.appendChild(c);
-  });
-
-  // Etkileşimli öğeleri temizle
-  root.querySelectorAll('button, svg').forEach(n => n.remove());
-  (root.style as any).opacity = '1';
-}
 
       },
       jsPDF: { unit: 'mm', format: 'a4', orientation: 'landscape', compress: true }
