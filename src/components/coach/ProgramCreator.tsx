@@ -424,4 +424,4 @@ export default function ProgramCreator({ studentId, onBack }: ProgramCreatorProp
     root.querySelectorAll('button, svg').forEach(n => n.remove());
     (root.style as any).opacity = '1';
   }
-};
+},
