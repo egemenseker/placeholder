@@ -349,7 +349,7 @@ export default function ProgramCreator({ studentId, onBack }: ProgramCreatorProp
     }
   };
 
- const exportToPDF = async () => {
+const exportToPDF = async () => {
   if (!student || !exportRef.current) return;
 
   try {
@@ -357,71 +357,84 @@ export default function ProgramCreator({ studentId, onBack }: ProgramCreatorProp
       margin: [5, 5, 5, 5],
       filename: `${student.firstName}_${student.lastName}_Program_${formatLocalDate(currentWindowStart)}.pdf`,
       image: { type: 'jpeg', quality: 0.98 },
-     html2canvas: {
-  scale: 2,
-  useCORS: true,
-  allowTaint: true,
-  backgroundColor: '#ffffff',
-  logging: false,
-  onclone: (clonedDoc: Document) => {
-    const root = clonedDoc.querySelector('[data-export-root]') as HTMLElement | null;
-    const origRoot = exportRef.current!;
-    if (!root || !origRoot) return;
+      html2canvas: {
+        scale: 2,
+        useCORS: true,
+        allowTaint: true,
+        backgroundColor: '#ffffff',
+        logging: false,
+        onclone: (clonedDoc: Document) => {
+          const root = clonedDoc.querySelector('[data-export-root]') as HTMLElement | null;
+          const origRoot = exportRef.current!;
+          if (!root || !origRoot) return;
 
-    // Düzen
-    Object.assign(root.style, {
-      width: '1400px',
-      background: '#ffffff',
-      padding: '20px',
-      boxSizing: 'border-box',
-    });
+          Object.assign(root.style, {
+            width: '1400px',
+            background: '#ffffff',
+            padding: '20px',
+            boxSizing: 'border-box',
+          });
 
-    // Header
-    const header = clonedDoc.createElement('div');
-    header.style.cssText =
-      'text-align:center;margin-bottom:20px;padding-bottom:15px;border-bottom:3px solid #FFBF00;';
-    header.innerHTML = `
-      <h1 style="font-size:24px;font-weight:700;color:#2D2D2D;margin-bottom:8px;">Haftalık Çalışma Programı</h1>
-      <p style="font-size:14px;color:#666;margin:3px 0;">Öğrenci: ${student.firstName} ${student.lastName}</p>
-      <p style="font-size:14px;color:#666;margin:3px 0;">Program: ${formatLocalDate(currentWindowStart)} - ${formatLocalDate(addDays(currentWindowStart, 6))}</p>
-      <p style="font-size:14px;color:#666;margin:3px 0;">Oluşturulma Tarihi: ${new Date().toLocaleDateString('tr-TR')}</p>
-    `;
-    root.insertBefore(header, root.firstChild);
+          const header = clonedDoc.createElement('div');
+          header.style.cssText =
+            'text-align:center;margin-bottom:20px;padding-bottom:15px;border-bottom:3px solid #FFBF00;';
+          header.innerHTML = `
+            <h1 style="font-size:24px;font-weight:700;color:#2D2D2D;margin-bottom:8px;">Haftalık Çalışma Programı</h1>
+            <p style="font-size:14px;color:#666;margin:3px 0;">Öğrenci: ${student.firstName} ${student.lastName}</p>
+            <p style="font-size:14px;color:#666;margin:3px 0;">Program: ${formatLocalDate(currentWindowStart)} - ${formatLocalDate(addDays(currentWindowStart, 6))}</p>
+            <p style="font-size:14px;color:#666;margin:3px 0;">Oluşturulma Tarihi: ${new Date().toLocaleDateString('tr-TR')}</p>
+          `;
+          root.insertBefore(header, root.firstChild);
 
-    // Orijinal -> klon içerik aktarımı (3 textarea)
-    const origContainers = Array.from(origRoot.querySelectorAll('.flex-1.min-w-0')) as HTMLElement[];
-    const clonedContainers = Array.from(root.querySelectorAll('.flex-1.min-w-0')) as HTMLElement[];
+          const origContainers = Array.from(origRoot.querySelectorAll('.flex-1.min-w-0')) as HTMLElement[];
+          const clonedContainers = Array.from(root.querySelectorAll('.flex-1.min-w-0')) as HTMLElement[];
 
-    clonedContainers.forEach((container, idx) => {
-      const areas = Array.from(origContainers[idx]?.querySelectorAll('textarea') || []) as HTMLTextAreaElement[];
+          clonedContainers.forEach((container, idx) => {
+            const areas = Array.from(
+              origContainers[idx]?.querySelectorAll('textarea') || []
+            ) as HTMLTextAreaElement[];
 
-      const name = (areas[0]?.value ?? areas[0]?.placeholder ?? 'Görev adı').trim();
-      const dur  = (areas[1]?.value ?? areas[1]?.placeholder ?? 'Süre').trim();
-      const crs  = (areas[2]?.value ?? areas[2]?.placeholder ?? 'Ders adı').trim();
+            const name = (areas[0]?.value ?? areas[0]?.placeholder ?? 'Görev adı').trim();
+            const dur  = (areas[1]?.value ?? areas[1]?.placeholder ?? 'Süre').trim();
+            const crs  = (areas[2]?.value ?? areas[2]?.placeholder ?? 'Ders adı').trim();
 
-      container.innerHTML = '';
+            container.innerHTML = '';
 
-      const n = clonedDoc.createElement('div');
-      n.textContent = name;
-      n.style.cssText = 'font-size:14px;font-weight:600;white-space:pre-wrap;word-break:break-word;';
-      container.appendChild(n);
+            const n = clonedDoc.createElement('div');
+            n.textContent = name;
+            n.style.cssText = 'font-size:14px;font-weight:600;white-space:pre-wrap;word-break:break-word;';
+            container.appendChild(n);
 
-      const d = clonedDoc.createElement('div');
-      d.textContent = dur;
-      d.style.cssText = 'margin-top:4px;font-size:12px;color:#4b5563;white-space:pre-wrap;word-break:break-word;';
-      container.appendChild(d);
+            const d = clonedDoc.createElement('div');
+            d.textContent = dur;
+            d.style.cssText = 'margin-top:4px;font-size:12px;color:#4b5563;white-space:pre-wrap;word-break:break-word;';
+            container.appendChild(d);
 
-      const c = clonedDoc.createElement('div');
-      c.textContent = crs;
-      c.style.cssText = 'margin-top:2px;font-size:12px;color:#6b7280;white-space:pre-wrap;word-break:break-word;';
-      container.appendChild(c);
+            const c = clonedDoc.createElement('div');
+            c.textContent = crs;
+            c.style.cssText = 'margin-top:2px;font-size:12px;color:#6b7280;white-space:pre-wrap;word-break:break-word;';
+            container.appendChild(c);
 
-      const card = container.closest('[class*="border"]') as HTMLElement | null;
-      if (card) card.style.overflow = 'visible';
-    });
+            const card = container.closest('[class*="border"]') as HTMLElement | null;
+            if (card) card.style.overflow = 'visible';
+          });
 
-    // Etkileşimli öğeleri temizle
-    root.querySelectorAll('button, svg').forEach(n => n.remove());
-    (root.style as any).opacity = '1';
+          root.querySelectorAll('button, svg').forEach(n => n.remove());
+          (root.style as any).opacity = '1';
+        },
+      },
+      jsPDF: { unit: 'mm', format: 'a4', orientation: 'landscape', compress: true },
+    } as const;
+
+    const worker: any = html2pdf().set(opt).from(exportRef.current).toCanvas();
+    const canvas: HTMLCanvasElement = await worker.get('canvas');
+    if (!canvas || canvas.width === 0 || canvas.height === 0) {
+      alert('PDF kaynağı boş görünüyor. DOM kopyası oluşturulamadı.');
+      return;
+    }
+    await worker.toPdf().save();
+  } catch (e) {
+    console.error('PDF oluşturma hatası:', e);
+    alert('PDF oluşturulurken bir hata oluştu.');
   }
-},
+};
