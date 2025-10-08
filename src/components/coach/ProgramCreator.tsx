@@ -445,6 +445,7 @@ export default function ProgramCreator({ studentId, onBack }: ProgramCreatorProp
   (root.style as any).opacity = '1';
 }
 
+
       },
       jsPDF: { unit: 'mm', format: 'a4', orientation: 'landscape', compress: true }
     };
