@@ -544,7 +544,8 @@ export default function ProgramCreator({ studentId, onBack }: ProgramCreatorProp
         </div>
 
         {/* Calendar Grid */}
-        <div ref={exportRef} className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-7 gap-4">
+        <div ref={exportRef} data-export-root className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-7 gap-4">
+
           {(days || []).map((day, dayIndex) => (
             <div key={dayIndex} className="bg-white rounded-lg shadow-md p-4">
               {/* Day Header */}
