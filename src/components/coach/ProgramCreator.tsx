@@ -348,359 +348,169 @@ export default function ProgramCreator({ studentId, onBack }: ProgramCreatorProp
     }
   };
 
-  const exportToPDF = async () => {
-    if (!student) return;
+ const exportToPDF = async () => {
+  if (!student) return;
+  try {
+    const el = createPrintableElement();
 
-    try {
-      // Create a printable version of the current view
-      const printElement = createPrintableElement();
-
-      // Wait for any fonts/images to load
-      await new Promise(resolve => setTimeout(resolve, 100));
-
-      const opt = {
-        margin: [5, 5, 5, 5],
-        filename: `${student.firstName}_${student.lastName}_Program_${formatLocalDate(currentWindowStart)}.pdf`,
-        image: { type: 'jpeg', quality: 0.98 },
-        html2canvas: {
-          scale: 2,
-          useCORS: true,
-          letterRendering: true,
-          logging: true,
-          backgroundColor: '#ffffff',
-          windowWidth: printElement.scrollWidth,
-          windowHeight: printElement.scrollHeight
-        },
-        jsPDF: {
-          unit: 'mm',
-          format: 'a4',
-          orientation: 'landscape',
-          compress: true
-        },
-        pagebreak: { mode: ['avoid-all', 'css', 'legacy'] }
-      };
-
-      await html2pdf().set(opt).from(printElement).save();
-      alert('Program PDF olarak başarıyla indirildi!');
-      // Clean up the temporary element
-      if (document.body.contains(printElement)) {
-        document.body.removeChild(printElement);
-      }
-
-    } catch (error) {
-      console.error('PDF oluşturma hatası:', error);
-      alert('PDF oluşturulurken bir hata oluştu!');
+    // Layout & font hazır olana kadar bekle
+    await new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r)));
+    if ('fonts' in document) {
+      try { await (document as any).fonts?.ready; } catch {}
     }
-  };
 
-  const createPrintableElement = () => {
-    const printDiv = document.createElement('div');
-    printDiv.style.position = 'fixed';
-    printDiv.style.left = '0';
-    printDiv.style.top = '0';
-    printDiv.style.width = '1200px';
-    printDiv.style.minHeight = '100vh';
-    printDiv.style.fontFamily = 'Inter, system-ui, -apple-system, sans-serif';
-    printDiv.style.backgroundColor = '#ffffff';
-    printDiv.style.zIndex = '-1000';
-    printDiv.style.opacity = '0.01';
-    printDiv.style.pointerEvents = 'none';
-    
-    const totalTasks = (days || []).reduce((total, day) => total + (day.tasks?.length || 0), 0);
-    const completedTasks = (days || []).reduce((total, day) => 
-      total + (day.tasks?.filter(task => task.completed).length || 0), 0
-    );
-    const completionRate = totalTasks > 0 ? Math.round((completedTasks / totalTasks) * 100) : 0;
+    const rect = el.getBoundingClientRect();
+    const opt = {
+      margin: [5, 5, 5, 5],
+      filename: `${student.firstName}_${student.lastName}_Program_${formatLocalDate(currentWindowStart)}.pdf`,
+      image: { type: 'jpeg', quality: 0.98 },
+      html2canvas: {
+        scale: 2,
+        useCORS: true,
+        allowTaint: true,
+        letterRendering: true,
+        foreignObjectRendering: true,
+        backgroundColor: '#ffffff',
+        windowWidth: Math.max(rect.width, 1200),
+        windowHeight: Math.max(rect.height, 1700),
+      },
+      jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait', compress: true },
+      pagebreak: { mode: ['avoid-all', 'css', 'legacy'] },
+    };
 
-    printDiv.innerHTML = `
-      <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
-        
-        @media print {
-          @page { 
-            size: A4 portrait; 
-            margin: 12mm; 
-          }
-          * { 
-            -webkit-print-color-adjust: exact !important; 
-            print-color-adjust: exact !important; 
-            color-adjust: exact !important;
-          }
-        }
-        
-        .print-container {
-          font-family: 'Inter', system-ui, -apple-system, sans-serif;
-          background: white;
-          padding: 20px;
-          width: 100%;
-          box-sizing: border-box;
-        }
-        
-        .print-header {
-          text-align: center;
-          margin-bottom: 30px;
-          border-bottom: 2px solid #FFBF00;
-          padding-bottom: 20px;
-        }
-        
-        .print-title {
-          font-size: 24px;
-          font-weight: 700;
-          color: #2D2D2D;
-          margin-bottom: 8px;
-        }
-        
-        .print-subtitle {
-          font-size: 14px;
-          color: #666;
-          margin: 3px 0;
-        }
-        
-        .print-week-grid {
-          display: grid;
-          grid-template-columns: repeat(7, 1fr);
-          gap: 8px;
-          margin-bottom: 20px;
-        }
-        
-        .print-day-card {
-          background: linear-gradient(135deg, #FFFEF7 0%, #FAF9F2 100%);
-          border: 2px solid #FFBF00;
-          border-radius: 8px;
-          padding: 10px;
-          min-height: 250px;
-          box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-          page-break-inside: avoid;
-        }
-        
-        .print-day-header {
-          text-align: center;
-          margin-bottom: 16px;
-          border-bottom: 1px solid #FFBF00;
-          padding-bottom: 8px;
-        }
-        
-        .print-day-name {
-          font-size: 16px;
-          font-weight: 700;
-          color: #2D2D2D;
-          margin-bottom: 4px;
-        }
-        
-        .print-day-date {
-          font-size: 12px;
-          color: #666;
-        }
-        
-        .print-task {
-          border: 2px solid #e5e5e5;
-          border-radius: 8px;
-          padding: 12px;
-          margin-bottom: 8px;
-          box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
-          background: white !important;
-        }
+    await html2pdf().set(opt).from(el).save();
+    document.body.contains(el) && document.body.removeChild(el);
+    alert('Program PDF olarak başarıyla indirildi!');
+  } catch (error) {
+    console.error('PDF oluşturma hatası:', error);
+    alert('PDF oluşturulurken bir hata oluştu!');
+  }
+};
 
-        .print-task.completed {
-          background: #dcfce7 !important;
-          border-color: #22c55e !important;
-        }
 
-        .print-task.failed {
-          background: #fee2e2 !important;
-          border-color: #ef4444 !important;
-        }
+const createPrintableElement = () => {
+  const printDiv = document.createElement('div');
+  // Ekran dışına taşı, opak tut
+  printDiv.style.position = 'fixed';
+  printDiv.style.left = '-10000px';
+  printDiv.style.top = '0';
+  printDiv.style.width = '1200px';
+  printDiv.style.minHeight = '100vh';
+  printDiv.style.backgroundColor = '#ffffff';
+  printDiv.style.zIndex = '-1';
+  // SYSTEM FONT (webfont import yok)
+  printDiv.style.fontFamily = 'system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif';
+  printDiv.style.opacity = '1';
+  printDiv.style.pointerEvents = 'none';
 
-        .print-task.neutral {
-          background: white !important;
-          border-color: #e5e5e5 !important;
-        }
-        
-        .print-task-header {
-          display: flex;
-          align-items: center;
-          justify-content: space-between;
-          margin-bottom: 6px;
-        }
-        
-        .print-task-name {
-          font-weight: 600;
-          color: #2D2D2D;
-          font-size: 14px;
-          flex: 1;
-        }
-        
-        .print-task-status {
-          width: 16px;
-          height: 16px;
-          border-radius: 50%;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          font-size: 12px;
-          font-weight: bold;
-        }
-        
-        .print-task-status.completed {
-          background: #22c55e !important;
-          color: white !important;
-        }
+  const totalTasks = (days || []).reduce((t, d) => t + (d.tasks?.length || 0), 0);
+  const completedTasks = (days || []).reduce((t, d) => t + (d.tasks?.filter(x => x.completed).length || 0), 0);
+  const completionRate = totalTasks > 0 ? Math.round((completedTasks / totalTasks) * 100) : 0;
 
-        .print-task-status.failed {
-          background: #ef4444 !important;
-          color: white !important;
-        }
+  printDiv.innerHTML = `
+    <style>
+      @media print {
+        @page { size: A4 portrait; margin: 12mm; }
+        * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+      }
+      .print-container { background:#fff; padding:20px; width:100%; box-sizing:border-box; }
+      .print-header { text-align:center; margin-bottom:30px; border-bottom:2px solid #FFBF00; padding-bottom:20px; }
+      .print-title { font-size:24px; font-weight:700; color:#2D2D2D; margin-bottom:8px; }
+      .print-subtitle { font-size:14px; color:#666; margin:3px 0; }
+      .print-week-grid { display:grid; grid-template-columns:repeat(7,1fr); gap:8px; margin-bottom:20px; }
+      .print-day-card { background:linear-gradient(135deg,#FFFEF7 0%, #FAF9F2 100%); border:2px solid #FFBF00; border-radius:8px; padding:10px; min-height:250px; box-shadow:0 2px 4px rgba(0,0,0,.1); page-break-inside:avoid; }
+      .print-day-header { text-align:center; margin-bottom:16px; border-bottom:1px solid #FFBF00; padding-bottom:8px; }
+      .print-day-name { font-size:16px; font-weight:700; color:#2D2D2D; margin-bottom:4px; }
+      .print-day-date { font-size:12px; color:#666; }
+      .print-task { border:2px solid #e5e5e5; border-radius:8px; padding:12px; margin-bottom:8px; box-shadow:0 2px 4px rgba(0,0,0,.05); background:#fff !important; }
+      .print-task.completed { background:#dcfce7 !important; border-color:#22c55e !important; }
+      .print-task.failed { background:#fee2e2 !important; border-color:#ef4444 !important; }
+      .print-task.neutral { background:#fff !important; border-color:#e5e5e5 !important; }
+      .print-task-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:6px; }
+      .print-task-name { font-weight:600; color:#2D2D2D; font-size:14px; flex:1; }
+      .print-task-status { width:16px; height:16px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:12px; font-weight:bold; }
+      .print-task-status.completed { background:#22c55e !important; color:#fff !important; }
+      .print-task-status.failed { background:#ef4444 !important; color:#fff !important; }
+      .print-task-status.neutral { background:#e5e5e5 !important; color:#666 !important; }
+      .print-task-details { font-size:12px; color:#666; display:flex; flex-direction:column; gap:2px; }
+      .print-no-tasks { text-align:center; color:#999; font-style:italic; padding:20px; }
+      .print-statistics { background:linear-gradient(135deg,#FFFEF7 0%, #FAF9F2 100%); border:2px solid #FFBF00; border-radius:12px; padding:20px; margin-bottom:20px; }
+      .print-stats-title { font-size:18px; font-weight:700; color:#2D2D2D; margin-bottom:15px; text-align:center; }
+      .print-stats-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:15px; text-align:center; }
+      .print-stat-item { background:#fff; padding:15px; border-radius:8px; box-shadow:0 2px 4px rgba(0,0,0,.05); }
+      .print-stat-number { font-size:24px; font-weight:700; color:#FFBF00; margin-bottom:5px; }
+      .print-stat-label { font-size:12px; color:#666; font-weight:500; }
+      .print-footer { text-align:center; padding-top:20px; border-top:1px solid #e5e5e5; color:#666; font-size:12px; }
+    </style>
 
-        .print-task-status.neutral {
-          background: #e5e5e5 !important;
-          color: #666 !important;
-        }
-        
-        .print-task-details {
-          font-size: 12px;
-          color: #666;
-          display: flex;
-          flex-direction: column;
-          gap: 2px;
-        }
-        
-        .print-task-detail {
-          display: flex;
-          align-items: center;
-          gap: 4px;
-        }
-        
-        .print-no-tasks {
-          text-align: center;
-          color: #999;
-          font-style: italic;
-          padding: 20px;
-        }
-        
-        .print-statistics {
-          background: linear-gradient(135deg, #FFFEF7 0%, #FAF9F2 100%);
-          border: 2px solid #FFBF00;
-          border-radius: 12px;
-          padding: 20px;
-          margin-bottom: 20px;
-        }
-        
-        .print-stats-title {
-          font-size: 18px;
-          font-weight: 700;
-          color: #2D2D2D;
-          margin-bottom: 15px;
-          text-align: center;
-        }
-        
-        .print-stats-grid {
-          display: grid;
-          grid-template-columns: repeat(4, 1fr);
-          gap: 15px;
-          text-align: center;
-        }
-        
-        .print-stat-item {
-          background: white;
-          padding: 15px;
-          border-radius: 8px;
-          box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
-        }
-        
-        .print-stat-number {
-          font-size: 24px;
-          font-weight: 700;
-          color: #FFBF00;
-          margin-bottom: 5px;
-        }
-        
-        .print-stat-label {
-          font-size: 12px;
-          color: #666;
-          font-weight: 500;
-        }
-        
-        .print-footer {
-          text-align: center;
-          padding-top: 20px;
-          border-top: 1px solid #e5e5e5;
-          color: #666;
-          font-size: 12px;
-        }
-      </style>
-      
-      <div class="print-container">
-        <div class="print-header">
-          <div class="print-title">Haftalık Çalışma Programı</div>
-          <div class="print-subtitle">Öğrenci: ${student.firstName} ${student.lastName}</div>
-          <div class="print-subtitle">Program: ${formatLocalDate(currentWindowStart)} - ${formatLocalDate(addDays(currentWindowStart, 6))}</div>
-          <div class="print-subtitle">Oluşturulma Tarihi: ${new Date().toLocaleDateString('tr-TR')}</div>
-        </div>
-        
-        <div class="print-week-grid">
-          ${(days || []).map(day => `
-            <div class="print-day-card">
-              <div class="print-day-header">
-                <div class="print-day-name">${day.dayName}</div>
-                <div class="print-day-date">${new Date(day.date).toLocaleDateString('tr-TR')}</div>
-              </div>
-              
-              ${!day.tasks || day.tasks.length === 0 ?
-                '<div class="print-no-tasks">Görev bulunmuyor</div>' :
-                day.tasks.map(task => {
-                  const taskStatus = task.status || (task.completed ? 'completed' : 'neutral');
-                  const statusIcon = taskStatus === 'completed' ? '✓' : taskStatus === 'failed' ? '✗' : '○';
-                  return `
-                    <div class="print-task ${taskStatus}">
-                      <div class="print-task-header">
-                        <div class="print-task-name">${task.name || 'İsimsiz Görev'}</div>
-                        <div class="print-task-status ${taskStatus}">
-                          ${statusIcon}
+    <div class="print-container">
+      <div class="print-header">
+        <div class="print-title">Haftalık Çalışma Programı</div>
+        <div class="print-subtitle">Öğrenci: ${student.firstName} ${student.lastName}</div>
+        <div class="print-subtitle">Program: ${formatLocalDate(currentWindowStart)} - ${formatLocalDate(addDays(currentWindowStart, 6))}</div>
+        <div class="print-subtitle">Oluşturulma Tarihi: ${new Date().toLocaleDateString('tr-TR')}</div>
+      </div>
+
+      <div class="print-week-grid">
+        ${(days || []).map(day => `
+          <div class="print-day-card">
+            <div class="print-day-header">
+              <div class="print-day-name">${day.dayName}</div>
+              <div class="print-day-date">${new Date(day.date).toLocaleDateString('tr-TR')}</div>
+            </div>
+            ${
+              !day.tasks || day.tasks.length === 0
+                ? '<div class="print-no-tasks">Görev bulunmuyor</div>'
+                : day.tasks.map(task => {
+                    const taskStatus = task.status || (task.completed ? 'completed' : 'neutral');
+                    const statusIcon = taskStatus === 'completed' ? '✓' : taskStatus === 'failed' ? '✗' : '○';
+                    return `
+                      <div class="print-task ${taskStatus}">
+                        <div class="print-task-header">
+                          <div class="print-task-name">${task.name || 'İsimsiz Görev'}</div>
+                          <div class="print-task-status ${taskStatus}">${statusIcon}</div>
+                        </div>
+                        <div class="print-task-details">
+                          ${task.courseName ? `<div>📚 ${task.courseName}</div>` : ''}
+                          ${task.duration ? `<div>⏱ ${task.duration}</div>` : ''}
                         </div>
                       </div>
-                      <div class="print-task-details">
-                        ${task.courseName ? `<div class="print-task-detail">📚 ${task.courseName}</div>` : ''}
-                        ${task.duration ? `<div class="print-task-detail">⏱ ${task.duration}</div>` : ''}
-                      </div>
-                    </div>
-                  `;
-                }).join('')
-              }
-            </div>
-          `).join('')}
-        </div>
-        
-        <div class="print-statistics">
-          <div class="print-stats-title">Program İstatistikleri</div>
-          <div class="print-stats-grid">
-            <div class="print-stat-item">
-              <div class="print-stat-number">${totalTasks}</div>
-              <div class="print-stat-label">Toplam Görev</div>
-            </div>
-            <div class="print-stat-item">
-              <div class="print-stat-number">${completedTasks}</div>
-              <div class="print-stat-label">Tamamlanan</div>
-            </div>
-            <div class="print-stat-item">
-              <div class="print-stat-number">${totalTasks - completedTasks}</div>
-              <div class="print-stat-label">Tamamlanmayan</div>
-            </div>
-            <div class="print-stat-item">
-              <div class="print-stat-number">%${completionRate}</div>
-              <div class="print-stat-label">Tamamlanma Oranı</div>
-            </div>
+                    `;
+                  }).join('')
+            }
+          </div>
+        `).join('')}
+      </div>
+
+      <div class="print-statistics">
+        <div class="print-stats-title">Program İstatistikleri</div>
+        <div class="print-stats-grid">
+          <div class="print-stat-item">
+            <div class="print-stat-number">${totalTasks}</div>
+            <div class="print-stat-label">Toplam Görev</div>
+          </div>
+          <div class="print-stat-item">
+            <div class="print-stat-number">${completedTasks}</div>
+            <div class="print-stat-label">Tamamlanan</div>
+          </div>
+          <div class="print-stat-item">
+            <div class="print-stat-number">${totalTasks - completedTasks}</div>
+            <div class="print-stat-label">Tamamlanmayan</div>
+          </div>
+          <div class="print-stat-item">
+            <div class="print-stat-number">%${completionRate}</div>
+            <div class="print-stat-label">Tamamlanma Oranı</div>
           </div>
         </div>
-        
-        <div class="print-footer">
-          © 2025 Arı Koçluk - Haftalık Program
-        </div>
       </div>
-    `;
-    
-    document.body.appendChild(printDiv);
-    return printDiv;
-  };
+
+      <div class="print-footer">© 2025 Arı Koçluk - Haftalık Program</div>
+    </div>
+  `;
+  document.body.appendChild(printDiv);
+  return printDiv;
+};
+
 
   if (!student) {
     return (
