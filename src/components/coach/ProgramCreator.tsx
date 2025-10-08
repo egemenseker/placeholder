@@ -294,25 +294,27 @@ export default function ProgramCreator({ studentId, onBack }: ProgramCreatorProp
               container.style.minWidth = 'unset';
               container.style.overflow = 'visible';
               container.style.flex = '1';
+              container.style.padding = '4px';
+              container.style.display = 'block';
 
               if (name.trim()) {
                 const n = clonedDoc.createElement('div');
                 n.textContent = name;
-                n.style.cssText = 'font-size:14px;font-weight:600;color:#1f2937;white-space:pre-wrap;word-break:break-word;line-height:1.5;overflow:visible;';
+                n.style.cssText = 'font-size:14px;font-weight:600;color:#1f2937;white-space:pre-wrap;word-break:break-word;line-height:1.6;overflow:visible;padding:2px 0;margin-bottom:4px;display:block;';
                 container.appendChild(n);
               }
 
               if (dur.trim()) {
                 const d = clonedDoc.createElement('div');
                 d.textContent = dur;
-                d.style.cssText = 'margin-top:6px;font-size:12px;color:#4b5563;white-space:pre-wrap;word-break:break-word;line-height:1.4;overflow:visible;';
+                d.style.cssText = 'font-size:12px;color:#4b5563;white-space:pre-wrap;word-break:break-word;line-height:1.5;overflow:visible;padding:2px 0;margin-bottom:2px;display:block;';
                 container.appendChild(d);
               }
 
               if (crs.trim()) {
                 const c = clonedDoc.createElement('div');
                 c.textContent = crs;
-                c.style.cssText = 'margin-top:4px;font-size:12px;color:#6b7280;white-space:pre-wrap;word-break:break-word;line-height:1.4;overflow:visible;';
+                c.style.cssText = 'font-size:12px;color:#6b7280;white-space:pre-wrap;word-break:break-word;line-height:1.5;overflow:visible;padding:2px 0;display:block;';
                 container.appendChild(c);
               }
 
@@ -336,18 +338,28 @@ export default function ProgramCreator({ studentId, onBack }: ProgramCreatorProp
 
             root.querySelectorAll('*').forEach((el) => {
               const element = el as HTMLElement;
-              const computed = window.getComputedStyle(element);
-              if (computed.overflow === 'hidden' || computed.overflow === 'clip') {
-                element.style.overflow = 'visible';
-              }
-              if (computed.textOverflow === 'ellipsis') {
-                element.style.textOverflow = 'unset';
+              element.style.overflow = 'visible !important';
+              element.style.textOverflow = 'clip';
+              element.style.whiteSpace = 'normal';
+
+              if (element.style.height && element.style.height !== 'auto') {
+                element.style.minHeight = element.style.height;
+                element.style.height = 'auto';
               }
             });
 
-            root.querySelectorAll('[class*="rounded"]').forEach((el) => {
+            root.querySelectorAll('.space-y-2 > *').forEach((el) => {
+              const element = el as HTMLElement;
+              element.style.overflow = 'visible !important';
+              element.style.padding = '12px';
+              element.style.minHeight = '80px';
+              element.style.height = 'auto';
+            });
+
+            root.querySelectorAll('.flex').forEach((el) => {
               const element = el as HTMLElement;
               element.style.overflow = 'visible';
+              element.style.alignItems = 'flex-start';
             });
 
             (root.style as any).opacity = '1';
