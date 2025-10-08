@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { ArrowLeft, Plus, Check, ChevronLeft, ChevronRight, MoreVertical, Trash2, Download } from 'lucide-react';
 import html2pdf from 'html2pdf.js';
 import { useApp } from '../../contexts/AppContext';
@@ -50,7 +50,8 @@ const getCanonicalWeekStart = (date: Date): Date => {
 export default function ProgramCreator({ studentId, onBack }: ProgramCreatorProps) {
   const { students, programs, addProgram, updateProgram, user } = useApp();
   const student = students?.find(s => s.id === studentId);
-  
+
+  const exportRef = useRef<HTMLDivElement>(null);
   const [currentWindowStart, setCurrentWindowStart] = useState(() => normalizeDate(new Date()));
   const [days, setDays] = useState<DayProgram[]>([]);
   const [selectedTask, setSelectedTask] = useState<{ dayIndex: number; taskId: string } | null>(null);
@@ -348,168 +349,112 @@ export default function ProgramCreator({ studentId, onBack }: ProgramCreatorProp
     }
   };
 
- const exportToPDF = async () => {
-  if (!student) return;
-  try {
-    const el = createPrintableElement();
+  const exportToPDF = async () => {
+    if (!student || !exportRef.current) return;
 
-    // Layout & font hazır olana kadar bekle
-    await new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r)));
-    if ('fonts' in document) {
-      try { await (document as any).fonts?.ready; } catch {}
-    }
+    try {
+      // Clone the visible calendar section
+      const clonedElement = exportRef.current.cloneNode(true) as HTMLElement;
 
-    const rect = el.getBoundingClientRect();
-    const opt = {
-      margin: [5, 5, 5, 5],
-      filename: `${student.firstName}_${student.lastName}_Program_${formatLocalDate(currentWindowStart)}.pdf`,
-      image: { type: 'jpeg', quality: 0.98 },
-      html2canvas: {
-        scale: 2,
-        useCORS: true,
-        allowTaint: true,
-        letterRendering: true,
-        foreignObjectRendering: true,
-        backgroundColor: '#ffffff',
-        windowWidth: Math.max(rect.width, 1200),
-        windowHeight: Math.max(rect.height, 1700),
-      },
-      jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait', compress: true },
-      pagebreak: { mode: ['avoid-all', 'css', 'legacy'] },
-    };
+      // Replace all textarea and input elements with divs containing their values
+      const textareas = clonedElement.querySelectorAll('textarea');
+      textareas.forEach((textarea) => {
+        const div = document.createElement('div');
+        const value = (textarea as HTMLTextAreaElement).value;
+        const placeholder = (textarea as HTMLTextAreaElement).placeholder;
+        div.textContent = value || placeholder;
+        div.className = (textarea as HTMLTextAreaElement).className;
+        const computedStyle = window.getComputedStyle(textarea);
+        div.style.fontSize = computedStyle.fontSize;
+        div.style.color = computedStyle.color;
+        div.style.fontWeight = computedStyle.fontWeight;
+        div.style.padding = computedStyle.padding;
+        div.style.whiteSpace = 'pre-wrap';
+        div.style.wordWrap = 'break-word';
+        textarea.parentNode?.replaceChild(div, textarea);
+      });
 
-    await html2pdf().set(opt).from(el).save();
-    document.body.contains(el) && document.body.removeChild(el);
-    alert('Program PDF olarak başarıyla indirildi!');
-  } catch (error) {
-    console.error('PDF oluşturma hatası:', error);
-    alert('PDF oluşturulurken bir hata oluştu!');
-  }
-};
+      const inputs = clonedElement.querySelectorAll('input');
+      inputs.forEach((input) => {
+        const div = document.createElement('div');
+        const value = (input as HTMLInputElement).value;
+        const placeholder = (input as HTMLInputElement).placeholder;
+        div.textContent = value || placeholder;
+        div.className = (input as HTMLInputElement).className;
+        const computedStyle = window.getComputedStyle(input);
+        div.style.fontSize = computedStyle.fontSize;
+        div.style.color = computedStyle.color;
+        div.style.fontWeight = computedStyle.fontWeight;
+        div.style.padding = computedStyle.padding;
+        input.parentNode?.replaceChild(div, input);
+      });
 
+      // Remove interactive elements (buttons, menus)
+      const buttonsToRemove = clonedElement.querySelectorAll('button');
+      buttonsToRemove.forEach(button => button.remove());
 
-const createPrintableElement = () => {
-  const printDiv = document.createElement('div');
-  // Ekran dışına taşı, opak tut
-  printDiv.style.position = 'fixed';
-  printDiv.style.left = '-10000px';
-  printDiv.style.top = '0';
-  printDiv.style.width = '1200px';
-  printDiv.style.minHeight = '100vh';
-  printDiv.style.backgroundColor = '#ffffff';
-  printDiv.style.zIndex = '-1';
-  // SYSTEM FONT (webfont import yok)
-  printDiv.style.fontFamily = 'system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif';
-  printDiv.style.opacity = '1';
-  printDiv.style.pointerEvents = 'none';
+      // Style the cloned element for PDF
+      clonedElement.style.position = 'fixed';
+      clonedElement.style.left = '0';
+      clonedElement.style.top = '0';
+      clonedElement.style.width = '1400px';
+      clonedElement.style.backgroundColor = '#ffffff';
+      clonedElement.style.zIndex = '-1000';
+      clonedElement.style.opacity = '0.01';
+      clonedElement.style.pointerEvents = 'none';
+      clonedElement.style.padding = '20px';
 
-  const totalTasks = (days || []).reduce((t, d) => t + (d.tasks?.length || 0), 0);
-  const completedTasks = (days || []).reduce((t, d) => t + (d.tasks?.filter(x => x.completed).length || 0), 0);
-  const completionRate = totalTasks > 0 ? Math.round((completedTasks / totalTasks) * 100) : 0;
+      // Add header with student info
+      const header = document.createElement('div');
+      header.style.cssText = 'text-align: center; margin-bottom: 20px; padding-bottom: 15px; border-bottom: 3px solid #FFBF00;';
+      header.innerHTML = `
+        <h1 style="font-size: 24px; font-weight: 700; color: #2D2D2D; margin-bottom: 8px;">Haftalık Çalışma Programı</h1>
+        <p style="font-size: 14px; color: #666; margin: 3px 0;">Öğrenci: ${student.firstName} ${student.lastName}</p>
+        <p style="font-size: 14px; color: #666; margin: 3px 0;">Program: ${formatLocalDate(currentWindowStart)} - ${formatLocalDate(addDays(currentWindowStart, 6))}</p>
+        <p style="font-size: 14px; color: #666; margin: 3px 0;">Oluşturulma Tarihi: ${new Date().toLocaleDateString('tr-TR')}</p>
+      `;
+      clonedElement.insertBefore(header, clonedElement.firstChild);
 
-  printDiv.innerHTML = `
-    <style>
-      @media print {
-        @page { size: A4 portrait; margin: 12mm; }
-        * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+      // Append to body temporarily
+      document.body.appendChild(clonedElement);
+
+      // Wait for rendering
+      await new Promise(resolve => setTimeout(resolve, 300));
+
+      const opt = {
+        margin: [5, 5, 5, 5],
+        filename: `${student.firstName}_${student.lastName}_Program_${formatLocalDate(currentWindowStart)}.pdf`,
+        image: { type: 'jpeg', quality: 0.98 },
+        html2canvas: {
+          scale: 2,
+          useCORS: true,
+          backgroundColor: '#ffffff',
+          letterRendering: false,
+          foreignObjectRendering: false,
+          logging: false
+        },
+        jsPDF: {
+          unit: 'mm',
+          format: 'a4',
+          orientation: 'landscape',
+          compress: true
+        }
+      };
+
+      await html2pdf().set(opt).from(clonedElement).save();
+      alert('Program PDF olarak başarıyla indirildi!');
+
+      // Clean up
+      if (document.body.contains(clonedElement)) {
+        document.body.removeChild(clonedElement);
       }
-      .print-container { background:#fff; padding:20px; width:100%; box-sizing:border-box; }
-      .print-header { text-align:center; margin-bottom:30px; border-bottom:2px solid #FFBF00; padding-bottom:20px; }
-      .print-title { font-size:24px; font-weight:700; color:#2D2D2D; margin-bottom:8px; }
-      .print-subtitle { font-size:14px; color:#666; margin:3px 0; }
-      .print-week-grid { display:grid; grid-template-columns:repeat(7,1fr); gap:8px; margin-bottom:20px; }
-      .print-day-card { background:linear-gradient(135deg,#FFFEF7 0%, #FAF9F2 100%); border:2px solid #FFBF00; border-radius:8px; padding:10px; min-height:250px; box-shadow:0 2px 4px rgba(0,0,0,.1); page-break-inside:avoid; }
-      .print-day-header { text-align:center; margin-bottom:16px; border-bottom:1px solid #FFBF00; padding-bottom:8px; }
-      .print-day-name { font-size:16px; font-weight:700; color:#2D2D2D; margin-bottom:4px; }
-      .print-day-date { font-size:12px; color:#666; }
-      .print-task { border:2px solid #e5e5e5; border-radius:8px; padding:12px; margin-bottom:8px; box-shadow:0 2px 4px rgba(0,0,0,.05); background:#fff !important; }
-      .print-task.completed { background:#dcfce7 !important; border-color:#22c55e !important; }
-      .print-task.failed { background:#fee2e2 !important; border-color:#ef4444 !important; }
-      .print-task.neutral { background:#fff !important; border-color:#e5e5e5 !important; }
-      .print-task-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:6px; }
-      .print-task-name { font-weight:600; color:#2D2D2D; font-size:14px; flex:1; }
-      .print-task-status { width:16px; height:16px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:12px; font-weight:bold; }
-      .print-task-status.completed { background:#22c55e !important; color:#fff !important; }
-      .print-task-status.failed { background:#ef4444 !important; color:#fff !important; }
-      .print-task-status.neutral { background:#e5e5e5 !important; color:#666 !important; }
-      .print-task-details { font-size:12px; color:#666; display:flex; flex-direction:column; gap:2px; }
-      .print-no-tasks { text-align:center; color:#999; font-style:italic; padding:20px; }
-      .print-statistics { background:linear-gradient(135deg,#FFFEF7 0%, #FAF9F2 100%); border:2px solid #FFBF00; border-radius:12px; padding:20px; margin-bottom:20px; }
-      .print-stats-title { font-size:18px; font-weight:700; color:#2D2D2D; margin-bottom:15px; text-align:center; }
-      .print-stats-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:15px; text-align:center; }
-      .print-stat-item { background:#fff; padding:15px; border-radius:8px; box-shadow:0 2px 4px rgba(0,0,0,.05); }
-      .print-stat-number { font-size:24px; font-weight:700; color:#FFBF00; margin-bottom:5px; }
-      .print-stat-label { font-size:12px; color:#666; font-weight:500; }
-      .print-footer { text-align:center; padding-top:20px; border-top:1px solid #e5e5e5; color:#666; font-size:12px; }
-    </style>
 
-    <div class="print-container">
-      <div class="print-header">
-        <div class="print-title">Haftalık Çalışma Programı</div>
-        <div class="print-subtitle">Öğrenci: ${student.firstName} ${student.lastName}</div>
-        <div class="print-subtitle">Program: ${formatLocalDate(currentWindowStart)} - ${formatLocalDate(addDays(currentWindowStart, 6))}</div>
-        <div class="print-subtitle">Oluşturulma Tarihi: ${new Date().toLocaleDateString('tr-TR')}</div>
-      </div>
+    } catch (error) {
+      console.error('PDF oluşturma hatası:', error);
+      alert('PDF oluşturulurken bir hata oluştu!');
+    }
+  };
 
-      <div class="print-week-grid">
-        ${(days || []).map(day => `
-          <div class="print-day-card">
-            <div class="print-day-header">
-              <div class="print-day-name">${day.dayName}</div>
-              <div class="print-day-date">${new Date(day.date).toLocaleDateString('tr-TR')}</div>
-            </div>
-            ${
-              !day.tasks || day.tasks.length === 0
-                ? '<div class="print-no-tasks">Görev bulunmuyor</div>'
-                : day.tasks.map(task => {
-                    const taskStatus = task.status || (task.completed ? 'completed' : 'neutral');
-                    const statusIcon = taskStatus === 'completed' ? '✓' : taskStatus === 'failed' ? '✗' : '○';
-                    return `
-                      <div class="print-task ${taskStatus}">
-                        <div class="print-task-header">
-                          <div class="print-task-name">${task.name || 'İsimsiz Görev'}</div>
-                          <div class="print-task-status ${taskStatus}">${statusIcon}</div>
-                        </div>
-                        <div class="print-task-details">
-                          ${task.courseName ? `<div>📚 ${task.courseName}</div>` : ''}
-                          ${task.duration ? `<div>⏱ ${task.duration}</div>` : ''}
-                        </div>
-                      </div>
-                    `;
-                  }).join('')
-            }
-          </div>
-        `).join('')}
-      </div>
-
-      <div class="print-statistics">
-        <div class="print-stats-title">Program İstatistikleri</div>
-        <div class="print-stats-grid">
-          <div class="print-stat-item">
-            <div class="print-stat-number">${totalTasks}</div>
-            <div class="print-stat-label">Toplam Görev</div>
-          </div>
-          <div class="print-stat-item">
-            <div class="print-stat-number">${completedTasks}</div>
-            <div class="print-stat-label">Tamamlanan</div>
-          </div>
-          <div class="print-stat-item">
-            <div class="print-stat-number">${totalTasks - completedTasks}</div>
-            <div class="print-stat-label">Tamamlanmayan</div>
-          </div>
-          <div class="print-stat-item">
-            <div class="print-stat-number">%${completionRate}</div>
-            <div class="print-stat-label">Tamamlanma Oranı</div>
-          </div>
-        </div>
-      </div>
-
-      <div class="print-footer">© 2025 Arı Koçluk - Haftalık Program</div>
-    </div>
-  `;
-  document.body.appendChild(printDiv);
-  return printDiv;
-};
 
 
   if (!student) {
@@ -616,7 +561,7 @@ const createPrintableElement = () => {
         </div>
 
         {/* Calendar Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-7 gap-4">
+        <div ref={exportRef} className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-7 gap-4">
           {(days || []).map((day, dayIndex) => (
             <div key={dayIndex} className="bg-white rounded-lg shadow-md p-4">
               {/* Day Header */}
