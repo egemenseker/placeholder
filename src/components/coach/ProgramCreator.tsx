@@ -263,10 +263,36 @@ export default function ProgramCreator({ studentId, onBack }: ProgramCreatorProp
           const ta = node as HTMLTextAreaElement;
           const div = clonedDoc.createElement('div');
           div.textContent = ta.value || ta.placeholder || '';
-          // tipine göre tipografi
-          div.style.whiteSpace = 'normal';
-          div.style.wordBreak = 'break-word';
-          div.style.hyphens = 'auto';
+          const VOW = /[aeıioöuüAEIİOÖUÜ]/;
+
+// kelimeyi 6–10 karakterde bir, mümkünse ünlüden sonra kır
+function hyphenateTrWord(w: string): string {
+  if (w.length < 12) return w; // kısa kelimeyi bozma
+  let out = '';
+  let i = 0;
+  while (i < w.length) {
+    const nextCut = Math.min(i + 8, w.length);      // hedef blok uzunluğu
+    let j = nextCut;
+    // ünlüden sonra kesmeye çalış
+    while (j > i + 4 && j < w.length && !VOW.test(w[j - 1])) j--;
+    if (j <= i + 4) j = nextCut;                    // mecburen hedefte kes
+    out += w.slice(i, j) + (j < w.length ? '\u00AD' : '');
+    i = j;
+  }
+  return out;
+}
+
+function hyphenateTrLine(line: string): string {
+  return line.replace(/\p{L}{12,}/gu, (m) => hyphenateTrWord(m));
+}
+
+const raw = ta.value || ta.placeholder || '';
+const txt = hyphenateTrLine(raw);
+
+div.textContent = txt;
+div.style.whiteSpace = 'normal';
+div.style.wordBreak = 'break-word';
+div.style.hyphens = 'manual';
           const isName = ta.className.includes('text-sm') && ta.className.includes('font-medium');
           const isDur = ta.placeholder?.toLowerCase() === 'süre';
           const isCourse = ta.placeholder?.toLowerCase() === 'ders adı';
