@@ -364,59 +364,87 @@ export default function ProgramCreator({ studentId, onBack }: ProgramCreatorProp
         backgroundColor: '#ffffff',
         logging: false,
         onclone: (clonedDoc: Document) => {
-          const root = clonedDoc.querySelector('[data-export-root]') as HTMLElement | null;
-          if (!root) return;
+  const root = clonedDoc.querySelector('[data-export-root]') as HTMLElement | null;
+  if (!root) return;
 
-          // Başlık ekle
-          const header = clonedDoc.createElement('div');
-          header.style.cssText = 'text-align:center;margin-bottom:20px;padding-bottom:15px;border-bottom:3px solid #FFBF00;';
-          header.innerHTML = `
-            <h1 style="font-size:24px;font-weight:700;color:#2D2D2D;margin-bottom:8px;">Haftalık Çalışma Programı</h1>
-            <p style="font-size:14px;color:#666;margin:3px 0;">Öğrenci: ${student.firstName} ${student.lastName}</p>
-            <p style="font-size:14px;color:#666;margin:3px 0;">Program: ${formatLocalDate(currentWindowStart)} - ${formatLocalDate(addDays(currentWindowStart, 6))}</p>
-            <p style="font-size:14px;color:#666;margin:3px 0;">Oluşturulma Tarihi: ${new Date().toLocaleDateString('tr-TR')}</p>
-          `;
-          root.insertBefore(header, root.firstChild);
+  // Başlık
+  const header = clonedDoc.createElement('div');
+  header.style.cssText = 'text-align:center;margin-bottom:20px;padding-bottom:15px;border-bottom:3px solid #FFBF00;';
+  header.innerHTML = `
+    <h1 style="font-size:24px;font-weight:700;color:#2D2D2D;margin-bottom:8px;">Haftalık Çalışma Programı</h1>
+    <p style="font-size:14px;color:#666;margin:3px 0;">Öğrenci: ${student.firstName} ${student.lastName}</p>
+    <p style="font-size:14px;color:#666;margin:3px 0;">Program: ${formatLocalDate(currentWindowStart)} - ${formatLocalDate(addDays(currentWindowStart, 6))}</p>
+    <p style="font-size:14px;color:#666;margin:3px 0;">Oluşturulma Tarihi: ${new Date().toLocaleDateString('tr-TR')}</p>
+  `;
+  root.insertBefore(header, root.firstChild);
 
-          // Değer kopyalama ve input/textarea -> div dönüşümü (KOPYA DOKÜMANDA!)
-          const getCS = (el: Element) => clonedDoc.defaultView?.getComputedStyle(el as Element)!;
+  const getCS = (el: Element) => clonedDoc.defaultView?.getComputedStyle(el as Element)!;
 
-          root.querySelectorAll('textarea').forEach((taEl) => {
-            const ta = taEl as HTMLTextAreaElement;
-            const div = clonedDoc.createElement('div');
-            const cs = getCS(ta);
-            div.textContent = ta.value || ta.placeholder || '';
-            div.className = ta.className;
-            div.style.fontSize = cs.fontSize;
-            div.style.color = cs.color;
-            div.style.fontWeight = cs.fontWeight;
-            div.style.padding = cs.padding;
-            div.style.whiteSpace = 'pre-wrap';
-            div.style.wordBreak = 'break-word';
-            ta.parentNode?.replaceChild(div, ta);
-          });
+  // TEXTAREA -> DIV
+  root.querySelectorAll('textarea').forEach((taEl) => {
+    const ta = taEl as HTMLTextAreaElement;
+    const cs = getCS(ta);
+    // mevcut klon textarea içinde value zaten var; gerçek yüksekliği ölç
+    ta.style.height = 'auto';
+    ta.style.height = ta.scrollHeight + 'px';
 
-          root.querySelectorAll('input').forEach((inEl) => {
-            const inp = inEl as HTMLInputElement;
-            const div = clonedDoc.createElement('div');
-            const cs = getCS(inp);
-            div.textContent = inp.value || inp.placeholder || '';
-            div.className = inp.className;
-            div.style.fontSize = cs.fontSize;
-            div.style.color = cs.color;
-            div.style.fontWeight = cs.fontWeight;
-            div.style.padding = cs.padding;
-            div.style.whiteSpace = 'pre-wrap';
-            div.style.wordBreak = 'break-word';
-            inp.parentNode?.replaceChild(div, inp);
-          });
+    const div = clonedDoc.createElement('div');
+    div.textContent = ta.value || ta.placeholder || '';
 
-          // İnteraktif öğeleri ve svg ikonları temizle
-          root.querySelectorAll('button, svg').forEach(n => n.remove());
+    // Görünüm
+    div.style.display = 'block';
+    div.style.fontSize = cs.fontSize;
+    div.style.fontWeight = cs.fontWeight;
+    div.style.color = cs.color;
+    div.style.lineHeight = cs.lineHeight;
+    div.style.padding = cs.padding;
+    div.style.margin = cs.margin;
+    div.style.whiteSpace = 'pre-wrap';
+    div.style.wordBreak = 'break-word';
+    div.style.overflow = 'visible';
+    div.style.height = 'auto';
+    div.style.minHeight = ta.scrollHeight + 'px'; // kritik
 
-          // Kopya görünür; negatif z-index/opacity verme
-          (root.style as any).opacity = '1';
-        }
+    // Tailwind tipografi sınıfları kalsın istiyorsan kopyala ama overflow’u inline ile ezdik
+    div.className = ta.className;
+
+    ta.parentNode?.replaceChild(div, ta);
+  });
+
+  // INPUT -> DIV
+  root.querySelectorAll('input').forEach((inEl) => {
+    const inp = inEl as HTMLInputElement;
+    const cs = getCS(inp);
+    const div = clonedDoc.createElement('div');
+    div.textContent = inp.value || inp.placeholder || '';
+
+    div.style.display = 'block';
+    div.style.fontSize = cs.fontSize;
+    div.style.fontWeight = cs.fontWeight;
+    div.style.color = cs.color;
+    div.style.lineHeight = cs.lineHeight;
+    div.style.padding = cs.padding;
+    div.style.margin = cs.margin;
+    div.style.whiteSpace = 'pre-wrap';
+    div.style.wordBreak = 'break-word';
+    div.style.overflow = 'visible';
+    div.style.height = 'auto';
+    // input genelde 1 satır; en az 20px ver
+    const h = parseFloat(cs.height || '0') || 20;
+    div.style.minHeight = h + 'px';
+
+    div.className = inp.className;
+
+    inp.parentNode?.replaceChild(div, inp);
+  });
+
+  // Etkileşimli öğeleri kaldır
+  root.querySelectorAll('button, svg').forEach(n => n.remove());
+
+  // Görünür kalsın
+  (root.style as any).opacity = '1';
+}
+
       },
       jsPDF: { unit: 'mm', format: 'a4', orientation: 'landscape', compress: true }
     };
