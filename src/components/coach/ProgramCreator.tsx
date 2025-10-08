@@ -354,30 +354,40 @@ export default function ProgramCreator({ studentId, onBack }: ProgramCreatorProp
     try {
       // Create a printable version of the current view
       const printElement = createPrintableElement();
-      
+
       const opt = {
-        margin: [10, 10, 10, 10],
+        margin: [5, 5, 5, 5],
         filename: `${student.firstName}_${student.lastName}_Program_${formatLocalDate(currentWindowStart)}.pdf`,
         image: { type: 'jpeg', quality: 0.98 },
-        html2canvas: { 
-          scale: 2,
+        html2canvas: {
+          scale: 3,
           useCORS: true,
           letterRendering: true,
-          allowTaint: false
+          logging: false,
+          backgroundColor: '#ffffff'
         },
-        jsPDF: { 
-          unit: 'mm', 
-          format: 'a4', 
-          orientation: 'portrait'
-        }
+        jsPDF: {
+          unit: 'mm',
+          format: 'a4',
+          orientation: 'landscape',
+          compress: true
+        },
+        pagebreak: { mode: ['avoid-all', 'css', 'legacy'] }
       };
 
       html2pdf().set(opt).from(printElement).save().then(() => {
         alert('Program PDF olarak başarıyla indirildi!');
         // Clean up the temporary element
         document.body.removeChild(printElement);
+      }).catch((error: Error) => {
+        console.error('PDF kaydetme hatası:', error);
+        alert('PDF kaydedilirken bir hata oluştu!');
+        // Clean up even if there's an error
+        if (document.body.contains(printElement)) {
+          document.body.removeChild(printElement);
+        }
       });
-      
+
     } catch (error) {
       console.error('PDF oluşturma hatası:', error);
       alert('PDF oluşturulurken bir hata oluştu!');
@@ -389,8 +399,9 @@ export default function ProgramCreator({ studentId, onBack }: ProgramCreatorProp
     printDiv.style.position = 'absolute';
     printDiv.style.left = '-9999px';
     printDiv.style.top = '0';
-    printDiv.style.width = '210mm'; // A4 width
+    printDiv.style.width = '297mm'; // A4 landscape width
     printDiv.style.fontFamily = 'Inter, system-ui, -apple-system, sans-serif';
+    printDiv.style.backgroundColor = '#ffffff';
     
     const totalTasks = (days || []).reduce((total, day) => total + (day.tasks?.length || 0), 0);
     const completedTasks = (days || []).reduce((total, day) => 
@@ -478,17 +489,27 @@ export default function ProgramCreator({ studentId, onBack }: ProgramCreatorProp
         }
         
         .print-task {
-          background: white;
-          border: 1px solid #e5e5e5;
+          border: 2px solid #e5e5e5;
           border-radius: 8px;
           padding: 12px;
           margin-bottom: 8px;
           box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+          background: white !important;
         }
-        
+
         .print-task.completed {
-          background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
-          border-color: #22c55e;
+          background: #dcfce7 !important;
+          border-color: #22c55e !important;
+        }
+
+        .print-task.failed {
+          background: #fee2e2 !important;
+          border-color: #ef4444 !important;
+        }
+
+        .print-task.neutral {
+          background: white !important;
+          border-color: #e5e5e5 !important;
         }
         
         .print-task-header {
@@ -517,13 +538,18 @@ export default function ProgramCreator({ studentId, onBack }: ProgramCreatorProp
         }
         
         .print-task-status.completed {
-          background: #22c55e;
-          color: white;
+          background: #22c55e !important;
+          color: white !important;
         }
-        
-        .print-task-status.pending {
-          background: #e5e5e5;
-          color: #666;
+
+        .print-task-status.failed {
+          background: #ef4444 !important;
+          color: white !important;
+        }
+
+        .print-task-status.neutral {
+          background: #e5e5e5 !important;
+          color: #666 !important;
         }
         
         .print-task-details {
@@ -615,22 +641,26 @@ export default function ProgramCreator({ studentId, onBack }: ProgramCreatorProp
                 <div class="print-day-date">${new Date(day.date).toLocaleDateString('tr-TR')}</div>
               </div>
               
-              ${!day.tasks || day.tasks.length === 0 ? 
+              ${!day.tasks || day.tasks.length === 0 ?
                 '<div class="print-no-tasks">Görev bulunmuyor</div>' :
-                day.tasks.map(task => `
-                  <div class="print-task ${task.completed ? 'completed' : ''}">
-                    <div class="print-task-header">
-                      <div class="print-task-name">${task.name || 'İsimsiz Görev'}</div>
-                      <div class="print-task-status ${task.completed ? 'completed' : 'pending'}">
-                        ${task.completed ? '✓' : '○'}
+                day.tasks.map(task => {
+                  const taskStatus = task.status || (task.completed ? 'completed' : 'neutral');
+                  const statusIcon = taskStatus === 'completed' ? '✓' : taskStatus === 'failed' ? '✗' : '○';
+                  return `
+                    <div class="print-task ${taskStatus}">
+                      <div class="print-task-header">
+                        <div class="print-task-name">${task.name || 'İsimsiz Görev'}</div>
+                        <div class="print-task-status ${taskStatus}">
+                          ${statusIcon}
+                        </div>
+                      </div>
+                      <div class="print-task-details">
+                        ${task.courseName ? `<div class="print-task-detail">📚 ${task.courseName}</div>` : ''}
+                        ${task.duration ? `<div class="print-task-detail">⏱ ${task.duration}</div>` : ''}
                       </div>
                     </div>
-                    <div class="print-task-details">
-                      ${task.courseName ? `<div class="print-task-detail">📚 ${task.courseName}</div>` : ''}
-                      ${task.duration ? `<div class="print-task-detail">⏱ ${task.duration}</div>` : ''}
-                    </div>
-                  </div>
-                `).join('')
+                  `;
+                }).join('')
               }
             </div>
           `).join('')}
