@@ -282,30 +282,42 @@ export default function ProgramCreator({ studentId, onBack }: ProgramCreatorProp
             const clonedContainers = Array.from(root.querySelectorAll('.flex-1.min-w-0')) as HTMLElement[];
 
             clonedContainers.forEach((container, idx) => {
-              const areas = Array.from(origContainers[idx]?.querySelectorAll('textarea') || []) as HTMLTextAreaElement[];
-              const name = (areas[0]?.value ?? areas[0]?.placeholder ?? 'Görev adı').trim();
-              const dur = (areas[1]?.value ?? areas[1]?.placeholder ?? 'Süre').trim();
-              const crs = (areas[2]?.value ?? areas[2]?.placeholder ?? 'Ders adı').trim();
+              const origContainer = origContainers[idx];
+              if (!origContainer) return;
+
+              const areas = Array.from(origContainer.querySelectorAll('textarea')) as HTMLTextAreaElement[];
+              const name = areas[0]?.value || areas[0]?.placeholder || '';
+              const dur = areas[1]?.value || areas[1]?.placeholder || '';
+              const crs = areas[2]?.value || areas[2]?.placeholder || '';
 
               container.innerHTML = '';
 
-              const n = clonedDoc.createElement('div');
-              n.textContent = name;
-              n.style.cssText = 'font-size:14px;font-weight:600;white-space:pre-wrap;word-break:break-word;';
-              container.appendChild(n);
+              if (name.trim()) {
+                const n = clonedDoc.createElement('div');
+                n.textContent = name;
+                n.style.cssText = 'font-size:14px;font-weight:600;color:#1f2937;white-space:pre-wrap;word-break:break-word;line-height:1.4;';
+                container.appendChild(n);
+              }
 
-              const d = clonedDoc.createElement('div');
-              d.textContent = dur;
-              d.style.cssText = 'margin-top:4px;font-size:12px;color:#4b5563;white-space:pre-wrap;word-break:break-word;';
-              container.appendChild(d);
+              if (dur.trim()) {
+                const d = clonedDoc.createElement('div');
+                d.textContent = dur;
+                d.style.cssText = 'margin-top:4px;font-size:12px;color:#4b5563;white-space:pre-wrap;word-break:break-word;line-height:1.3;';
+                container.appendChild(d);
+              }
 
-              const c = clonedDoc.createElement('div');
-              c.textContent = crs;
-              c.style.cssText = 'margin-top:2px;font-size:12px;color:#6b7280;white-space:pre-wrap;word-break:break-word;';
-              container.appendChild(c);
+              if (crs.trim()) {
+                const c = clonedDoc.createElement('div');
+                c.textContent = crs;
+                c.style.cssText = 'margin-top:2px;font-size:12px;color:#6b7280;white-space:pre-wrap;word-break:break-word;line-height:1.3;';
+                container.appendChild(c);
+              }
 
               const card = container.closest('[class*="border"]') as HTMLElement | null;
-              if (card) card.style.overflow = 'visible';
+              if (card) {
+                card.style.overflow = 'visible';
+                card.style.minHeight = 'auto';
+              }
             });
 
             root.querySelectorAll('button, svg').forEach(n => n.remove());
