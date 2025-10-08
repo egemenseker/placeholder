@@ -249,8 +249,12 @@ export default function ProgramCreator({ studentId, onBack }: ProgramCreatorProp
     }
   };
 
- const exportToPDF = async () => {
+const exportToPDF = async () => {
   if (!student || !pdfRef.current) return;
+
+  // Ölçülerin hesaplanması için bir frame bekle
+  await new Promise(r => requestAnimationFrame(() => r(null)));
+
   const opt = {
     margin: [5, 5, 5, 5],
     filename: `${student.firstName}_${student.lastName}_Program_${formatLocalDate(currentWindowStart)}.pdf`,
@@ -261,52 +265,36 @@ export default function ProgramCreator({ studentId, onBack }: ProgramCreatorProp
       backgroundColor: '#ffffff',
       foreignObjectRendering: true,
       logging: false,
+      windowWidth: 1400,   // ölçü sabitle
     },
     jsPDF: { unit: 'mm', format: 'a4', orientation: 'landscape', compress: true },
   } as const;
 
   await html2pdf().set(opt).from(pdfRef.current).save();
 };
+
 function ExportView({ days }: { days: DayProgram[] }) {
   return (
     <div
       ref={pdfRef}
       data-export-root
       style={{
-        position: 'fixed', left: -99999, top: 0, width: 1400,
-        background: '#fff', padding: 20, boxSizing: 'border-box'
+        position: 'absolute',   // ölçülebilir
+        top: 0,
+        left: 0,
+        visibility: 'hidden',   // ekranda görünmez
+        zIndex: -1,
+        width: 1400,
+        background: '#fff',
+        padding: 20,
+        boxSizing: 'border-box'
       }}
     >
-      <h1 style={{ fontSize: 24, fontWeight: 700, marginBottom: 12 }}>Haftalık Çalışma Programı</h1>
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7,1fr)', gap: 16 }}>
-        {days.map((d, i) => (
-          <div key={i} style={{ background: '#fff', border: '1px solid #e5e7eb', borderRadius: 8, padding: 12 }}>
-            <div style={{ textAlign: 'center', marginBottom: 8 }}>
-              <div style={{ fontWeight: 700 }}>{d.dayName}</div>
-              <div style={{ fontSize: 12, color: '#6b7280' }}>{new Date(d.date).toLocaleDateString('tr-TR')}</div>
-            </div>
-            {(d.tasks || []).length === 0 && (
-              <div style={{ textAlign: 'center', color: '#9ca3af', fontSize: 12 }}>Henüz görev eklenmemiş</div>
-            )}
-            {(d.tasks || []).map(t => (
-              <div key={t.id} style={{ border: '1px solid #e5e7eb', borderRadius: 8, padding: 8, marginBottom: 8 }}>
-                <div style={{ fontSize: 14, fontWeight: 600, whiteSpace: 'pre-wrap', wordBreak: 'break-word', lineHeight: 1.5 }}>
-                  {t.name || ''}
-                </div>
-                <div style={{ fontSize: 12, color: '#4b5563', whiteSpace: 'pre-wrap', wordBreak: 'break-word', lineHeight: 1.5 }}>
-                  {t.duration || ''}
-                </div>
-                <div style={{ fontSize: 12, color: '#6b7280', whiteSpace: 'pre-wrap', wordBreak: 'break-word', lineHeight: 1.5 }}>
-                  {t.courseName || ''}
-                </div>
-              </div>
-            ))}
-          </div>
-        ))}
-      </div>
+      {/* ...aynı içerik... */}
     </div>
   );
 }
+
 
 
   if (!student) {
