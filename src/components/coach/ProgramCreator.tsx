@@ -536,8 +536,9 @@ function ExportView({ days }: { days: DayProgram[] }) {
           ))}
         </div>
       </div>
-      <ExportView days={days} />
+      
 
     </div>
+    <ExportView days={days} />
   );
 }
