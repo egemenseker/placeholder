@@ -348,23 +348,28 @@ export default function ProgramCreator({ studentId, onBack }: ProgramCreatorProp
     }
   };
 
-  const exportToPDF = () => {
+  const exportToPDF = async () => {
     if (!student) return;
 
     try {
       // Create a printable version of the current view
       const printElement = createPrintableElement();
 
+      // Wait for any fonts/images to load
+      await new Promise(resolve => setTimeout(resolve, 100));
+
       const opt = {
         margin: [5, 5, 5, 5],
         filename: `${student.firstName}_${student.lastName}_Program_${formatLocalDate(currentWindowStart)}.pdf`,
         image: { type: 'jpeg', quality: 0.98 },
         html2canvas: {
-          scale: 3,
+          scale: 2,
           useCORS: true,
           letterRendering: true,
-          logging: false,
-          backgroundColor: '#ffffff'
+          logging: true,
+          backgroundColor: '#ffffff',
+          windowWidth: printElement.scrollWidth,
+          windowHeight: printElement.scrollHeight
         },
         jsPDF: {
           unit: 'mm',
@@ -375,18 +380,12 @@ export default function ProgramCreator({ studentId, onBack }: ProgramCreatorProp
         pagebreak: { mode: ['avoid-all', 'css', 'legacy'] }
       };
 
-      html2pdf().set(opt).from(printElement).save().then(() => {
-        alert('Program PDF olarak başarıyla indirildi!');
-        // Clean up the temporary element
+      await html2pdf().set(opt).from(printElement).save();
+      alert('Program PDF olarak başarıyla indirildi!');
+      // Clean up the temporary element
+      if (document.body.contains(printElement)) {
         document.body.removeChild(printElement);
-      }).catch((error: Error) => {
-        console.error('PDF kaydetme hatası:', error);
-        alert('PDF kaydedilirken bir hata oluştu!');
-        // Clean up even if there's an error
-        if (document.body.contains(printElement)) {
-          document.body.removeChild(printElement);
-        }
-      });
+      }
 
     } catch (error) {
       console.error('PDF oluşturma hatası:', error);
@@ -396,12 +395,16 @@ export default function ProgramCreator({ studentId, onBack }: ProgramCreatorProp
 
   const createPrintableElement = () => {
     const printDiv = document.createElement('div');
-    printDiv.style.position = 'absolute';
-    printDiv.style.left = '-9999px';
+    printDiv.style.position = 'fixed';
+    printDiv.style.left = '0';
     printDiv.style.top = '0';
-    printDiv.style.width = '297mm'; // A4 landscape width
+    printDiv.style.width = '1200px';
+    printDiv.style.minHeight = '100vh';
     printDiv.style.fontFamily = 'Inter, system-ui, -apple-system, sans-serif';
     printDiv.style.backgroundColor = '#ffffff';
+    printDiv.style.zIndex = '-1000';
+    printDiv.style.opacity = '0.01';
+    printDiv.style.pointerEvents = 'none';
     
     const totalTasks = (days || []).reduce((total, day) => total + (day.tasks?.length || 0), 0);
     const completedTasks = (days || []).reduce((total, day) => 
@@ -441,32 +444,33 @@ export default function ProgramCreator({ studentId, onBack }: ProgramCreatorProp
         }
         
         .print-title {
-          font-size: 28px;
+          font-size: 24px;
           font-weight: 700;
           color: #2D2D2D;
-          margin-bottom: 10px;
+          margin-bottom: 8px;
         }
         
         .print-subtitle {
-          font-size: 16px;
+          font-size: 14px;
           color: #666;
-          margin: 5px 0;
+          margin: 3px 0;
         }
         
         .print-week-grid {
           display: grid;
           grid-template-columns: repeat(7, 1fr);
-          gap: 12px;
-          margin-bottom: 30px;
+          gap: 8px;
+          margin-bottom: 20px;
         }
         
         .print-day-card {
           background: linear-gradient(135deg, #FFFEF7 0%, #FAF9F2 100%);
           border: 2px solid #FFBF00;
-          border-radius: 12px;
-          padding: 16px;
-          min-height: 300px;
-          box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+          border-radius: 8px;
+          padding: 10px;
+          min-height: 250px;
+          box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+          page-break-inside: avoid;
         }
         
         .print-day-header {
