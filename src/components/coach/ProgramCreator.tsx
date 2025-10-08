@@ -350,80 +350,85 @@ export default function ProgramCreator({ studentId, onBack }: ProgramCreatorProp
   };
 
   const exportToPDF = async () => {
-  if (!student) return;
+  if (!student || !exportRef.current) return;
+
+  // rAF ile layout’un tamamlanmasını bekle
+  const raf = () => new Promise<void>(r => requestAnimationFrame(() => requestAnimationFrame(() => r())));
 
   try {
-    // 1) Offscreen statik kök
-    const printRoot = document.createElement('div');
-    printRoot.style.cssText =
-      'position:fixed;left:-99999px;top:0;width:1400px;background:#fff;padding:20px;';
+    // 1) Orijinal DOM’dan değerleri al
+    const orig = exportRef.current;
+    const origTextareas = Array.from(orig.querySelectorAll('textarea')) as HTMLTextAreaElement[];
+    const origInputs = Array.from(orig.querySelectorAll('input')) as HTMLInputElement[];
 
-    // 2) Header
+    // 2) Klonu oluştur
+    const cloned = orig.cloneNode(true) as HTMLElement;
+
+    // 3) Klondaki alanları orijinal değerlerle doldur
+    const clonedTextareas = Array.from(cloned.querySelectorAll('textarea')) as HTMLTextAreaElement[];
+    clonedTextareas.forEach((ta, i) => { ta.value = origTextareas[i]?.value ?? ''; });
+
+    const clonedInputs = Array.from(cloned.querySelectorAll('input')) as HTMLInputElement[];
+    clonedInputs.forEach((inp, i) => { inp.value = origInputs[i]?.value ?? ''; });
+
+    // 4) Input/textarea → div dönüşümü (metin PDF’e yazılsın)
+    const toDiv = (el: HTMLTextAreaElement | HTMLInputElement) => {
+      const div = document.createElement('div');
+      const cs = window.getComputedStyle(el);
+      div.textContent = (el as HTMLTextAreaElement | HTMLInputElement).value || (el as any).placeholder || '';
+      div.className = (el as any).className;
+      div.style.fontSize = cs.fontSize;
+      div.style.color = cs.color;
+      div.style.fontWeight = cs.fontWeight;
+      div.style.padding = cs.padding;
+      div.style.whiteSpace = 'pre-wrap';
+      div.style.wordBreak = 'break-word';
+      el.parentNode?.replaceChild(div, el);
+    };
+
+    clonedTextareas.forEach(toDiv);
+    clonedInputs.forEach(toDiv);
+
+    // 5) İnteraktif butonları kaldır
+    cloned.querySelectorAll('button').forEach(b => b.remove());
+
+    // 6) Başlık ekle
     const header = document.createElement('div');
-    header.style.cssText =
-      'text-align:center;margin-bottom:20px;padding-bottom:15px;border-bottom:3px solid #FFBF00;';
+    header.style.cssText = 'text-align:center;margin-bottom:20px;padding-bottom:15px;border-bottom:3px solid #FFBF00;';
     header.innerHTML = `
       <h1 style="font-size:24px;font-weight:700;color:#2D2D2D;margin-bottom:8px;">Haftalık Çalışma Programı</h1>
       <p style="font-size:14px;color:#666;margin:3px 0;">Öğrenci: ${student.firstName} ${student.lastName}</p>
       <p style="font-size:14px;color:#666;margin:3px 0;">Program: ${formatLocalDate(currentWindowStart)} - ${formatLocalDate(addDays(currentWindowStart, 6))}</p>
       <p style="font-size:14px;color:#666;margin:3px 0;">Oluşturulma Tarihi: ${new Date().toLocaleDateString('tr-TR')}</p>
     `;
-    printRoot.appendChild(header);
+    cloned.insertBefore(header, cloned.firstChild);
 
-    // 3) Grid
-    const grid = document.createElement('div');
-    grid.style.cssText = 'display:grid;grid-template-columns:repeat(7,1fr);gap:16px;';
-    printRoot.appendChild(grid);
+    // 7) Klonu görünür yap ama ekran dışına taşı (opacity=1, z-index negatif YAPMA)
+    cloned.style.position = 'fixed';
+    cloned.style.left = '-99999px';
+    cloned.style.top = '0';
+    cloned.style.width = '1400px';
+    cloned.style.backgroundColor = '#ffffff';
+    cloned.style.zIndex = '1';
+    cloned.style.opacity = '1';
+    cloned.style.pointerEvents = 'none';
+    cloned.style.padding = '20px';
 
-    // 4) Günler ve görev kartları (state'ten)
-    (days || []).forEach((day, dayIndex) => {
-      const col = document.createElement('div');
-      col.style.cssText =
-        'background:#fff;border-radius:12px;box-shadow:0 1px 3px rgba(0,0,0,.08);padding:16px;';
-      col.innerHTML = `
-        <div style="text-align:center;margin-bottom:12px;">
-          <div style="font-weight:700;color:#111827;">${day.dayName}</div>
-          <div style="font-size:12px;color:#6b7280;">${new Date(day.date).toLocaleDateString('tr-TR')}</div>
-        </div>
-      `;
-      const list = document.createElement('div');
+    // 8) DOM’a ekle ve layout’un bitmesini bekle
+    document.body.appendChild(cloned);
+    await raf();
 
-      (day.tasks || []).forEach((task) => {
-        const state = getTaskVisualState(dayIndex, task);
-        const bg = state === 'completed' ? '#dcfce7' : state === 'failed' ? '#fee2e2' : '#ffffff';
-        const bd = state === 'completed' ? '#86efac' : state === 'failed' ? '#fca5a5' : '#e5e7eb';
+    // 9) İçerik doğrulaması; boşsa iptal et
+    const w = cloned.offsetWidth;
+    const h = cloned.offsetHeight;
+    const textLen = (cloned.innerText || '').trim().length;
+    if (w === 0 || h === 0 || textLen === 0) {
+      document.body.removeChild(cloned);
+      alert('PDF çıktısı boş görünüyor. Görünürlük/boyut kontrol edin.');
+      return;
+    }
 
-        const card = document.createElement('div');
-        card.style.cssText = `border:1px solid ${bd};background:${bg};border-radius:8px;padding:12px;margin-bottom:8px;`;
-
-        const name = (task.name || '').trim() || 'Görev adı';
-        const dur = (task.duration || '').trim() || 'Süre';
-        const course = (task.courseName || '').trim() || 'Ders adı';
-
-        card.innerHTML = `
-          <div style="font-size:14px;font-weight:600;white-space:pre-wrap;word-break:break-word;">${name}</div>
-          <div style="font-size:12px;color:#4b5563;margin-top:4px;white-space:pre-wrap;word-break:break-word;">${dur}</div>
-          <div style="font-size:12px;color:#6b7280;margin-top:2px;white-space:pre-wrap;word-break:break-word;">${course}</div>
-        `;
-        list.appendChild(card);
-      });
-
-      if (!day.tasks || day.tasks.length === 0) {
-        const empty = document.createElement('div');
-        empty.style.cssText = 'text-align:center;color:#9ca3af;font-size:12px;padding:16px;';
-        empty.textContent = 'Henüz görev eklenmemiş';
-        list.appendChild(empty);
-      }
-
-      col.appendChild(list);
-      grid.appendChild(col);
-    });
-
-    // 5) DOM’a ekle ve render bekle
-    document.body.appendChild(printRoot);
-    await new Promise((r) => setTimeout(r, 100));
-
-    // 6) PDF
+    // 10) html2pdf ayarları ve oluşturma
     const opt = {
       margin: [5, 5, 5, 5],
       filename: `${student.firstName}_${student.lastName}_Program_${formatLocalDate(currentWindowStart)}.pdf`,
@@ -432,23 +437,22 @@ export default function ProgramCreator({ studentId, onBack }: ProgramCreatorProp
         scale: 2,
         useCORS: true,
         backgroundColor: '#ffffff',
-        logging: false,
         letterRendering: false,
         foreignObjectRendering: false,
+        logging: false
       },
-      jsPDF: { unit: 'mm', format: 'a4', orientation: 'landscape', compress: true },
-    } as const;
+      jsPDF: { unit: 'mm', format: 'a4', orientation: 'landscape', compress: true }
+    };
 
-    await html2pdf().set(opt).from(printRoot).save();
+    await html2pdf().set(opt).from(cloned).save();
 
-    document.body.removeChild(printRoot);
-  } catch (e) {
-    console.error(e);
-    alert('PDF oluşturulurken bir hata oluştu.');
+    // 11) Temizlik
+    document.body.contains(cloned) && document.body.removeChild(cloned);
+  } catch (error) {
+    console.error('PDF oluşturma hatası:', error);
+    alert('PDF oluşturulurken bir hata oluştu!');
   }
 };
-
-
 
 
 
@@ -557,8 +561,7 @@ export default function ProgramCreator({ studentId, onBack }: ProgramCreatorProp
         </div>
 
         {/* Calendar Grid */}
-        <div ref={exportRef} data-export-root className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-7 gap-4">
-
+        <div ref={exportRef} className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-7 gap-4">
           {(days || []).map((day, dayIndex) => (
             <div key={dayIndex} className="bg-white rounded-lg shadow-md p-4">
               {/* Day Header */}
