@@ -350,9 +350,80 @@ export default function ProgramCreator({ studentId, onBack }: ProgramCreatorProp
   };
 
   const exportToPDF = async () => {
-  if (!student || !exportRef.current) return;
+  if (!student) return;
 
   try {
+    // 1) Offscreen statik kök
+    const printRoot = document.createElement('div');
+    printRoot.style.cssText =
+      'position:fixed;left:-99999px;top:0;width:1400px;background:#fff;padding:20px;';
+
+    // 2) Header
+    const header = document.createElement('div');
+    header.style.cssText =
+      'text-align:center;margin-bottom:20px;padding-bottom:15px;border-bottom:3px solid #FFBF00;';
+    header.innerHTML = `
+      <h1 style="font-size:24px;font-weight:700;color:#2D2D2D;margin-bottom:8px;">Haftalık Çalışma Programı</h1>
+      <p style="font-size:14px;color:#666;margin:3px 0;">Öğrenci: ${student.firstName} ${student.lastName}</p>
+      <p style="font-size:14px;color:#666;margin:3px 0;">Program: ${formatLocalDate(currentWindowStart)} - ${formatLocalDate(addDays(currentWindowStart, 6))}</p>
+      <p style="font-size:14px;color:#666;margin:3px 0;">Oluşturulma Tarihi: ${new Date().toLocaleDateString('tr-TR')}</p>
+    `;
+    printRoot.appendChild(header);
+
+    // 3) Grid
+    const grid = document.createElement('div');
+    grid.style.cssText = 'display:grid;grid-template-columns:repeat(7,1fr);gap:16px;';
+    printRoot.appendChild(grid);
+
+    // 4) Günler ve görev kartları (state'ten)
+    (days || []).forEach((day, dayIndex) => {
+      const col = document.createElement('div');
+      col.style.cssText =
+        'background:#fff;border-radius:12px;box-shadow:0 1px 3px rgba(0,0,0,.08);padding:16px;';
+      col.innerHTML = `
+        <div style="text-align:center;margin-bottom:12px;">
+          <div style="font-weight:700;color:#111827;">${day.dayName}</div>
+          <div style="font-size:12px;color:#6b7280;">${new Date(day.date).toLocaleDateString('tr-TR')}</div>
+        </div>
+      `;
+      const list = document.createElement('div');
+
+      (day.tasks || []).forEach((task) => {
+        const state = getTaskVisualState(dayIndex, task);
+        const bg = state === 'completed' ? '#dcfce7' : state === 'failed' ? '#fee2e2' : '#ffffff';
+        const bd = state === 'completed' ? '#86efac' : state === 'failed' ? '#fca5a5' : '#e5e7eb';
+
+        const card = document.createElement('div');
+        card.style.cssText = `border:1px solid ${bd};background:${bg};border-radius:8px;padding:12px;margin-bottom:8px;`;
+
+        const name = (task.name || '').trim() || 'Görev adı';
+        const dur = (task.duration || '').trim() || 'Süre';
+        const course = (task.courseName || '').trim() || 'Ders adı';
+
+        card.innerHTML = `
+          <div style="font-size:14px;font-weight:600;white-space:pre-wrap;word-break:break-word;">${name}</div>
+          <div style="font-size:12px;color:#4b5563;margin-top:4px;white-space:pre-wrap;word-break:break-word;">${dur}</div>
+          <div style="font-size:12px;color:#6b7280;margin-top:2px;white-space:pre-wrap;word-break:break-word;">${course}</div>
+        `;
+        list.appendChild(card);
+      });
+
+      if (!day.tasks || day.tasks.length === 0) {
+        const empty = document.createElement('div');
+        empty.style.cssText = 'text-align:center;color:#9ca3af;font-size:12px;padding:16px;';
+        empty.textContent = 'Henüz görev eklenmemiş';
+        list.appendChild(empty);
+      }
+
+      col.appendChild(list);
+      grid.appendChild(col);
+    });
+
+    // 5) DOM’a ekle ve render bekle
+    document.body.appendChild(printRoot);
+    await new Promise((r) => setTimeout(r, 100));
+
+    // 6) PDF
     const opt = {
       margin: [5, 5, 5, 5],
       filename: `${student.firstName}_${student.lastName}_Program_${formatLocalDate(currentWindowStart)}.pdf`,
@@ -360,110 +431,23 @@ export default function ProgramCreator({ studentId, onBack }: ProgramCreatorProp
       html2canvas: {
         scale: 2,
         useCORS: true,
-        allowTaint: true,
         backgroundColor: '#ffffff',
         logging: false,
-        onclone: (clonedDoc: Document) => {
-  const root = clonedDoc.querySelector('[data-export-root]') as HTMLElement | null;
-  if (!root) return;
-
-  // Başlık
-  const header = clonedDoc.createElement('div');
-  header.style.cssText = 'text-align:center;margin-bottom:20px;padding-bottom:15px;border-bottom:3px solid #FFBF00;';
-  header.innerHTML = `
-    <h1 style="font-size:24px;font-weight:700;color:#2D2D2D;margin-bottom:8px;">Haftalık Çalışma Programı</h1>
-    <p style="font-size:14px;color:#666;margin:3px 0;">Öğrenci: ${student.firstName} ${student.lastName}</p>
-    <p style="font-size:14px;color:#666;margin:3px 0;">Program: ${formatLocalDate(currentWindowStart)} - ${formatLocalDate(addDays(currentWindowStart, 6))}</p>
-    <p style="font-size:14px;color:#666;margin:3px 0;">Oluşturulma Tarihi: ${new Date().toLocaleDateString('tr-TR')}</p>
-  `;
-  root.insertBefore(header, root.firstChild);
-
-  const getCS = (el: Element) => clonedDoc.defaultView?.getComputedStyle(el as Element)!;
-
-  // TEXTAREA -> DIV
-  root.querySelectorAll('textarea').forEach((taEl) => {
-    const ta = taEl as HTMLTextAreaElement;
-    const cs = getCS(ta);
-    // mevcut klon textarea içinde value zaten var; gerçek yüksekliği ölç
-    ta.style.height = 'auto';
-    ta.style.height = ta.scrollHeight + 'px';
-
-    const div = clonedDoc.createElement('div');
-    div.textContent = ta.value || ta.placeholder || '';
-
-    // Görünüm
-    div.style.display = 'block';
-    div.style.fontSize = cs.fontSize;
-    div.style.fontWeight = cs.fontWeight;
-    div.style.color = cs.color;
-    div.style.lineHeight = cs.lineHeight;
-    div.style.padding = cs.padding;
-    div.style.margin = cs.margin;
-    div.style.whiteSpace = 'pre-wrap';
-    div.style.wordBreak = 'break-word';
-    div.style.overflow = 'visible';
-    div.style.height = 'auto';
-    div.style.minHeight = ta.scrollHeight + 'px'; // kritik
-
-    // Tailwind tipografi sınıfları kalsın istiyorsan kopyala ama overflow’u inline ile ezdik
-    div.className = ta.className;
-
-    ta.parentNode?.replaceChild(div, ta);
-  });
-
-  // INPUT -> DIV
-  root.querySelectorAll('input').forEach((inEl) => {
-    const inp = inEl as HTMLInputElement;
-    const cs = getCS(inp);
-    const div = clonedDoc.createElement('div');
-    div.textContent = inp.value || inp.placeholder || '';
-
-    div.style.display = 'block';
-    div.style.fontSize = cs.fontSize;
-    div.style.fontWeight = cs.fontWeight;
-    div.style.color = cs.color;
-    div.style.lineHeight = cs.lineHeight;
-    div.style.padding = cs.padding;
-    div.style.margin = cs.margin;
-    div.style.whiteSpace = 'pre-wrap';
-    div.style.wordBreak = 'break-word';
-    div.style.overflow = 'visible';
-    div.style.height = 'auto';
-    // input genelde 1 satır; en az 20px ver
-    const h = parseFloat(cs.height || '0') || 20;
-    div.style.minHeight = h + 'px';
-
-    div.className = inp.className;
-
-    inp.parentNode?.replaceChild(div, inp);
-  });
-
-  // Etkileşimli öğeleri kaldır
-  root.querySelectorAll('button, svg').forEach(n => n.remove());
-
-  // Görünür kalsın
-  (root.style as any).opacity = '1';
-}
-
-
+        letterRendering: false,
+        foreignObjectRendering: false,
       },
-      jsPDF: { unit: 'mm', format: 'a4', orientation: 'landscape', compress: true }
-    };
+      jsPDF: { unit: 'mm', format: 'a4', orientation: 'landscape', compress: true },
+    } as const;
 
-    // Canvas üretildikten sonra boş mu kontrol et
-    const worker: any = html2pdf().set(opt).from(exportRef.current).toCanvas();
-    const canvas: HTMLCanvasElement = await worker.get('canvas');
-    if (!canvas || canvas.width === 0 || canvas.height === 0) {
-      alert('PDF kaynağı boş görünüyor. İçerik kopyalanamadı.');
-      return;
-    }
+    await html2pdf().set(opt).from(printRoot).save();
 
-    await worker.toPdf().save();
-  } catch (error) {
-    console.error('PDF oluşturma hatası:', error);
-    alert('PDF oluşturulurken bir hata oluştu!');
+    document.body.removeChild(printRoot);
+  } catch (e) {
+    console.error(e);
+    alert('PDF oluşturulurken bir hata oluştu.');
   }
 };
+
 
 
 
