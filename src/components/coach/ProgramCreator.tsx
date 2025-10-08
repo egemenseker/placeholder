@@ -363,76 +363,63 @@ export default function ProgramCreator({ studentId, onBack }: ProgramCreatorProp
         allowTaint: true,
         backgroundColor: '#ffffff',
         logging: false,
-        onclone: (clonedDoc: Document) => {
-          const root = clonedDoc.querySelector('[data-export-root]') as HTMLElement | null;
-          if (!root) return;
+       onclone: (clonedDoc: Document) => {
+  const root = clonedDoc.querySelector('[data-export-root]') as HTMLElement | null;
+  if (!root) return;
 
-          // Başlık
-          const header = clonedDoc.createElement('div');
-          header.style.cssText = 'text-align:center;margin-bottom:20px;padding-bottom:15px;border-bottom:3px solid #FFBF00;';
-          header.innerHTML = `
-            <h1 style="font-size:24px;font-weight:700;color:#2D2D2D;margin-bottom:8px;">Haftalık Çalışma Programı</h1>
-            <p style="font-size:14px;color:#666;margin:3px 0;">Öğrenci: ${student.firstName} ${student.lastName}</p>
-            <p style="font-size:14px;color:#666;margin:3px 0;">Program: ${formatLocalDate(currentWindowStart)} - ${formatLocalDate(addDays(currentWindowStart, 6))}</p>
-            <p style="font-size:14px;color:#666;margin:3px 0;">Oluşturulma Tarihi: ${new Date().toLocaleDateString('tr-TR')}</p>
-          `;
-          root.insertBefore(header, root.firstChild);
+  // PDF düzeni için güvenli kap
+  root.style.width = '1400px';
+  root.style.background = '#ffffff';
+  root.style.padding = '20px';
+  root.style.boxSizing = 'border-box';
 
-          const getCS = (el: Element) => clonedDoc.defaultView!.getComputedStyle(el);
+  // Header
+  const header = clonedDoc.createElement('div');
+  header.style.cssText = 'text-align:center;margin-bottom:20px;padding-bottom:15px;border-bottom:3px solid #FFBF00;';
+  header.innerHTML = `
+    <h1 style="font-size:24px;font-weight:700;color:#2D2D2D;margin-bottom:8px;">Haftalık Çalışma Programı</h1>
+    <p style="font-size:14px;color:#666;margin:3px 0;">Öğrenci: ${student.firstName} ${student.lastName}</p>
+    <p style="font-size:14px;color:#666;margin:3px 0;">Program: ${formatLocalDate(currentWindowStart)} - ${formatLocalDate(addDays(currentWindowStart, 6))}</p>
+    <p style="font-size:14px;color:#666;margin:3px 0;">Oluşturulma Tarihi: ${new Date().toLocaleDateString('tr-TR')}</p>
+  `;
+  root.insertBefore(header, root.firstChild);
 
-          // TEXTAREA -> DIV
-          root.querySelectorAll('textarea').forEach((taEl) => {
-            const ta = taEl as HTMLTextAreaElement;
-            ta.style.height = 'auto';
-            ta.style.height = ta.scrollHeight + 'px';
-            const cs = getCS(ta);
+  // Her görev kartındaki 3 textarea'yı statik 3 div'e çevir
+  root.querySelectorAll('.flex-1.min-w-0').forEach((container) => {
+    const areas = Array.from(container.querySelectorAll('textarea')) as HTMLTextAreaElement[];
+    if (areas.length === 0) return;
 
-            const div = clonedDoc.createElement('div');
-            div.textContent = ta.value || ta.placeholder || '';
-            div.style.display = 'block';
-            div.style.fontSize = cs.fontSize;
-            div.style.fontWeight = cs.fontWeight as string;
-            div.style.color = cs.color;
-            div.style.lineHeight = cs.lineHeight;
-            div.style.padding = cs.padding;
-            div.style.margin = cs.margin;
-            div.style.whiteSpace = 'pre-wrap';
-            div.style.wordBreak = 'break-word';
-            div.style.overflow = 'visible';
-            div.style.height = 'auto';
-            div.style.minHeight = ta.scrollHeight + 'px';
-            ta.parentNode?.replaceChild(div, ta);
-          });
+    const name = (areas[0]?.value || areas[0]?.placeholder || '').trim();
+    const dur  = (areas[1]?.value || areas[1]?.placeholder || '').trim();
+    const crs  = (areas[2]?.value || areas[2]?.placeholder || '').trim();
 
-          // INPUT -> DIV
-          root.querySelectorAll('input').forEach((inEl) => {
-            const inp = inEl as HTMLInputElement;
-            const cs = getCS(inp);
+    // Temizle
+    container.innerHTML = '';
 
-            const div = clonedDoc.createElement('div');
-            div.textContent = inp.value || inp.placeholder || '';
-            div.style.display = 'block';
-            div.style.fontSize = cs.fontSize;
-            div.style.fontWeight = cs.fontWeight as string;
-            div.style.color = cs.color;
-            div.style.lineHeight = cs.lineHeight;
-            div.style.padding = cs.padding;
-            div.style.margin = cs.margin;
-            div.style.whiteSpace = 'pre-wrap';
-            div.style.wordBreak = 'break-word';
-            div.style.overflow = 'visible';
-            div.style.height = 'auto';
-            const h = parseFloat(cs.height || '0') || 20;
-            div.style.minHeight = h + 'px';
-            inp.parentNode?.replaceChild(div, inp);
-          });
+    // İsim
+    const n = clonedDoc.createElement('div');
+    n.textContent = name || 'Görev adı';
+    n.style.cssText = 'font-size:14px;font-weight:600;white-space:pre-wrap;word-break:break-word;';
+    container.appendChild(n);
 
-          // Etkileşimli ve ikonları temizle
-          root.querySelectorAll('button, svg').forEach(n => n.remove());
+    // Süre
+    const d = clonedDoc.createElement('div');
+    d.textContent = dur || 'Süre';
+    d.style.cssText = 'margin-top:4px;font-size:12px;color:#4b5563;white-space:pre-wrap;word-break:break-word;';
+    container.appendChild(d);
 
-          // Görünür kalsın
-          (root.style as any).opacity = '1';
-        }
+    // Ders adı
+    const c = clonedDoc.createElement('div');
+    c.textContent = crs || 'Ders adı';
+    c.style.cssText = 'margin-top:2px;font-size:12px;color:#6b7280;white-space:pre-wrap;word-break:break-word;';
+    container.appendChild(c);
+  });
+
+  // Etkileşimli öğeleri temizle
+  root.querySelectorAll('button, svg').forEach(n => n.remove());
+  (root.style as any).opacity = '1';
+}
+
       },
       jsPDF: { unit: 'mm', format: 'a4', orientation: 'landscape', compress: true }
     } as const;
