@@ -231,132 +231,48 @@ export default function ProgramCreator({ studentId, onBack }: ProgramCreatorProp
     }
   };
 
-  const exportToPDF = async () => {
-    if (!student || !exportRef.current) return;
-    try {
-      const opt = {
-        margin: [5, 5, 5, 5],
-        filename: `${student.firstName}_${student.lastName}_Program_${formatLocalDate(currentWindowStart)}.pdf`,
-        image: { type: 'jpeg', quality: 0.98 },
-        html2canvas: {
-          scale: 2,
-          useCORS: true,
-          allowTaint: true,
-          backgroundColor: '#ffffff',
-          logging: false,
-          onclone: (clonedDoc: Document) => {
-            const root = clonedDoc.querySelector('[data-export-root]') as HTMLElement | null;
-            const origRoot = exportRef.current!;
-            if (!root || !origRoot) return;
+const exportToPDF = async () => {
+  if (!student || !exportRef.current) return;
 
-            Object.assign(root.style, {
-              width: '1400px',
-              background: '#ffffff',
-              padding: '20px',
-              boxSizing: 'border-box',
-            });
+  const opt = {
+    margin: [5, 5, 5, 5],
+    filename: `${student.firstName}_${student.lastName}_Program_${formatLocalDate(currentWindowStart)}.pdf`,
+    image: { type: 'jpeg', quality: 0.98 },
+    html2canvas: {
+      scale: 2,
+      useCORS: true,
+      backgroundColor: '#ffffff',
+      foreignObjectRendering: true, // form kontrolleri için şart
+      logging: false,
+      windowWidth: 1400,
+      onclone: (clonedDoc: Document) => {
+        const root = clonedDoc.querySelector('[data-export-root]') as HTMLElement | null;
+        if (!root) return;
 
-            const header = clonedDoc.createElement('div');
-            header.style.cssText = 'text-align:center;margin-bottom:20px;padding-bottom:15px;border-bottom:3px solid #FFBF00;';
-            header.innerHTML = `
-              <h1 style="font-size:24px;font-weight:700;color:#2D2D2D;margin-bottom:8px;">Haftalık Çalışma Programı</h1>
-              <p style="font-size:14px;color:#666;margin:3px 0;">Öğrenci: ${student.firstName} ${student.lastName}</p>
-              <p style="font-size:14px;color:#666;margin:3px 0;">Program: ${formatLocalDate(currentWindowStart)} - ${formatLocalDate(addDays(currentWindowStart, 6))}</p>
-              <p style="font-size:14px;color:#666;margin:3px 0;">Oluşturulma Tarihi: ${new Date().toLocaleDateString('tr-TR')}</p>
-            `;
-            root.insertBefore(header, root.firstChild);
+        // Genel: clipping ve sabit yükseklikleri kaldır
+        root.querySelectorAll<HTMLElement>('*').forEach(el => {
+          const cs = clonedDoc.defaultView!.getComputedStyle(el);
+          if (cs.overflow !== 'visible') el.style.overflow = 'visible';
+          if (cs.maxHeight !== 'none') { el.style.maxHeight = 'none'; el.style.height = 'auto'; }
+          // yuvarlatma kırpmasını önlemek için PDF'te radius'ları sıfırla
+          if (cs.borderRadius && cs.borderRadius !== '0px') el.style.borderRadius = '0';
+        });
 
-            const origContainers = Array.from(origRoot.querySelectorAll('.flex-1.min-w-0')) as HTMLElement[];
-            const clonedContainers = Array.from(root.querySelectorAll('.flex-1.min-w-0')) as HTMLElement[];
+        // TEXTAREA → DIV dönüşümü (yükseklik kaybını bitirir)
+        root.querySelectorAll('textarea').forEach(node => {
+          const ta = node as HTMLTextAreaElement;
+          const div = clonedDoc.createElement('div');
+          div.textContent = ta.value || ta.placeholder || '';
+          // tipine göre tipografi
+          const isName = ta.className.includes('text-sm') && ta.className.includes('font-medium');
+          const isDur = ta.placeholder?.toLowerCase() === 'süre';
+          const isCourse = ta.placeholder?.toLowerCase() === 'ders adı';
 
-            clonedContainers.forEach((container, idx) => {
-              const origContainer = origContainers[idx];
-              if (!origContainer) return;
+          div.style.whiteSpace = 'pre-wrap';
+          div.style.wordBreak = 'break-word';
+          div.style.lineHeight = '1.6';
+          div.style.padding = '0';
 
-              const areas = Array.from(origContainer.querySelectorAll('textarea')) as HTMLTextAreaElement[];
-              const name = areas[0]?.value || areas[0]?.placeholder || '';
-              const dur = areas[1]?.value || areas[1]?.placeholder || '';
-              const crs = areas[2]?.value || areas[2]?.placeholder || '';
-
-              container.innerHTML = '';
-              container.style.minWidth = 'unset';
-              container.style.overflow = 'visible';
-              container.style.flex = '1';
-              container.style.padding = '4px';
-              container.style.display = 'block';
-
-              if (name.trim()) {
-                const n = clonedDoc.createElement('div');
-                n.textContent = name;
-                n.style.cssText =
-                  'font-size:14px;font-weight:600;color:#1f2937;white-space:pre-wrap;word-break:break-word;line-height:1.6;overflow:visible;padding:2px 0;margin-bottom:4px;display:block;';
-                container.appendChild(n);
-              }
-              if (dur.trim()) {
-                const d = clonedDoc.createElement('div');
-                d.textContent = dur;
-                d.style.cssText =
-                  'font-size:12px;color:#4b5563;white-space:pre-wrap;word-break:break-word;line-height:1.5;overflow:visible;padding:2px 0;margin-bottom:2px;display:block;';
-                container.appendChild(d);
-              }
-              if (crs.trim()) {
-                const c = clonedDoc.createElement('div');
-                c.textContent = crs;
-                c.style.cssText =
-                  'font-size:12px;color:#6b7280;white-space:pre-wrap;word-break:break-word;line-height:1.5;overflow:visible;padding:2px 0;display:block;';
-                container.appendChild(c);
-              }
-
-              const card = container.closest('[class*="border"]') as HTMLElement | null;
-              if (card) {
-                card.style.overflow = 'visible';
-                card.style.minHeight = 'auto';
-                card.style.height = 'auto';
-                card.style.maxHeight = 'none';
-              }
-              const flexParent = container.parentElement as HTMLElement | null;
-              if (flexParent) {
-                flexParent.style.overflow = 'visible';
-                flexParent.style.height = 'auto';
-                flexParent.style.alignItems = 'flex-start';
-              }
-            });
-
-            root.querySelectorAll('button, svg').forEach(n => n.remove());
-            root.querySelectorAll<HTMLElement>('*').forEach(element => {
-              element.style.overflow = 'visible';
-              element.style.textOverflow = 'clip';
-              element.style.whiteSpace = 'normal';
-              if (element.style.height && element.style.height !== 'auto') {
-                element.style.minHeight = element.style.height;
-                element.style.height = 'auto';
-              }
-            });
-
-            root.querySelectorAll<HTMLElement>('.space-y-2 > *').forEach(el => {
-              el.style.overflow = 'visible';
-              el.style.padding = '12px';
-              el.style.minHeight = '80px';
-              el.style.height = 'auto';
-            });
-
-            root.querySelectorAll<HTMLElement>('.flex').forEach(el => {
-              el.style.overflow = 'visible';
-              el.style.alignItems = 'flex-start';
-            });
-
-            (root.style as any).opacity = '1';
-          },
-        },
-        jsPDF: { unit: 'mm', format: 'a4', orientation: 'landscape', compress: true },
-      } as const;
-
-      await (html2pdf() as any).set(opt).from(exportRef.current).save();
-    } catch (e) {
-      console.error('PDF oluşturma hatası:', e);
-      alert('PDF oluşturulurken bir hata oluştu.');
-    }
-  };
 
   if (!student) {
     return (
