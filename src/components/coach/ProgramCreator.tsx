@@ -350,110 +350,110 @@ export default function ProgramCreator({ studentId, onBack }: ProgramCreatorProp
   };
 
   const exportToPDF = async () => {
-    if (!student || !exportRef.current) return;
+  if (!student || !exportRef.current) return;
 
-    try {
-      // Clone the visible calendar section
-      const clonedElement = exportRef.current.cloneNode(true) as HTMLElement;
+  // rAF ile layout’un tamamlanmasını bekle
+  const raf = () => new Promise<void>(r => requestAnimationFrame(() => requestAnimationFrame(() => r())));
 
-      // Replace all textarea and input elements with divs containing their values
-      const textareas = clonedElement.querySelectorAll('textarea');
-      textareas.forEach((textarea) => {
-        const div = document.createElement('div');
-        const value = (textarea as HTMLTextAreaElement).value;
-        const placeholder = (textarea as HTMLTextAreaElement).placeholder;
-        div.textContent = value || placeholder;
-        div.className = (textarea as HTMLTextAreaElement).className;
-        const computedStyle = window.getComputedStyle(textarea);
-        div.style.fontSize = computedStyle.fontSize;
-        div.style.color = computedStyle.color;
-        div.style.fontWeight = computedStyle.fontWeight;
-        div.style.padding = computedStyle.padding;
-        div.style.whiteSpace = 'pre-wrap';
-        div.style.wordWrap = 'break-word';
-        textarea.parentNode?.replaceChild(div, textarea);
-      });
+  try {
+    // 1) Orijinal DOM’dan değerleri al
+    const orig = exportRef.current;
+    const origTextareas = Array.from(orig.querySelectorAll('textarea')) as HTMLTextAreaElement[];
+    const origInputs = Array.from(orig.querySelectorAll('input')) as HTMLInputElement[];
 
-      const inputs = clonedElement.querySelectorAll('input');
-      inputs.forEach((input) => {
-        const div = document.createElement('div');
-        const value = (input as HTMLInputElement).value;
-        const placeholder = (input as HTMLInputElement).placeholder;
-        div.textContent = value || placeholder;
-        div.className = (input as HTMLInputElement).className;
-        const computedStyle = window.getComputedStyle(input);
-        div.style.fontSize = computedStyle.fontSize;
-        div.style.color = computedStyle.color;
-        div.style.fontWeight = computedStyle.fontWeight;
-        div.style.padding = computedStyle.padding;
-        input.parentNode?.replaceChild(div, input);
-      });
+    // 2) Klonu oluştur
+    const cloned = orig.cloneNode(true) as HTMLElement;
 
-      // Remove interactive elements (buttons, menus)
-      const buttonsToRemove = clonedElement.querySelectorAll('button');
-      buttonsToRemove.forEach(button => button.remove());
+    // 3) Klondaki alanları orijinal değerlerle doldur
+    const clonedTextareas = Array.from(cloned.querySelectorAll('textarea')) as HTMLTextAreaElement[];
+    clonedTextareas.forEach((ta, i) => { ta.value = origTextareas[i]?.value ?? ''; });
 
-      // Style the cloned element for PDF
-      clonedElement.style.position = 'fixed';
-      clonedElement.style.left = '0';
-      clonedElement.style.top = '0';
-      clonedElement.style.width = '1400px';
-      clonedElement.style.backgroundColor = '#ffffff';
-      clonedElement.style.zIndex = '-1000';
-      clonedElement.style.opacity = '0.01';
-      clonedElement.style.pointerEvents = 'none';
-      clonedElement.style.padding = '20px';
+    const clonedInputs = Array.from(cloned.querySelectorAll('input')) as HTMLInputElement[];
+    clonedInputs.forEach((inp, i) => { inp.value = origInputs[i]?.value ?? ''; });
 
-      // Add header with student info
-      const header = document.createElement('div');
-      header.style.cssText = 'text-align: center; margin-bottom: 20px; padding-bottom: 15px; border-bottom: 3px solid #FFBF00;';
-      header.innerHTML = `
-        <h1 style="font-size: 24px; font-weight: 700; color: #2D2D2D; margin-bottom: 8px;">Haftalık Çalışma Programı</h1>
-        <p style="font-size: 14px; color: #666; margin: 3px 0;">Öğrenci: ${student.firstName} ${student.lastName}</p>
-        <p style="font-size: 14px; color: #666; margin: 3px 0;">Program: ${formatLocalDate(currentWindowStart)} - ${formatLocalDate(addDays(currentWindowStart, 6))}</p>
-        <p style="font-size: 14px; color: #666; margin: 3px 0;">Oluşturulma Tarihi: ${new Date().toLocaleDateString('tr-TR')}</p>
-      `;
-      clonedElement.insertBefore(header, clonedElement.firstChild);
+    // 4) Input/textarea → div dönüşümü (metin PDF’e yazılsın)
+    const toDiv = (el: HTMLTextAreaElement | HTMLInputElement) => {
+      const div = document.createElement('div');
+      const cs = window.getComputedStyle(el);
+      div.textContent = (el as HTMLTextAreaElement | HTMLInputElement).value || (el as any).placeholder || '';
+      div.className = (el as any).className;
+      div.style.fontSize = cs.fontSize;
+      div.style.color = cs.color;
+      div.style.fontWeight = cs.fontWeight;
+      div.style.padding = cs.padding;
+      div.style.whiteSpace = 'pre-wrap';
+      div.style.wordBreak = 'break-word';
+      el.parentNode?.replaceChild(div, el);
+    };
 
-      // Append to body temporarily
-      document.body.appendChild(clonedElement);
+    clonedTextareas.forEach(toDiv);
+    clonedInputs.forEach(toDiv);
 
-      // Wait for rendering
-      await new Promise(resolve => setTimeout(resolve, 300));
+    // 5) İnteraktif butonları kaldır
+    cloned.querySelectorAll('button').forEach(b => b.remove());
 
-      const opt = {
-        margin: [5, 5, 5, 5],
-        filename: `${student.firstName}_${student.lastName}_Program_${formatLocalDate(currentWindowStart)}.pdf`,
-        image: { type: 'jpeg', quality: 0.98 },
-        html2canvas: {
-          scale: 2,
-          useCORS: true,
-          backgroundColor: '#ffffff',
-          letterRendering: false,
-          foreignObjectRendering: false,
-          logging: false
-        },
-        jsPDF: {
-          unit: 'mm',
-          format: 'a4',
-          orientation: 'landscape',
-          compress: true
-        }
-      };
+    // 6) Başlık ekle
+    const header = document.createElement('div');
+    header.style.cssText = 'text-align:center;margin-bottom:20px;padding-bottom:15px;border-bottom:3px solid #FFBF00;';
+    header.innerHTML = `
+      <h1 style="font-size:24px;font-weight:700;color:#2D2D2D;margin-bottom:8px;">Haftalık Çalışma Programı</h1>
+      <p style="font-size:14px;color:#666;margin:3px 0;">Öğrenci: ${student.firstName} ${student.lastName}</p>
+      <p style="font-size:14px;color:#666;margin:3px 0;">Program: ${formatLocalDate(currentWindowStart)} - ${formatLocalDate(addDays(currentWindowStart, 6))}</p>
+      <p style="font-size:14px;color:#666;margin:3px 0;">Oluşturulma Tarihi: ${new Date().toLocaleDateString('tr-TR')}</p>
+    `;
+    cloned.insertBefore(header, cloned.firstChild);
 
-      await html2pdf().set(opt).from(clonedElement).save();
-      alert('Program PDF olarak başarıyla indirildi!');
+    // 7) Klonu görünür yap ama ekran dışına taşı (opacity=1, z-index negatif YAPMA)
+    cloned.style.position = 'fixed';
+    cloned.style.left = '-99999px';
+    cloned.style.top = '0';
+    cloned.style.width = '1400px';
+    cloned.style.backgroundColor = '#ffffff';
+    cloned.style.zIndex = '1';
+    cloned.style.opacity = '1';
+    cloned.style.pointerEvents = 'none';
+    cloned.style.padding = '20px';
 
-      // Clean up
-      if (document.body.contains(clonedElement)) {
-        document.body.removeChild(clonedElement);
-      }
+    // 8) DOM’a ekle ve layout’un bitmesini bekle
+    document.body.appendChild(cloned);
+    await raf();
 
-    } catch (error) {
-      console.error('PDF oluşturma hatası:', error);
-      alert('PDF oluşturulurken bir hata oluştu!');
+    // 9) İçerik doğrulaması; boşsa iptal et
+    const w = cloned.offsetWidth;
+    const h = cloned.offsetHeight;
+    const textLen = (cloned.innerText || '').trim().length;
+    if (w === 0 || h === 0 || textLen === 0) {
+      document.body.removeChild(cloned);
+      alert('PDF çıktısı boş görünüyor. Görünürlük/boyut kontrol edin.');
+      return;
     }
-  };
+
+    // 10) html2pdf ayarları ve oluşturma
+    const opt = {
+      margin: [5, 5, 5, 5],
+      filename: `${student.firstName}_${student.lastName}_Program_${formatLocalDate(currentWindowStart)}.pdf`,
+      image: { type: 'jpeg', quality: 0.98 },
+      html2canvas: {
+        scale: 2,
+        useCORS: true,
+        backgroundColor: '#ffffff',
+        letterRendering: false,
+        foreignObjectRendering: false,
+        logging: false
+      },
+      jsPDF: { unit: 'mm', format: 'a4', orientation: 'landscape', compress: true }
+    };
+
+    await html2pdf().set(opt).from(cloned).save();
+
+    // 11) Temizlik
+    document.body.contains(cloned) && document.body.removeChild(cloned);
+  } catch (error) {
+    console.error('PDF oluşturma hatası:', error);
+    alert('PDF oluşturulurken bir hata oluştu!');
+  }
+};
+
 
 
 
