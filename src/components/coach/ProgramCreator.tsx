@@ -357,338 +357,71 @@ export default function ProgramCreator({ studentId, onBack }: ProgramCreatorProp
       margin: [5, 5, 5, 5],
       filename: `${student.firstName}_${student.lastName}_Program_${formatLocalDate(currentWindowStart)}.pdf`,
       image: { type: 'jpeg', quality: 0.98 },
-      html2canvas: {
-        scale: 2,
-        useCORS: true,
-        allowTaint: true,
-        backgroundColor: '#ffffff',
-        logging: false,
-      onclone: (clonedDoc: Document) => {
-  const root = clonedDoc.querySelector('[data-export-root]') as HTMLElement | null;
-  const origRoot = exportRef.current!;
-  if (!root || !origRoot) return;
+     html2canvas: {
+  scale: 2,
+  useCORS: true,
+  allowTaint: true,
+  backgroundColor: '#ffffff',
+  logging: false,
+  onclone: (clonedDoc: Document) => {
+    const root = clonedDoc.querySelector('[data-export-root]') as HTMLElement | null;
+    const origRoot = exportRef.current!;
+    if (!root || !origRoot) return;
 
-  // PDF düzeni
-  Object.assign(root.style, {
-    width: '1400px',
-    background: '#ffffff',
-    padding: '20px',
-    boxSizing: 'border-box',
-  });
+    // Düzen
+    Object.assign(root.style, {
+      width: '1400px',
+      background: '#ffffff',
+      padding: '20px',
+      boxSizing: 'border-box',
+    });
 
-  // Header
-  const header = clonedDoc.createElement('div');
-  header.style.cssText = 'text-align:center;margin-bottom:20px;padding-bottom:15px;border-bottom:3px solid #FFBF00;';
-  header.innerHTML = `
-    <h1 style="font-size:24px;font-weight:700;color:#2D2D2D;margin-bottom:8px;">Haftalık Çalışma Programı</h1>
-    <p style="font-size:14px;color:#666;margin:3px 0;">Öğrenci: ${student.firstName} ${student.lastName}</p>
-    <p style="font-size:14
+    // Header
+    const header = clonedDoc.createElement('div');
+    header.style.cssText =
+      'text-align:center;margin-bottom:20px;padding-bottom:15px;border-bottom:3px solid #FFBF00;';
+    header.innerHTML = `
+      <h1 style="font-size:24px;font-weight:700;color:#2D2D2D;margin-bottom:8px;">Haftalık Çalışma Programı</h1>
+      <p style="font-size:14px;color:#666;margin:3px 0;">Öğrenci: ${student.firstName} ${student.lastName}</p>
+      <p style="font-size:14px;color:#666;margin:3px 0;">Program: ${formatLocalDate(currentWindowStart)} - ${formatLocalDate(addDays(currentWindowStart, 6))}</p>
+      <p style="font-size:14px;color:#666;margin:3px 0;">Oluşturulma Tarihi: ${new Date().toLocaleDateString('tr-TR')}</p>
+    `;
+    root.insertBefore(header, root.firstChild);
 
+    // Orijinal -> klon içerik aktarımı (3 textarea)
+    const origContainers = Array.from(origRoot.querySelectorAll('.flex-1.min-w-0')) as HTMLElement[];
+    const clonedContainers = Array.from(root.querySelectorAll('.flex-1.min-w-0')) as HTMLElement[];
 
-      },
-      jsPDF: { unit: 'mm', format: 'a4', orientation: 'landscape', compress: true }
-    } as const;
+    clonedContainers.forEach((container, idx) => {
+      const areas = Array.from(origContainers[idx]?.querySelectorAll('textarea') || []) as HTMLTextAreaElement[];
 
-    // Önce canvas üretip boş mu kontrol et
-    const worker: any = html2pdf().set(opt).from(exportRef.current).toCanvas();
-    const canvas: HTMLCanvasElement = await worker.get('canvas');
-    if (!canvas || canvas.width === 0 || canvas.height === 0) {
-      alert('PDF kaynağı boş görünüyor. DOM kopyası oluşturulamadı.');
-      return;
-    }
+      const name = (areas[0]?.value ?? areas[0]?.placeholder ?? 'Görev adı').trim();
+      const dur  = (areas[1]?.value ?? areas[1]?.placeholder ?? 'Süre').trim();
+      const crs  = (areas[2]?.value ?? areas[2]?.placeholder ?? 'Ders adı').trim();
 
-    await worker.toPdf().save();
-  } catch (e) {
-    console.error('PDF oluşturma hatası:', e);
-    alert('PDF oluşturulurken bir hata oluştu.');
+      container.innerHTML = '';
+
+      const n = clonedDoc.createElement('div');
+      n.textContent = name;
+      n.style.cssText = 'font-size:14px;font-weight:600;white-space:pre-wrap;word-break:break-word;';
+      container.appendChild(n);
+
+      const d = clonedDoc.createElement('div');
+      d.textContent = dur;
+      d.style.cssText = 'margin-top:4px;font-size:12px;color:#4b5563;white-space:pre-wrap;word-break:break-word;';
+      container.appendChild(d);
+
+      const c = clonedDoc.createElement('div');
+      c.textContent = crs;
+      c.style.cssText = 'margin-top:2px;font-size:12px;color:#6b7280;white-space:pre-wrap;word-break:break-word;';
+      container.appendChild(c);
+
+      const card = container.closest('[class*="border"]') as HTMLElement | null;
+      if (card) card.style.overflow = 'visible';
+    });
+
+    // Etkileşimli öğeleri temizle
+    root.querySelectorAll('button, svg').forEach(n => n.remove());
+    (root.style as any).opacity = '1';
   }
-};
-
-
-
-
-
-
-  if (!student) {
-    return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="text-center">
-          <h2 className="text-xl font-semibold text-gray-900 mb-2">Öğrenci bulunamadı!</h2>
-          <button
-            onClick={onBack}
-            className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
-          >
-            Geri Dön
-          </button>
-        </div>
-      </div>
-    );
-  }
-
-  const existingProgram = getCurrentWindowProgram();
-
-  return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Header */}
-      <div className="bg-white shadow-sm">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center h-16">
-            <div className="flex items-center space-x-4">
-              <button
-                onClick={onBack}
-                className="flex items-center space-x-2 text-gray-600 hover:text-gray-800"
-              >
-                <ArrowLeft className="w-4 h-4" />
-                <span>Geri</span>
-              </button>
-              <h1 className="text-xl font-bold text-gray-900">
-                Program Oluştur - {student.firstName} {student.lastName}
-              </h1>
-            </div>
-            
-            <div className="flex items-center space-x-3">
-              <button
-                onClick={exportToPDF}
-                className="flex items-center space-x-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
-              >
-                <Download className="w-4 h-4" />
-                <span>PDF İndir</span>
-              </button>
-              <button
-                onClick={() => saveProgram(days)}
-                className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
-              >
-                {existingProgram ? 'Güncelle' : 'Kaydet'}
-              </button>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Calendar Navigation */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-        <div className="flex justify-between items-center mb-6">
-          <h2 className="text-2xl font-bold text-gray-900">
-            7 Günlük Program
-          </h2>
-          <div className="flex items-center space-x-4">
-            <button
-              onClick={() => navigateDay('prev')}
-              className="p-2 rounded-lg border hover:bg-gray-50 transition-colors"
-            >
-              <ChevronLeft className="w-5 h-5" />
-            </button>
-            <span className="text-lg font-medium">
-              {currentWindowStart.toLocaleDateString('tr-TR')} - {
-                addDays(currentWindowStart, 6).toLocaleDateString('tr-TR')
-              }
-            </span>
-            <button
-              onClick={() => navigateDay('next')}
-              className="p-2 rounded-lg border hover:bg-gray-50 transition-colors"
-            >
-              <ChevronRight className="w-5 h-5" />
-            </button>
-          </div>
-        </div>
-
-        {/* Program Status Indicator */}
-        <div className="mb-4">
-          {(() => {
-            const totalTasks = (days || []).reduce((total, day) => total + (day.tasks?.length || 0), 0);
-            return totalTasks > 0 ? (
-              <div className="bg-green-50 border border-green-200 rounded-lg p-3">
-                <p className="text-green-800 text-sm">
-                  ✅ Bu tarih aralığı için program mevcut - Düzenleyebilirsiniz
-                </p>
-              </div>
-            ) : (
-              <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
-                <p className="text-blue-800 text-sm">
-                  📝 Bu tarih aralığı için yeni program oluşturuluyor
-                </p>
-              </div>
-            );
-          })()}
-        </div>
-
-        {/* Calendar Grid */}
-       <div ref={exportRef} data-export-root className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-7 gap-4">
-
-          {(days || []).map((day, dayIndex) => (
-            <div key={dayIndex} className="bg-white rounded-lg shadow-md p-4">
-              {/* Day Header */}
-              <div className="text-center mb-4">
-                <h3 className="font-bold text-lg text-gray-900">{day.dayName}</h3>
-                <p className="text-sm text-gray-600">
-                  {new Date(day.date).toLocaleDateString('tr-TR')}
-                </p>
-              </div>
-
-              {/* Action Buttons */}
-              <div className="flex justify-center space-x-2 mb-4">
-                <button
-                  onClick={() => addTask(dayIndex)}
-                  className="p-2 bg-blue-600 text-white rounded-full hover:bg-blue-700 transition-colors"
-                  title="Görev Ekle"
-                >
-                  <Plus className="w-4 h-4" />
-                </button>
-                <button
-                  onClick={async () => {
-                    if (isReviewMode) {
-                      // Deactivating review mode - update task completion status and save changes
-                      const updatedDays = days.map((day, dayIdx) => ({
-                        ...day,
-                        tasks: day.tasks.map(task => {
-                          const taskKey = `${dayIdx}-${task.id}`;
-                          const reviewState = taskReviewStates[taskKey] || 'neutral';
-                          return {
-                            ...task,
-                            completed: reviewState === 'completed'
-                          };
-                        })
-                      }));
-
-                      // Update local state
-                      setDays(updatedDays);
-
-                      // Save to database with updated data
-                      try {
-                        await saveProgram(updatedDays);
-                      } catch (error) {
-                        console.error('Error saving program:', error);
-                        alert('Program kaydedilirken bir hata oluştu!');
-                      }
-
-                      // Clear review states
-                      setTaskReviewStates({});
-                    }
-                    setIsReviewMode(!isReviewMode);
-                  }}
-                  className={`p-2 rounded-full transition-colors ${
-                    isReviewMode ? 'bg-green-600 text-white' : 'bg-gray-200 text-gray-600 hover:bg-gray-300'
-                  }`}
-                  title="İnceleme Modu"
-                >
-                  <Check className="w-4 h-4" />
-                </button>
-              </div>
-
-              {/* Tasks */}
-              <div className="space-y-2">
-                {(day.tasks || []).map((task) => (
-                  <div
-                    key={task.id}
-                    className={getTaskClasses(getTaskVisualState(dayIndex, task), isReviewMode)}
-                    onClick={() => isReviewMode && handleTaskReviewToggle(dayIndex, task.id)}
-                  >
-                    <div className="flex justify-between items-start">
-                      <div className="flex-1 min-w-0">
-                        <textarea
-                          value={task.name || ''}
-                          onChange={(e) => updateTask(dayIndex, task.id, { name: e.target.value })}
-                          placeholder="Görev adı"
-                          className="w-full text-sm font-medium bg-transparent border-none focus:outline-none resize-none overflow-hidden"
-                          rows={1}
-                          disabled={isReviewMode}
-                          onClick={(e) => e.stopPropagation()}
-                          onInput={(e) => {
-                            const target = e.target as HTMLTextAreaElement;
-                            target.style.height = 'auto';
-                            target.style.height = target.scrollHeight + 'px';
-                          }}
-                          ref={(el) => {
-                            if (el) {
-                              el.style.height = 'auto';
-                              el.style.height = el.scrollHeight + 'px';
-                            }
-                          }}
-                        />
-                        <textarea
-                          value={task.duration || ''}
-                          onChange={(e) => updateTask(dayIndex, task.id, { duration: e.target.value })}
-                          placeholder="Süre"
-                          className="w-full text-xs text-gray-600 bg-transparent border-none focus:outline-none mt-1 resize-none overflow-hidden"
-                          rows={1}
-                          disabled={isReviewMode}
-                          onClick={(e) => e.stopPropagation()}
-                          onInput={(e) => {
-                            const target = e.target as HTMLTextAreaElement;
-                            target.style.height = 'auto';
-                            target.style.height = target.scrollHeight + 'px';
-                          }}
-                          ref={(el) => {
-                            if (el) {
-                              el.style.height = 'auto';
-                              el.style.height = el.scrollHeight + 'px';
-                            }
-                          }}
-                        />
-                        <textarea
-                          value={task.courseName || ''}
-                          onChange={(e) => updateTask(dayIndex, task.id, { courseName: e.target.value })}
-                          placeholder="Ders adı"
-                          className="w-full text-xs text-gray-500 bg-transparent border-none focus:outline-none mt-1 resize-none overflow-hidden"
-                          rows={1}
-                          disabled={isReviewMode}
-                          onClick={(e) => e.stopPropagation()}
-                          onInput={(e) => {
-                            const target = e.target as HTMLTextAreaElement;
-                            target.style.height = 'auto';
-                            target.style.height = target.scrollHeight + 'px';
-                          }}
-                          ref={(el) => {
-                            if (el) {
-                              el.style.height = 'auto';
-                              el.style.height = el.scrollHeight + 'px';
-                            }
-                          }}
-                        />
-                      </div>
-                      
-                      <div className="relative">
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            setSelectedTask(
-                              selectedTask?.taskId === task.id ? null : { dayIndex, taskId: task.id }
-                            );
-                          }}
-                          className="text-gray-400 hover:text-gray-600"
-                        >
-                          <MoreVertical className="w-4 h-4" />
-                        </button>
-                        
-                        {selectedTask?.taskId === task.id && (
-                          <div className="absolute right-0 top-6 bg-white border rounded-lg shadow-lg z-10 min-w-[120px]">
-                            <button
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                deleteTask(dayIndex, task.id);
-                              }}
-                              className="flex items-center space-x-2 px-3 py-2 text-sm text-red-600 hover:bg-red-50 w-full"
-                            >
-                              <Trash2 className="w-4 h-4" />
-                              <span>Sil</span>
-                            </button>
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                  </div>
-                ))}
-                
-                {(!day.tasks || day.tasks.length === 0) && (
-                  <div className="text-center text-gray-400 text-sm py-4">
-                    Henüz görev eklenmemiş
-                  </div>
-                )}
-              </div>
-            </div>
-          ))}
-        </div>
-      </div>
-    </div>
-  );
-}
+},
