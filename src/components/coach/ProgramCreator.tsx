@@ -264,6 +264,9 @@ export default function ProgramCreator({ studentId, onBack }: ProgramCreatorProp
           const div = clonedDoc.createElement('div');
           div.textContent = ta.value || ta.placeholder || '';
           // tipine göre tipografi
+          div.style.whiteSpace = 'normal';
+          div.style.wordBreak = 'break-word';
+          div.style.hyphens = 'auto';
           const isName = ta.className.includes('text-sm') && ta.className.includes('font-medium');
           const isDur = ta.placeholder?.toLowerCase() === 'süre';
           const isCourse = ta.placeholder?.toLowerCase() === 'ders adı';
