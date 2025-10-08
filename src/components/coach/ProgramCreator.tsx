@@ -231,7 +231,7 @@ export default function ProgramCreator({ studentId, onBack }: ProgramCreatorProp
     }
   };
 
-const exportToPDF = async () => {
+ const exportToPDF = async () => {
   if (!student || !exportRef.current) return;
 
   const opt = {
@@ -272,7 +272,49 @@ const exportToPDF = async () => {
           div.style.wordBreak = 'break-word';
           div.style.lineHeight = '1.6';
           div.style.padding = '0';
+          div.style.margin = '0';
 
+          if (isName) { div.style.fontSize = '14px'; div.style.fontWeight = '600'; div.style.color = '#1f2937'; }
+          else if (isDur) { div.style.fontSize = '12px'; div.style.color = '#4b5563'; }
+          else if (isCourse) { div.style.fontSize = '12px'; div.style.color = '#6b7280'; }
+          else { div.style.fontSize = '12px'; }
+
+          ta.replaceWith(div);
+        });
+
+        // Kartların ve flex ebeveynlerin kısıtlarını kaldır
+        root.querySelectorAll<HTMLElement>('[class*="border"]').forEach(card => {
+          card.style.overflow = 'visible';
+          card.style.minHeight = 'auto';
+          card.style.height = 'auto';
+          card.style.maxHeight = 'none';
+          // gölgeyi kaldır, PDF’te artefakt yapabiliyor
+          card.style.boxShadow = 'none';
+        });
+        root.querySelectorAll<HTMLElement>('.flex').forEach(f => {
+          f.style.alignItems = 'flex-start';
+          f.style.overflow = 'visible';
+        });
+
+        // UI buton ve ikonlarını kaldır
+        root.querySelectorAll('button, svg').forEach(n => n.remove());
+      },
+    },
+    jsPDF: { unit: 'mm', format: 'a4', orientation: 'landscape', compress: true },
+  } as const;
+
+  // Ölçülerin hesaplanması için bir frame bekle
+  await new Promise(r => requestAnimationFrame(() => r(null)));
+
+  const worker: any = html2pdf().set(opt).from(exportRef.current).toCanvas();
+  const canvas: HTMLCanvasElement = await worker.get('canvas');
+  if (!canvas || canvas.width === 0 || canvas.height === 0) {
+    alert('PDF kaynağı boş görünüyor.');
+    return;
+  }
+  await worker.toPdf().save();
+};
+;
 
   if (!student) {
     return (
