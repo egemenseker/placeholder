@@ -544,7 +544,7 @@ export default function ProgramCreator({ studentId, onBack }: ProgramCreatorProp
                           const taskKey = `${dayIdx}-${task.id}`;
                           const reviewState = taskReviewStates[taskKey] || 'neutral';
                           return {
-                            ...task,
+                            ...task;
                             completed: reviewState === 'completed'
                           };
                         })
