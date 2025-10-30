@@ -2,9 +2,14 @@ import React, { useState } from 'react';
 import TrialSessionForm from './TrialSessionForm';
 import CoachCarousel from './CoachCarousel';
 import InfoBoxes from './InfoBoxes';
+import PurchaseCallToAction from './PurchaseCallToAction';
 import { useScrollAnimation } from '../utils/aos';
 
-export default function Homepage() {
+interface HomepageProps {
+  onPurchaseClick: () => void;
+}
+
+export default function Homepage({ onPurchaseClick }: HomepageProps) {
   const [showTrialForm, setShowTrialForm] = useState(false);
   const heroRef = useScrollAnimation('fade-up');
   const carouselRef = useScrollAnimation('fade-in');
@@ -14,9 +19,9 @@ export default function Homepage() {
     <div className="min-h-screen bg-lightCream">
       {/* Hero Section - Trial Session */}
       <section ref={heroRef} className="relative py-20">
-        <div 
+        <div
           className="absolute inset-0 bg-cover bg-center bg-no-repeat"
-          style={{ 
+          style={{
             backgroundImage: "url('/ChatGPT Image 4 Eki 2025 16_29_31 copy.png')",
             backgroundRepeat: 'no-repeat',
             backgroundSize: 'cover',
@@ -29,7 +34,7 @@ export default function Homepage() {
             YKS Hedefinize <span className="text-lightCream">Arı Koçluk</span> ile Ulaşın
           </h1>
           <p className="text-xl text-white mb-8 max-w-3xl mx-auto" style={{ textShadow: '2px 2px 6px rgba(0,0,0,0.8)' }}>
-            Arı Koçluk'un uzman koçlarıyla kişiselleştirilmiş eğitim programları ve birebir destek ile 
+            Arı Koçluk'un uzman koçlarıyla kişiselleştirilmiş eğitim programları ve birebir destek ile
             hayalinizdeki üniversiteye yerleşin.
           </p>
           <button
@@ -48,6 +53,8 @@ export default function Homepage() {
       <div ref={infoRef}>
         <InfoBoxes />
       </div>
+
+      <PurchaseCallToAction onPurchaseClick={onPurchaseClick} />
 
       <TrialSessionForm isOpen={showTrialForm} onClose={() => setShowTrialForm(false)} />
     </div>

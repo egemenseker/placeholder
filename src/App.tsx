@@ -30,7 +30,7 @@ function App() {
     switch (currentState) {
       case 'homepage':
         return (
-          <Homepage />
+          <Homepage onPurchaseClick={() => setCurrentState('purchase')} />
         );
       case 'direct-login':
         return (
@@ -54,7 +54,7 @@ function App() {
       case 'purchase':
         return <PurchaseMainPage onBack={() => setCurrentState('homepage')} />;
       default:
-        return <Homepage />;
+        return <Homepage onPurchaseClick={() => setCurrentState('purchase')} />;
     }
   };
 
