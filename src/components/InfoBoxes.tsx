@@ -55,49 +55,38 @@ export default function InfoBoxes() {
   return (
     <div className="py-16 bg-white">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div ref={gridRef} className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+        <div ref={gridRef} className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {infoCards.map((card, index) => (
             <div
               key={index}
-              className="premium-card relative overflow-hidden rounded-2xl shadow-2xl aspect-square group cursor-pointer"
-              style={{
-                animationDelay: `${index * 100}ms`,
-                transition: 'all 0.5s cubic-bezier(0.4, 0, 0.2, 1)'
-              }}
+              className="relative overflow-hidden rounded-lg shadow-lg aspect-square group"
             >
               {/* Background Image with Overlay */}
-              <div
-                className="absolute inset-0 bg-cover bg-center transition-all duration-700 group-hover:scale-125 group-hover:brightness-125 overflow-hidden"
+              <div 
+                className="absolute inset-0 bg-cover bg-center transition-transform duration-300 group-hover:scale-110 group-hover:brightness-125 overflow-hidden"
                 style={{ backgroundImage: `url('${card.bgImage}')` }}
               />
-              <div className="absolute inset-0 bg-gradient-to-br from-yellow-400/60 via-amber-500/50 to-black/70 transition-opacity duration-500 group-hover:opacity-90" />
+              <div className="absolute inset-0 bg-gradient-to-br from-yellow-400/60 via-amber-500/50 to-black/70" />
               <div className="absolute inset-0 bg-gradient-to-br from-yellow-400/40 via-amber-500/30 to-black/60" />
-
+              
               {/* Content */}
-              <div className="relative h-full flex flex-col justify-between p-8 text-white">
+              <div className="relative h-full flex flex-col justify-between p-6 text-white">
                 <div>
-                  <h3 className="text-2xl font-bold mb-3 leading-tight text-center w-full transform transition-all duration-500 group-hover:scale-110" style={{ fontFamily: 'cursive', textShadow: '3px 3px 6px rgba(0,0,0,0.9)' }}>
+                  <h3 className="text-2xl font-bold mb-3 leading-tight text-center w-full" style={{ fontFamily: 'cursive' }}>
                     {card.title}
                   </h3>
                 </div>
-
-                <div className="transform transition-all duration-500 group-hover:translate-y-0 translate-y-2">
-                  <p className="text-lg leading-relaxed opacity-90 group-hover:opacity-100 transition-all duration-500 font-semibold" style={{ textShadow: '2px 2px 4px rgba(0,0,0,0.8), -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000, 1px 1px 0 #000' }}>
+                
+                <div>
+                  <p className="text-lg leading-relaxed opacity-90 group-hover:opacity-100 transition-opacity font-semi
+                    bold" style={{ textShadow: '2px 2px 4px rgba(0,0,0,0.8), -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000, 1px 1px 0 #000' }}>
                     {card.description}
                   </p>
                 </div>
               </div>
-
-              {/* Shimmer Effect */}
-              <div className="absolute inset-0 opacity-0 group-hover:opacity-20 transition-opacity duration-500">
-                <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white to-transparent shimmer-effect" />
-              </div>
-
-              {/* Glow Border */}
-              <div className="absolute inset-0 rounded-2xl ring-2 ring-amber-500/0 group-hover:ring-amber-500/50 transition-all duration-500" />
-
+              
               {/* Subtle Pattern Overlay */}
-              <div className="absolute inset-0 opacity-10 bg-gradient-to-br from-transparent via-white/30 to-transparent" />
+              <div className="absolute inset-0 opacity-10 bg-gradient-to-br from-transparent via-white/20 to-transparent" />
             </div>
           ))}
         </div>
