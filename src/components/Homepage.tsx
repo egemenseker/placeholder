@@ -39,8 +39,7 @@ export default function Homepage({ onPurchaseClick }: HomepageProps) {
           </p>
           <button
             onClick={() => setShowTrialForm(true)}
-            className="bg-lightCream hover:bg-creamWhite text-softBlack px-8 py-4 rounded-lg text-lg font-semibold transform transition-all duration-300 hover:scale-105 shadow-lg"
-            style={{ boxShadow: '0 4px 12px rgba(0,0,0,0.3)' }}
+            className="premium-button bg-lightCream hover:bg-creamWhite text-softBlack px-10 py-5 rounded-xl text-lg font-bold shadow-2xl relative z-10"
           >
             Ücretsiz Ön Görüşme Al
           </button>
