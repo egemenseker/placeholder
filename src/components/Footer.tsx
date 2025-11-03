@@ -1,7 +1,107 @@
-import React from 'react';
-import { Instagram, Youtube, MessageCircle } from 'lucide-react';
+import React, { useState } from 'react';
+import { Instagram, Youtube, MessageCircle, X } from 'lucide-react';
 
 export default function Footer() {
+  const [selectedDocument, setSelectedDocument] = useState<'teslimat' | 'mesafeli' | 'gizlilik' | null>(null);
+
+  const documents = {
+    teslimat: {
+      title: 'Teslimat ve İade Şartları',
+      content: `TÜKETİCİ HAKLARI - CAYMA - İPTAL İADE KOŞULLARI
+
+Kullanmakta olduğunuz web sitesi üzerinden elektronik ortamda sipariş verdiğiniz takdirde, size sunulan ön bilgilendirme formunu ve mesafeli satış sözleşmesini kabul etmiş sayılırsınız.
+
+Alıcılar, satın aldıkları ürünün satış ve teslimi ile ilgili olarak 6502 sayılı Tüketicinin Korunması Hakkında Kanun ve Mesafeli Sözleşmeler Yönetmeliği (RG:27.11.2014/29188) hükümleri ile yürürlükteki diğer yasalara tabidir.
+
+Ürün sevkiyat masrafı olan kargo ücretleri satıcı tarafından ödenecektir.
+
+- Koçluk hizmetinde iptal halinde kullanılmayan günlerin ücreti iade edilir.
+- Deneme Kulübü paketlerinde cayma hakkı 14 gündür. Cayma hakkı süresi içinde, kullanılmamış denemelerin iadesi halinde bedel iade edilir.
+- Cayma süresi geçtikten sonra iade yapılamaz.
+
+Satın alınan ürünün satılmasının imkansızlaşması durumunda, satıcı bu durumu öğrendiğinden itibaren 3 gün içinde yazılı olarak alıcıya bu durumu bildirmek zorundadır. 14 gün içinde de toplam bedel Alıcı'ya iade edilmek zorundadır.
+
+SATIN ALINAN ÜRÜN BEDELİ ÖDENMEZ İSE:
+Alıcı, satın aldığı ürün bedelini ödemez veya banka kayıtlarında iptal ederse, Satıcının ürünü teslim yükümlülüğü sona erer.
+
+KREDİ KARTININ YETKİSİZ KULLANIMI İLE YAPILAN ALIŞVERİŞLER:
+Ürün teslim edildikten sonra, alıcının ödeme yaptığı kredi kartının yetkisiz kişiler tarafından haksız olarak kullanıldığı tespit edilirse ve satılan ürün bedeli ilgili banka veya finans kuruluşu tarafından Satıcı'ya ödenmez ise, Alıcı, sözleşme konusu ürünü 3 gün içerisinde nakliye gideri SATICI'ya ait olacak şekilde SATICI'ya iade etmek zorundadır.
+
+CAYMA HAKKI:
+ALICI; satın aldığı ürünün kendisine veya gösterdiği adresteki kişi/kuruluşa teslim tarihinden itibaren 14 (on dört) gün içerisinde, SATICI'ya bildirmek şartıyla hiçbir hukuki ve cezai sorumluluk üstlenmeksizin ve hiçbir gerekçe göstermeksizin malı reddederek sözleşmeden cayma hakkını kullanabilir.
+
+SATICININ İLETİŞİM BİLGİLERİ:
+ŞİRKET ADI: Recep Serkan Pakfiliz (Pakfiliz Kitabevi – Arı Koçluk)
+ADRES: Seyyid Ömer Mah. Silivrikapı Cad. Birlik Ap. A No: 54B Fatih / İstanbul
+EPOSTA: info@arikocluk.com
+TEL: +90 543 206 95 94`
+    },
+    mesafeli: {
+      title: 'Mesafeli Satış Sözleşmesi',
+      content: `MESAFELİ SATIŞ SÖZLEŞMESİ
+
+1. SATICI BİLGİLERİ
+Ad Soyad: Recep Serkan Pakfiliz (Pakfiliz Kitabevi – Arı Koçluk)
+ADRES: Seyyid Ömer Mah. Silivrikapı Cad. Birlik Ap. A No: 54B Fatih / İstanbul
+Telefon: 0543 206 95 94
+Eposta: info@arikocluk.com
+Vergi Dairesi: Fatih
+Vergi No: 7190340425
+
+2. KONU
+İşbu Sözleşme, ALICI'nın, SATICI'ya ait internet sitesi üzerinden elektronik ortamda siparişini verdiği ürünün satışı ve teslimi ile ilgili olarak 6502 sayılı Tüketicinin Korunması Hakkında Kanun ve Mesafeli Sözleşmelere Dair Yönetmelik hükümleri gereğince tarafların hak ve yükümlülüklerini düzenler.
+
+3. ÖDEME ŞEKLİ
+- Koçluk hizmeti ödemeleri aylık abonelik şeklinde İyzico altyapısı üzerinden online alınır.
+- Deneme Kulübü paketleri tek seferlik peşin ödeme ile satın alınır.
+
+4. CAYMA HAKKI
+Ürünlerimiz dijital ürün olduğu için teslim edildikten sonra iade gerçekleştirilememektedir.
+Koçluk ve danışmanlık alımlarında ise danışan ilk görüşmeden 1 gün önceye kadar iade isteyebilir. Daha sonra iade yoktur.
+
+- Koçluk hizmetinde: ALICI dilediği zaman iptal talebinde bulunabilir. Kullanılan günlere tekabül eden tutar mahsup edilerek kalan kısım iade edilir.
+- Deneme Kulübü paketlerinde: ALICI, 14 gün içinde cayma hakkına sahiptir. Kullanılmamış denemelerin eksiksiz ve hasarsız iade edilmesi gerekir.
+
+5. YETKİLİ MAHKEME
+6502 sayılı Tüketicinin Korunması Hakkında Kanun'un 68. Maddesi gereği:
+- Değeri 2.000,00 TL'nin altında olan uyuşmazlıklarda ilçe tüketici hakem heyetlerine,
+- Değeri 3.000,00 TL'nin altında bulunan uyuşmazlıklarda il tüketici hakem heyetlerine başvuru yapılmaktadır.`
+    },
+    gizlilik: {
+      title: 'Gizlilik Sözleşmesi',
+      content: `ARI KOÇLUK - GİZLİLİK POLİTİKASI VE KİŞİSEL VERİLERİN İŞLENMESİ
+
+Veri Sorumlusu: Recep Serkan Pakfiliz (Pakfiliz Kitabevi – Arı Koçluk)
+Telefon: +90 0543 206 95 94
+E-Mail: info@arikocluk.com
+
+KİŞİSEL VERİLERİN İŞLENME AMAÇLARI:
+• Kimlik tespiti ve bilgilerin doğruluğunun teyidi
+• Ödeme hizmetlerinin doğru şekilde gerçekleşmesi
+• İletişim ve destek hizmeti sunmak
+• Reklam ve pazarlama
+• Bilgi sistemlerinin güvenliğinin sağlanması
+• Talep ve şikayetlerin takibi
+• Finans, muhasebe ve faturalandırma işlemleri
+
+KİŞİSEL VERİLERİN AKTARILMASI:
+Kişisel verileriniz, beraber çalıştığımız reklam ajanslarına, koçlara veya öğrencilere tanıtım amacıyla, ödeme hizmet sağlayıcılara aktarılabilir. Arı Koçluk'un kart bilgilerinize erişimi yoktur.
+
+TEKNİK VE ORGANİZASYONEL TEDBİRLER:
+Arı Koçluk, kişisel verilerinizi korumak amacıyla makul teknik ve organizasyonel tedbirleri almaktadır. Çalışanlar eğitilmekte, gerekli siber güvenlik önlemleri alınmaktadır.
+
+İLGİLİ KİŞİNİN HAKLARI (KVKK m.11):
+• Kişisel veri işlenip işlenmediğini öğrenme
+• Kişisel verilerin işlenme amacını öğrenme
+• Kişisel verilerin aktarıldığı üçüncü kişileri bilme
+• Kişisel verilerin düzeltilmesini isteme
+• Kişisel verilerin silinmesini isteme
+• Zararın giderilmesini talep etme
+
+Talep ve şikayetlerinizi info@arikocluk.com adresine iletebilirsiniz.`
+    }
+  };
+
   return (
     <footer className="bg-softBlack text-white">
       {/* Main Footer Content */}
@@ -58,19 +158,19 @@ export default function Footer() {
               <h3 className="text-warmAmber font-semibold mb-4 text-base whitespace-nowrap">Sözleşme ve Koşullar</h3>
               <ul className="space-y-2">
                 <li>
-                  <a href="#" className="text-lightCream hover:text-warmAmber transition-colors">
+                  <button onClick={() => setSelectedDocument('teslimat')} className="text-lightCream hover:text-warmAmber transition-colors text-left">
+                    Teslimat ve İade Şartları
+                  </button>
+                </li>
+                <li>
+                  <button onClick={() => setSelectedDocument('mesafeli')} className="text-lightCream hover:text-warmAmber transition-colors text-left">
                     Mesafeli Satış Sözleşmesi
-                  </a>
+                  </button>
                 </li>
                 <li>
-                  <a href="#" className="text-lightCream hover:text-warmAmber transition-colors">
-                    İptal İade Koşulları
-                  </a>
-                </li>
-                <li>
-                  <a href="#" className="text-lightCream hover:text-warmAmber transition-colors">
+                  <button onClick={() => setSelectedDocument('gizlilik')} className="text-lightCream hover:text-warmAmber transition-colors text-left">
                     Gizlilik Sözleşmesi
-                  </a>
+                  </button>
                 </li>
               </ul>
             </div>
@@ -139,6 +239,23 @@ export default function Footer() {
           </div>
         </div>
       </div>
+
+      {/* Document Modal */}
+      {selectedDocument && (
+        <div className="fixed inset-0 bg-black/70 flex items-center justify-center p-4 z-[9999]" onClick={() => setSelectedDocument(null)}>
+          <div className="bg-white rounded-2xl max-w-4xl w-full max-h-[90vh] overflow-hidden shadow-2xl" onClick={(e) => e.stopPropagation()}>
+            <div className="sticky top-0 bg-warmAmber text-white px-6 py-4 flex justify-between items-center">
+              <h2 className="text-2xl font-bold">{documents[selectedDocument].title}</h2>
+              <button onClick={() => setSelectedDocument(null)} className="hover:scale-110 transition-transform">
+                <X className="w-6 h-6" />
+              </button>
+            </div>
+            <div className="p-6 overflow-y-auto max-h-[calc(90vh-80px)]">
+              <pre className="whitespace-pre-wrap text-sm text-gray-800 font-sans leading-relaxed">{documents[selectedDocument].content}</pre>
+            </div>
+          </div>
+        </div>
+      )}
     </footer>
   );
 }
