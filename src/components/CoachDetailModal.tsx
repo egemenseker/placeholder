@@ -20,92 +20,88 @@ export default function CoachDetailModal({ coachId, onClose, onPurchase }: Coach
   };
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[99999] p-4">
-      <div className="bg-white rounded-xl max-w-4xl w-full max-h-[90vh] flex flex-col shadow-2xl overflow-hidden">
-        {/* Header */}
-        <div className="flex-none px-6 py-4 border-b flex justify-between items-center bg-white">
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[99999]">
+      <div className="bg-white rounded-lg max-w-2xl w-full mx-4 max-h-[90vh] overflow-y-auto shadow-2xl">
+        <div className="sticky top-0 bg-white border-b px-6 py-4 flex justify-between items-center">
           <h2 className="text-xl font-bold text-softBlack">Koç Detayları</h2>
-          <button onClick={onClose} className="text-softBlack hover:text-warmAmber transition-colors">
+          <button onClick={onClose} className="text-softBlack hover:text-warmAmber">
             <X className="w-6 h-6" />
           </button>
         </div>
 
-        {/* Content - Scrollable Area */}
-        <div className="flex-1 overflow-y-auto p-6">
-          <div className="flex flex-col md:flex-row gap-8">
-            {/* Sol Kolon: Profil ve Özet Bilgiler */}
-            <div className="w-full md:w-5/12 flex flex-col space-y-6 flex-shrink-0">
-              <div className="flex items-start space-x-4">
-                <img
-                  src={coach.profilePhoto}
-                  alt={`${coach.firstName} ${coach.lastName}`}
-                  className="w-24 h-24 rounded-lg object-cover shadow-md"
-                />
-                <div>
-                  <h3 className="text-xl font-bold text-softBlack">
-                    {coach.firstName} {coach.lastName}
-                  </h3>
-                  <p className="text-sm text-gray-600">{coach.university}</p>
-                  <p className="text-xs text-gray-500">{coach.department}</p>
-                </div>
+        <div className="p-6">
+          <div className="flex items-start space-x-6 mb-6">
+            <img
+              src={coach.profilePhoto}
+              alt={`${coach.firstName} ${coach.lastName}`}
+              className="w-32 h-32 rounded-lg object-cover"
+            />
+            <div className="flex-1">
+              <h3 className="text-2xl font-bold text-softBlack mb-2">
+                {coach.firstName} {coach.lastName}
+              </h3>
+              <div className="space-y-1 text-softBlack">
+                <p><strong>Sıralama:</strong> {coach.ranking}</p>
+                <p><strong>Alan:</strong> {getFieldName(coach.field)}</p>
+                <p><strong>Üniversite:</strong> {coach.university} - {coach.department}</p>
+                <p><strong>TYT Puanı:</strong> {coach.tytScore}</p>
+                <p><strong>Mezuniyet:</strong> {coach.hasGapYear ? 'Mezun (Gap Year)' : 'Bu Yıl Mezun'}</p>
+                <p><strong>Özel Dershane:</strong> {coach.attendedPrivateInstitution ? 'Evet' : 'Hayır'}</p>
               </div>
-
-              <div className="space-y-3 text-sm text-softBlack bg-gray-50 p-4 rounded-lg border border-gray-100">
-                <div className="flex justify-between"><strong>Sıralama:</strong> <span>{coach.ranking}</span></div>
-                <div className="flex justify-between"><strong>Alan:</strong> <span>{getFieldName(coach.field)}</span></div>
-                <div className="flex justify-between"><strong>TYT Puanı:</strong> <span>{coach.tytScore}</span></div>
-                <div className="flex justify-between"><strong>Mezuniyet:</strong> <span>{coach.hasGapYear ? 'Mezun (Gap Year)' : 'Bu Yıl Mezun'}</span></div>
-                <div className="flex justify-between"><strong>Özel Dershane:</strong> <span>{coach.attendedPrivateInstitution ? 'Evet' : 'Hayır'}</span></div>
-              </div>
-
-              <div className="space-y-2">
-                 <div className="flex items-baseline space-x-2">
-                    <span className="text-2xl font-bold text-warmAmber">₺{coach.price.toLocaleString('tr-TR')}</span>
-                    <span className="text-sm text-gray-500">/ aylık</span>
-                 </div>
-                 <div className="flex items-center text-sm">
-                    {coach.quotaFull ? (
-                      <span className="flex items-center text-red-600 font-medium"><XCircle className="w-4 h-4 mr-1"/> Kontenjan Dolu</span>
-                    ) : (
-                      <span className="flex items-center text-green-600 font-medium"><CheckCircle className="w-4 h-4 mr-1"/> Kontenjan Mevcut</span>
-                    )}
-                 </div>
-              </div>
-            </div>
-
-            {/* Sağ Kolon: Hakkında Yazısı */}
-            <div className="w-full md:w-7/12">
-              <h4 className="text-lg font-semibold text-softBlack mb-3">Hakkında</h4>
-              <p className="text-softBlack text-sm leading-relaxed whitespace-pre-line text-justify">
-                {coach.description}
-              </p>
             </div>
           </div>
-        </div>
 
-        {/* Footer Actions */}
-        <div className="flex-none p-6 border-t bg-gray-50">
-          <div className="flex space-x-4">
+          <div className="mb-6">
+            <h4 className="text-lg font-semibold text-softBlack mb-3">Fiyat</h4>
+            <div className="text-3xl font-bold text-warmAmber">
+              ₺{coach.price.toLocaleString('tr-TR')}
+              <span className="text-base text-softBlack ml-2">/ aylık</span>
+            </div>
+          </div>
+
+          <div className="mb-6">
+            <h4 className="text-lg font-semibold text-softBlack mb-3">Kontenjan Durumu</h4>
+            <div className="flex items-center space-x-2">
+              {coach.quotaFull ? (
+                <div className="flex items-center text-red-600">
+                  <XCircle className="w-5 h-5 mr-2" />
+                  <span>Kontenjan Dolu</span>
+                </div>
+              ) : (
+                <div className="flex items-center text-warmAmber">
+                  <CheckCircle className="w-5 h-5 mr-2" />
+                  <span>Kontenjan Mevcut</span>
+                </div>
+              )}
+            </div>
+          </div>
+
+          <div className="mb-8">
+            <h4 className="text-lg font-semibold text-softBlack mb-3">Hakkında</h4>
+            <p className="text-softBlack leading-relaxed">{coach.description}</p>
+          </div>
+
+          <div className="flex space-x-4 pt-4 border-t">
             <button
               onClick={onClose}
-              className="flex-1 px-6 py-3 border border-warmAmber text-warmAmber rounded-lg hover:bg-warmAmber/10 transition-colors font-medium"
+              className="flex-1 px-6 py-3 border border-warmAmber text-warmAmber rounded-lg hover:bg-lightCream transition-colors"
             >
               Kapat
             </button>
             <button
               onClick={() => onPurchase(coach.id)}
               disabled={coach.quotaFull}
-              className={`flex-1 px-6 py-3 font-medium rounded-lg transition-colors shadow-lg active:scale-95 ${
+              className={`flex-1 px-6 py-3 font-medium rounded-lg transition-colors ${
                 coach.quotaFull
                   ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
                   : 'bg-warmAmber text-white hover:bg-darkAmber'
               }`}
             >
-              {coach.quotaFull ? 'Kontenjan Dolu' : 'Hemen Başla'}
+              Satın Al
             </button>
           </div>
         </div>
       </div>
     </div>
   );
-}
+}  
