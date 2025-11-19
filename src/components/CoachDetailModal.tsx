@@ -20,7 +20,7 @@ export default function CoachDetailModal({ coachId, onClose, onPurchase }: Coach
   };
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[9999]">
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[99999]">
       <div className="bg-white rounded-lg max-w-2xl w-full mx-4 max-h-[90vh] overflow-y-auto shadow-2xl">
         <div className="sticky top-0 bg-white border-b px-6 py-4 flex justify-between items-center">
           <h2 className="text-xl font-bold text-softBlack">Koç Detayları</h2>

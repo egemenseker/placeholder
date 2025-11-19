@@ -25,7 +25,7 @@ export default function CoachCarousel() {
           <p className="text-gray-600 mt-4 text-lg">Türkiye'nin en başarılı öğrencileri sizin için burada</p>
         </div>
 
-        <div className="overflow-hidden relative">
+        <div className="overflow-hidden relative" style={{ zIndex: 1 }}>
           {/* Gradient Overlays for infinite scroll effect */}
           <div className="absolute left-0 top-0 bottom-0 w-32 bg-gradient-to-r from-creamWhite to-transparent z-10 pointer-events-none" />
           <div className="absolute right-0 top-0 bottom-0 w-32 bg-gradient-to-l from-white to-transparent z-10 pointer-events-none" />
@@ -35,7 +35,7 @@ export default function CoachCarousel() {
               <button
                 key={`${coach.id}-${index}`}
                 onClick={() => setSelectedCoach(coach.id)}
-                className="premium-card group flex-shrink-0 w-72 bg-white rounded-2xl shadow-xl overflow-hidden focus:outline-none focus:ring-4 focus:ring-warmAmber/50 glow-effect"
+                className="premium-card group flex-shrink-0 w-72 bg-white rounded-2xl shadow-xl overflow-hidden focus:outline-none focus:ring-4 focus:ring-warmAmber/50 glow-effect relative z-0 hover:z-50 transition-all duration-300"
               >
                 <div
                   className="h-80 bg-cover bg-center relative overflow-hidden"
