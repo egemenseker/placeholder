@@ -23,6 +23,10 @@ export default function PurchaseCallToAction({ onPurchaseClick }: PurchaseCallTo
 
           {/* Content */}
           <div className="relative z-10 text-center">
+            <div className="mb-8 float-animation">
+              <ShoppingCart className="w-20 h-20 mx-auto text-white drop-shadow-2xl" strokeWidth={2.5} />
+            </div>
+
             <h2 className="text-4xl md:text-5xl font-bold text-white mb-4 transform transition-all duration-300" style={{ textShadow: '3px 3px 10px rgba(0,0,0,0.4)' }}>
               ARI KOÇLUK PAKETİ
             </h2>
