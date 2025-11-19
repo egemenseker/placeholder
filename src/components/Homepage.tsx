@@ -34,7 +34,7 @@ export default function Homepage({ onPurchaseClick }: HomepageProps) {
             Senin hikayeni yaşamış koçunla hedefine ulaş!
           </h1>
           <p className="text-xl text-white mb-8 max-w-3xl mx-auto" style={{ textShadow: '2px 2px 6px rgba(0,0,0,0.8)' }}>
-            Senin için özel seçilmiş, seninle aynı seviyeden başlayıp istediğin başarıya ulaşmış koçunla çalış
+            Senin için özel seçilmiş, seninle aynı seviyeden başlayıp istediğin başarıya ulaşmış koçunla çalış.
           </p>
           <button
             onClick={() => setShowTrialForm(true)}
