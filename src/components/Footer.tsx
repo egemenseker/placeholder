@@ -118,7 +118,7 @@ Talep ve şikayetlerinizi info@arikocluk.com adresine iletebilirsiniz.`
               <span className="text-xl font-bold">Arı Koçluk</span>
             </div>
             <p className="text-lightCream text-lg italic">
-              "Sadece senin yolundan geçmiş koçla çalış."
+              "En verimli sabahlar sert programlarla başlar!"
             </p>
           </div>
 

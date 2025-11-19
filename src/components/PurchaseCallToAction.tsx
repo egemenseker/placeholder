@@ -1,5 +1,5 @@
 import React from 'react';
-import { ShoppingCart } from 'lucide-react';
+import { ShoppingCart, Check } from 'lucide-react';
 import { useScrollAnimation } from '../utils/aos';
 
 interface PurchaseCallToActionProps {
@@ -23,25 +23,37 @@ export default function PurchaseCallToAction({ onPurchaseClick }: PurchaseCallTo
 
           {/* Content */}
           <div className="relative z-10 text-center">
-            <div className="mb-8 float-animation">
-              <ShoppingCart className="w-20 h-20 mx-auto text-white drop-shadow-2xl" strokeWidth={2.5} />
-            </div>
-
-            <h2 className="text-5xl md:text-6xl font-bold text-white mb-6 transform transition-all duration-300 hover:scale-105" style={{ textShadow: '3px 3px 10px rgba(0,0,0,0.4)' }}>
-              Koçluk Satın Al
+            <h2 className="text-4xl md:text-5xl font-bold text-white mb-4 transform transition-all duration-300" style={{ textShadow: '3px 3px 10px rgba(0,0,0,0.4)' }}>
+              ARI KOÇLUK PAKETİ
             </h2>
 
-            <p className="text-xl md:text-2xl text-white/95 mb-10 max-w-3xl mx-auto leading-relaxed font-medium" style={{ textShadow: '2px 2px 6px rgba(0,0,0,0.3)' }}>
-              YKS hedeflerinize ulaşmak için uzman koçlarımızla çalışmaya bugün başlayın.
-              Kişiselleştirilmiş programlar, haftalık görüşmeler ve 7/24 WhatsApp desteği ile yanınızdayız.
-            </p>
+            <div className="text-5xl md:text-6xl font-bold text-white mb-8" style={{ textShadow: '3px 3px 10px rgba(0,0,0,0.4)' }}>
+              ₺ 2795 <span className="text-2xl md:text-3xl">/ 4 HAFTA</span>
+            </div>
+
+            <div className="max-w-2xl mx-auto mb-10 space-y-3">
+              {[
+                'Özenle seçilmiş, halinden anlayan koç',
+                'Sana özel hazırlanmış günlük program',
+                'Haftada 1 görüntülü görüşme',
+                'Her gün sınırsız WhatsApp konuşması',
+                'Program revize desteği',
+                'Deneme analizi',
+                'Günlük takip'
+              ].map((feature, index) => (
+                <div key={index} className="flex items-center justify-center space-x-3 text-white text-lg md:text-xl font-medium" style={{ textShadow: '2px 2px 4px rgba(0,0,0,0.3)' }}>
+                  <Check className="w-6 h-6 flex-shrink-0" />
+                  <span>{feature}</span>
+                </div>
+              ))}
+            </div>
 
             <button
               onClick={onPurchaseClick}
               className="premium-button bg-white text-amber-600 px-12 py-6 rounded-xl text-xl font-bold shadow-2xl inline-flex items-center space-x-3 group relative z-20"
             >
               <ShoppingCart className="w-6 h-6 group-hover:scale-110 transition-transform" />
-              <span>Koçluk Paketi Satın Al</span>
+              <span>KOÇLUK SATIN AL</span>
             </button>
           </div>
 

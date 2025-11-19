@@ -31,11 +31,10 @@ export default function Homepage({ onPurchaseClick }: HomepageProps) {
         />
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <h1 className="text-4xl md:text-6xl font-bold text-white mb-6" style={{ textShadow: '2px 2px 8px rgba(0,0,0,0.8)' }}>
-            YKS Hedefinize <span className="text-lightCream">Arı Koçluk</span> ile Ulaşın
+            Senin hikâyeni yaşamış koçunla hedefine ulaş!
           </h1>
           <p className="text-xl text-white mb-8 max-w-3xl mx-auto" style={{ textShadow: '2px 2px 6px rgba(0,0,0,0.8)' }}>
-            Arı Koçluk'un uzman koçlarıyla kişiselleştirilmiş eğitim programları ve birebir destek ile
-            hayalinizdeki üniversiteye yerleşin.
+            Senin için özel seçilmiş, seninle aynı seviyeden başlayıp istediğin başarıya ulaşmış koçunla çalış
           </p>
           <button
             onClick={() => setShowTrialForm(true)}
