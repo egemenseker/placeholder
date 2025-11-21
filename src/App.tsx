@@ -17,6 +17,7 @@ function App() {
   const { user } = useApp();
   const [currentState, setCurrentState] = useState<AppState>('homepage');
   const [showCallDrawer, setShowCallDrawer] = useState(false);
+  const [selectedCoachForPurchase, setSelectedCoachForPurchase] = useState<string | null>(null);
 
   // Check URL path on component mount
   useEffect(() => {
@@ -24,6 +25,18 @@ function App() {
     if (path === '/login') {
       setCurrentState('direct-login');
     }
+  }, []);
+
+  // Listen for navigate to purchase events from coach carousel
+  useEffect(() => {
+    const handleNavigateToPurchase = (event: any) => {
+      const { coachId } = event.detail;
+      setSelectedCoachForPurchase(coachId);
+      setCurrentState('purchase');
+    };
+
+    window.addEventListener('navigateToPurchase', handleNavigateToPurchase);
+    return () => window.removeEventListener('navigateToPurchase', handleNavigateToPurchase);
   }, []);
 
   const renderCurrentView = () => {
@@ -52,7 +65,13 @@ function App() {
       case 'admin-panel':
         return <AdminPanel onBack={() => setCurrentState('homepage')} />;
       case 'purchase':
-        return <PurchaseMainPage onBack={() => setCurrentState('homepage')} />;
+        return <PurchaseMainPage
+          onBack={() => {
+            setCurrentState('homepage');
+            setSelectedCoachForPurchase(null);
+          }}
+          preselectedCoachId={selectedCoachForPurchase}
+        />;
       default:
         return <Homepage onPurchaseClick={() => setCurrentState('purchase')} />;
     }

@@ -7,14 +7,15 @@ import { useScrollAnimation } from '../utils/aos';
 
 interface PurchaseMainPageProps {
   onBack: () => void;
+  preselectedCoachId?: string | null;
 }
 
-export default function PurchaseMainPage({ onBack }: PurchaseMainPageProps) {
+export default function PurchaseMainPage({ onBack, preselectedCoachId }: PurchaseMainPageProps) {
   const { coaches } = useApp();
   const [selectedField, setSelectedField] = useState<string>('');
   const [selectedGapYear, setSelectedGapYear] = useState<string>('');
   const [selectedCoach, setSelectedCoach] = useState<string | null>(null);
-  const [showPurchase, setShowPurchase] = useState<string | null>(null);
+  const [showPurchase, setShowPurchase] = useState<string | null>(preselectedCoachId || null);
   const headerRef = useScrollAnimation('fade-up');
   const filtersRef = useScrollAnimation('fade-in');
   const gridRef = useScrollAnimation('fade-up');

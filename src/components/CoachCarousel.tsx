@@ -87,8 +87,9 @@ export default function CoachCarousel() {
           <CoachDetailModal
             coachId={selectedCoach}
             onClose={() => setSelectedCoach(null)}
-            onPurchase={() => {
-              alert('Purchase functionality would be connected here');
+            onPurchase={(coachId) => {
+              window.dispatchEvent(new CustomEvent('navigateToPurchase', { detail: { coachId } }));
+              setSelectedCoach(null);
             }}
           />
         )}
