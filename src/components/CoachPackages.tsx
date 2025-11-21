@@ -68,7 +68,7 @@ export default function CoachPackages() {
               >
                 <option value="">Tümü</option>
                 <option value="false">Bu Yıl Mezun</option>
-                <option value="true">Mezun (Gap Year)</option>
+                <option value="true">Mezun</option>
               </select>
             </div>
           </div>
