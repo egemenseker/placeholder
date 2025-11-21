@@ -52,11 +52,31 @@ export default function CoachProfile() {
     }
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (coach) {
-      updateCoach(coach.id, formData);
-      alert('Profil bilgileri güncellendi!');
+      try {
+        await updateCoach(coach.id, {
+          firstName: formData.firstName,
+          lastName: formData.lastName,
+          email: formData.email,
+          password: formData.password,
+          field: formData.field,
+          ranking: formData.ranking,
+          description: formData.description,
+          hasGapYear: formData.hasgapyear,
+          tytScore: formData.tytScore,
+          university: formData.university,
+          department: formData.department,
+          attendedPrivateInstitution: formData.attendedprivateinstitution,
+          quotaFull: formData.quotafull,
+          price: formData.price,
+        });
+        alert('Profil bilgileri güncellendi!');
+      } catch (error) {
+        console.error('Error updating profile:', error);
+        alert('Profil bilgileri güncellenirken bir hata oluştu.');
+      }
     }
   };
 

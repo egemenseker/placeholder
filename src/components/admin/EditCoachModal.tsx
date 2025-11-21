@@ -45,11 +45,32 @@ export default function EditCoachModal({ coachId, onClose }: EditCoachModalProps
     }
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    updateCoach(coachId, formData);
-    alert('Koç bilgileri güncellendi!');
-    onClose();
+
+    try {
+      await updateCoach(coachId, {
+        firstName: formData.firstName,
+        lastName: formData.lastName,
+        email: formData.email,
+        password: formData.password,
+        field: formData.field,
+        ranking: formData.ranking,
+        description: formData.description,
+        hasGapYear: formData.hasgapyear,
+        tytScore: formData.tytScore,
+        university: formData.university,
+        department: formData.department,
+        attendedPrivateInstitution: formData.attendedprivateinstitution,
+        quotaFull: formData.quotafull,
+        price: formData.price,
+      });
+      alert('Koç bilgileri güncellendi!');
+      onClose();
+    } catch (error) {
+      console.error('Error updating coach:', error);
+      alert('Koç bilgileri güncellenirken bir hata oluştu.');
+    }
   };
 
   return (
