@@ -87,15 +87,15 @@ export default function PurchaseMainPage({ onBack, preselectedCoachId }: Purchas
               </div>
               
               <div>
-                <label className="block text-sm font-medium text-softBlack mb-2">Mezun</label>
+                <label className="block text-sm font-medium text-softBlack mb-2">Sınav Senesi</label>
                 <select
                   value={selectedGapYear}
                   onChange={(e) => setSelectedGapYear(e.target.value)}
                   className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-warmAmber focus:border-transparent"
                 >
                   <option value="">Tümü</option>
-                  <option value="false">Hayır</option>
-                  <option value="true">Evet</option>
+                  <option value="false">12. Sınıf</option>
+                  <option value="true">Mezun</option>
                 </select>
               </div>
             </div>

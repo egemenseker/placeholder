@@ -45,7 +45,7 @@ export default function CoachDetailModal({ coachId, onClose, onPurchase }: Coach
                 <p><strong>Alan:</strong> {getFieldName(coach.field)}</p>
                 <p><strong>Üniversite:</strong> {coach.university} - {coach.department}</p>
                 <p><strong>TYT Puanı:</strong> {coach.tytScore}</p>
-                <p><strong>Mezuniyet:</strong> {coach.hasGapYear ? 'Mezun (Gap Year)' : 'Bu Yıl Mezun'}</p>
+                <p><strong>Sınav Senesi:</strong> {coach.hasGapYear ? 'Mezun' : '12. Sınıf'}</p>
                 <p><strong>Özel Dershane:</strong> {coach.attendedPrivateInstitution ? 'Evet' : 'Hayır'}</p>
               </div>
             </div>

@@ -62,4 +62,14 @@ export interface TrialSession {
   phone: string;
   field: 'EA' | 'SAY' | 'SÖZ' | 'DİL';
   createdAt: string;
+  isCalled: boolean;
+}
+
+export interface CallRequest {
+  id: string;
+  fullName: string;
+  userType: 'Veliyim' | 'Öğrenciyim';
+  phone: string;
+  createdAt: string;
+  isCalled: boolean;
 }

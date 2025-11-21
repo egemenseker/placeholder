@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
-import { Users, UserCheck, LogOut, ArrowLeft } from 'lucide-react';
+import { Users, UserCheck, LogOut, ArrowLeft, ClipboardList } from 'lucide-react';
 import { useApp } from '../../contexts/AppContext';
 import AdminCoaches from './AdminCoaches';
 import AdminStudents from './AdminStudents';
+import AdminApplications from './AdminApplications';
 
 interface AdminPanelProps {
   onBack: () => void;
@@ -10,7 +11,7 @@ interface AdminPanelProps {
 
 export default function AdminPanel({ onBack }: AdminPanelProps) {
   const { logout } = useApp();
-  const [activeTab, setActiveTab] = useState<'coaches' | 'students'>('coaches');
+  const [activeTab, setActiveTab] = useState<'coaches' | 'students' | 'applications'>('coaches');
 
   const handleLogout = () => {
     logout();
@@ -72,6 +73,17 @@ export default function AdminPanel({ onBack }: AdminPanelProps) {
               <Users className="w-4 h-4" />
               <span>Öğrenciler</span>
             </button>
+            <button
+              onClick={() => setActiveTab('applications')}
+              className={`py-4 px-2 border-b-2 font-medium text-sm flex items-center space-x-2 ${
+                activeTab === 'applications'
+                  ? 'border-blue-500 text-blue-600'
+                  : 'border-transparent text-gray-500 hover:text-gray-700'
+              }`}
+            >
+              <ClipboardList className="w-4 h-4" />
+              <span>Başvurular</span>
+            </button>
           </nav>
         </div>
       </div>
@@ -80,6 +92,7 @@ export default function AdminPanel({ onBack }: AdminPanelProps) {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {activeTab === 'coaches' && <AdminCoaches />}
         {activeTab === 'students' && <AdminStudents />}
+        {activeTab === 'applications' && <AdminApplications />}
       </div>
     </div>
   );

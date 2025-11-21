@@ -164,6 +164,7 @@ export interface Database {
           phone: string
           field: 'EA' | 'SAY' | 'SÖZ' | 'DİL'
           createdAt: string
+          isCalled: boolean
           created_at?: string
         }
         Insert: {
@@ -172,6 +173,7 @@ export interface Database {
           phone: string
           field: 'EA' | 'SAY' | 'SÖZ' | 'DİL'
           createdAt: string
+          isCalled?: boolean
         }
         Update: {
           id?: string
@@ -179,6 +181,34 @@ export interface Database {
           phone?: string
           field?: 'EA' | 'SAY' | 'SÖZ' | 'DİL'
           createdAt?: string
+          isCalled?: boolean
+        }
+      }
+      call_requests: {
+        Row: {
+          id: string
+          fullName: string
+          userType: 'Veliyim' | 'Öğrenciyim'
+          phone: string
+          createdAt: string
+          isCalled: boolean
+          created_at?: string
+        }
+        Insert: {
+          id?: string
+          fullName: string
+          userType: 'Veliyim' | 'Öğrenciyim'
+          phone: string
+          createdAt: string
+          isCalled?: boolean
+        }
+        Update: {
+          id?: string
+          fullName?: string
+          userType?: 'Veliyim' | 'Öğrenciyim'
+          phone?: string
+          createdAt?: string
+          isCalled?: boolean
         }
       }
     }

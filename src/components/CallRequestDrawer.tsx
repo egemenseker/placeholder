@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { X, Phone } from 'lucide-react';
+import { useApp } from '../contexts/AppContext';
 
 interface CallRequestDrawerProps {
   isOpen: boolean;
@@ -7,6 +8,7 @@ interface CallRequestDrawerProps {
 }
 
 export default function CallRequestDrawer({ isOpen, onClose }: CallRequestDrawerProps) {
+  const { addCallRequest } = useApp();
   const [formData, setFormData] = useState({
     fullName: '',
     userType: 'Öğrenciyim' as 'Veliyim' | 'Öğrenciyim',
@@ -28,7 +30,7 @@ export default function CallRequestDrawer({ isOpen, onClose }: CallRequestDrawer
     setFormData(prev => ({ ...prev, userType: value }));
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
     if (!formData.fullName.trim()) {
@@ -41,10 +43,20 @@ export default function CallRequestDrawer({ isOpen, onClose }: CallRequestDrawer
       return;
     }
 
-    alert('Talebiniz alındı! En kısa sürede sizi arayacağız.');
+    try {
+      await addCallRequest({
+        fullName: formData.fullName,
+        userType: formData.userType,
+        phone: formData.phone,
+      });
 
-    setFormData({ fullName: '', userType: 'Öğrenciyim', phone: '' });
-    onClose();
+      alert('Talebiniz alındı! En kısa sürede sizi arayacağız.');
+      setFormData({ fullName: '', userType: 'Öğrenciyim', phone: '' });
+      onClose();
+    } catch (error) {
+      console.error('Error submitting call request:', error);
+      alert('Bir hata oluştu. Lütfen tekrar deneyin.');
+    }
   };
 
   const handleBackdropClick = (e: React.MouseEvent) => {

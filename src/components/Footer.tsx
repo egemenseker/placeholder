@@ -351,11 +351,6 @@ Kişisel veri ihlali ile ilgili veya diğer her türlü kişisel verilerin korun
               <ul className="space-y-2">
                 <li>
                   <a href="#" className="text-lightCream hover:text-warmAmber transition-colors">
-                    Aboneliğimi Yönet
-                  </a>
-                </li>
-                <li>
-                  <a href="#" className="text-lightCream hover:text-warmAmber transition-colors">
                     Bize Ulaşın
                   </a>
                 </li>

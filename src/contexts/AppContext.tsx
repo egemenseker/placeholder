@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-import { Coach, Student, Program, TrialSession } from '../types';
+import { Coach, Student, Program, TrialSession, CallRequest } from '../types';
 import { supabase } from '../lib/supabase';
 
 interface User {
@@ -15,6 +15,7 @@ interface AppContextType {
   students: Student[];
   programs: Program[];
   trialSessions: TrialSession[];
+  callRequests: CallRequest[];
   login: (email: string, password: string) => Promise<boolean>;
   logout: () => void;
   addCoach: (coach: Omit<Coach, 'id'>) => void;
@@ -26,7 +27,10 @@ interface AppContextType {
   assignStudentToCoach: (studentId: string, coachId: string) => void;
   addProgram: (program: Omit<Program, 'id'>) => void;
   updateProgram: (id: string, program: Partial<Program>) => void;
-  addTrialSession: (session: Omit<TrialSession, 'id' | 'createdAt'>) => void;
+  addTrialSession: (session: Omit<TrialSession, 'id' | 'createdAt' | 'isCalled'>) => void;
+  updateTrialSession: (id: string, updates: Partial<TrialSession>) => Promise<void>;
+  addCallRequest: (request: Omit<CallRequest, 'id' | 'createdAt' | 'isCalled'>) => Promise<void>;
+  updateCallRequest: (id: string, updates: Partial<CallRequest>) => Promise<void>;
 }
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
@@ -37,6 +41,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const [students, setStudents] = useState<Student[]>([]);
   const [programs, setPrograms] = useState<Program[]>([]);
   const [trialSessions, setTrialSessions] = useState<TrialSession[]>([]);
+  const [callRequests, setCallRequests] = useState<CallRequest[]>([]);
 
   // Load data from Supabase
   const loadCoaches = async () => {
@@ -200,19 +205,21 @@ export function AppProvider({ children }: { children: ReactNode }) {
           phone,
           field,
           createdat,
+          iscalled,
           created_at
         `)
         .order('createdat', { ascending: false });
-      
+
       if (error) throw error;
-      
+
       // Convert flat case to camelCase for frontend
       const formattedSessions = data?.map(session => ({
         id: session.id,
         fullName: session.fullname,
         phone: session.phone,
         field: session.field,
-        createdAt: session.createdat
+        createdAt: session.createdat,
+        isCalled: session.iscalled || false
       })) || [];
       
       setTrialSessions(formattedSessions);
@@ -231,7 +238,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
       loadCoaches(),
       loadStudents(),
       loadPrograms(),
-      loadTrialSessions()
+      loadTrialSessions(),
+      loadCallRequests()
     ]);
   };
 
@@ -522,11 +530,49 @@ export function AppProvider({ children }: { children: ReactNode }) {
     }
   };
 
-  const addTrialSession = async (session: Omit<TrialSession, 'id' | 'createdAt'>) => {
+  const loadCallRequests = async () => {
+    if (!supabase) {
+      console.warn('Supabase client not initialized, skipping loadCallRequests');
+      return;
+    }
+
+    try {
+      const { data, error } = await supabase
+        .from('call_requests')
+        .select(`
+          id,
+          fullname,
+          usertype,
+          phone,
+          createdat,
+          iscalled,
+          created_at
+        `)
+        .order('createdat', { ascending: false });
+
+      if (error) throw error;
+
+      // Convert flat case to camelCase for frontend
+      const formattedRequests = data?.map(request => ({
+        id: request.id,
+        fullName: request.fullname,
+        userType: request.usertype,
+        phone: request.phone,
+        createdAt: request.createdat,
+        isCalled: request.iscalled || false
+      })) || [];
+
+      setCallRequests(formattedRequests);
+    } catch (error) {
+      console.error('Error loading call requests:', error);
+    }
+  };
+
+  const addTrialSession = async (session: Omit<TrialSession, 'id' | 'createdAt' | 'isCalled'>) => {
     if (!supabase) {
       throw new Error('Supabase client not initialized');
     }
-    
+
     try {
       // Convert camelCase to flat case for Supabase
       const { data, error } = await supabase
@@ -535,14 +581,85 @@ export function AppProvider({ children }: { children: ReactNode }) {
           fullname: session.fullName,
           phone: session.phone,
           field: session.field,
-          createdat: new Date().toISOString()
+          createdat: new Date().toISOString(),
+          iscalled: false
         })
         .select();
-      
+
       if (error) throw error;
       await loadTrialSessions();
     } catch (error) {
       console.error('Error adding trial session:', error);
+      throw error;
+    }
+  };
+
+  const updateTrialSession = async (id: string, updates: Partial<TrialSession>) => {
+    if (!supabase) {
+      throw new Error('Supabase client not initialized');
+    }
+
+    try {
+      const updateData: any = {};
+      if (updates.isCalled !== undefined) updateData.iscalled = updates.isCalled;
+
+      const { error } = await supabase
+        .from('trial_sessions')
+        .update(updateData)
+        .eq('id', id);
+
+      if (error) throw error;
+      await loadTrialSessions();
+    } catch (error) {
+      console.error('Error updating trial session:', error);
+      throw error;
+    }
+  };
+
+  const addCallRequest = async (request: Omit<CallRequest, 'id' | 'createdAt' | 'isCalled'>) => {
+    if (!supabase) {
+      throw new Error('Supabase client not initialized');
+    }
+
+    try {
+      // Convert camelCase to flat case for Supabase
+      const { data, error } = await supabase
+        .from('call_requests')
+        .insert({
+          fullname: request.fullName,
+          usertype: request.userType,
+          phone: request.phone,
+          createdat: new Date().toISOString(),
+          iscalled: false
+        })
+        .select();
+
+      if (error) throw error;
+      await loadCallRequests();
+    } catch (error) {
+      console.error('Error adding call request:', error);
+      throw error;
+    }
+  };
+
+  const updateCallRequest = async (id: string, updates: Partial<CallRequest>) => {
+    if (!supabase) {
+      throw new Error('Supabase client not initialized');
+    }
+
+    try {
+      const updateData: any = {};
+      if (updates.isCalled !== undefined) updateData.iscalled = updates.isCalled;
+
+      const { error } = await supabase
+        .from('call_requests')
+        .update(updateData)
+        .eq('id', id);
+
+      if (error) throw error;
+      await loadCallRequests();
+    } catch (error) {
+      console.error('Error updating call request:', error);
       throw error;
     }
   };
@@ -554,6 +671,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
       students,
       programs,
       trialSessions,
+      callRequests,
       login,
       logout,
       addCoach,
@@ -566,6 +684,9 @@ export function AppProvider({ children }: { children: ReactNode }) {
       addProgram,
       updateProgram,
       addTrialSession,
+      updateTrialSession,
+      addCallRequest,
+      updateCallRequest,
     }}>
       {children}
     </AppContext.Provider>
