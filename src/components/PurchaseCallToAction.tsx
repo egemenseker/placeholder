@@ -28,7 +28,8 @@ export default function PurchaseCallToAction({ onPurchaseClick }: PurchaseCallTo
             </div>
 
             <h2 className="text-4xl md:text-5xl font-bold text-white mb-4 transform transition-all duration-300" style={{ textShadow: '3px 3px 10px rgba(0,0,0,0.4)' }}>
-              ARI KOÇLUK PAKETİ
+              ARI YKS 
+              KOÇLUK PAKETİ
             </h2>
 
             <div className="text-5xl md:text-6xl font-bold text-white mb-8" style={{ textShadow: '3px 3px 10px rgba(0,0,0,0.4)' }}>
