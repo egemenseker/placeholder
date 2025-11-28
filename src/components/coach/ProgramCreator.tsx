@@ -327,12 +327,12 @@ const exportToPDF = async () => {
             
             // Metin kutusu ayarları (Kesilmeyi önleyen kısım)
             div.style.display = 'block';
-            div.style.height = 'auto';           // İçeriğe göre uza
+            div.style.height = '16px';           // İçeriğe göre uza
             div.style.minHeight = style.height;  // Orijinal boyuttan kısa olma
             div.style.width = '100%';
             div.style.whiteSpace = 'pre-wrap';   // Satır atlamalarını koru
             div.style.wordBreak = 'break-word';  // Uzun kelimeleri böl
-            div.style.overflow = 'hidden';      // Taşanları gizleme
+            div.style.overflow = 'visible';      // Taşanları gizleme
             div.style.resize = 'none';
             div.style.paddingBottom = '8px';     // "g, y, p" gibi harfler için alt tampon
             div.style.lineHeight = '1.4';        // Satır aralığını rahatlat
