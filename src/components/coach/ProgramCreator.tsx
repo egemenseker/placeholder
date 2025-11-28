@@ -231,25 +231,22 @@ export default function ProgramCreator({ studentId, onBack }: ProgramCreatorProp
     }
   };
 
-  // --- RESİM (PNG) OLARAK İNDİRME FONKSİYONU ---
+  // --- RESİM (PNG) OLARAK İNDİRME FONKSİYONU (LOGOLU) ---
   const exportToImage = async (e: React.MouseEvent<HTMLButtonElement>) => {
-    // 1. Sayfa yenilenmesini ve form gönderimini engelle (Kritik)
     e.preventDefault();
     e.stopPropagation();
 
     if (!student || !exportRef.current) return;
 
-    // Buton geri bildirimi
     const btn = e.currentTarget;
-    const originalText = btn.innerText;
     btn.innerText = "Hazırlanıyor...";
     btn.disabled = true;
 
     try {
       const canvas = await html2canvas(exportRef.current, {
-        scale: 2, // Retina kalitesi (2x)
+        scale: 2,
         useCORS: true,
-        backgroundColor: '#ffffff',
+        backgroundColor: null, // Arka planı şeffaf bırak, CSS ile dolduracağız
         logging: false,
         scrollY: 0,
         windowWidth: 1600,
@@ -257,7 +254,7 @@ export default function ProgramCreator({ studentId, onBack }: ProgramCreatorProp
           const root = clonedDoc.querySelector('[data-export-root]') as HTMLElement | null;
           if (!root) return;
 
-          // Stil Sıfırlama
+          // Stil Sıfırlama ve LOGO EKLEME
           const style = clonedDoc.createElement('style');
           style.innerHTML = `
             * {
@@ -274,9 +271,33 @@ export default function ProgramCreator({ studentId, onBack }: ProgramCreatorProp
               flex-wrap: wrap !important;
               gap: 20px !important;
               width: 100% !important;
-              padding: 20px !important;
+              padding: 40px !important; /* Logoya yer açmak için padding arttı */
               background-color: white !important;
+              position: relative !important; /* Logo için referans noktası */
+              z-index: 0 !important;
             }
+            
+            /* --- ARKA PLAN LOGOSU İÇİN CSS --- */
+            [data-export-root]::before {
+              content: "" !important;
+              position: absolute !important;
+              top: 0 !important;
+              left: 0 !important;
+              width: 100% !important;
+              height: 100% !important;
+              /* ÖNEMLİ: Logoyu 'public' klasörüne koyun ve adını güncelleyin.
+                 Örn: public/background-logo.jpg ise burası '/background-logo.jpg' olur.
+              */
+              background-image: url('/background-logo.jpg') !important; 
+              background-repeat: no-repeat !important;
+              background-position: center center !important;
+              background-size: 50% auto !important; /* Boyutu buradan ayarlayabilirsiniz */
+              opacity: 0.15 !important; /* Şeffaflık ayarı (0.1 - 0.3 arası iyidir) */
+              z-index: -1 !important; /* İçeriğin arkasında kalmasını sağlar */
+              pointer-events: none !important;
+            }
+            /* -------------------------------- */
+
             .bg-white.rounded-lg.shadow-md {
               flex: 0 0 31% !important;
               max-width: 31% !important;
@@ -284,6 +305,7 @@ export default function ProgramCreator({ studentId, onBack }: ProgramCreatorProp
               border: 1px solid #ddd !important;
               box-shadow: none !important;
               display: block !important;
+              background-color: rgba(255, 255, 255, 0.9) !important; /* Kartları hafif şeffaf yap ki logo alttan belli olsun */
             }
             .aos-element, [data-aos] {
               opacity: 1 !important;
@@ -330,32 +352,25 @@ export default function ProgramCreator({ studentId, onBack }: ProgramCreatorProp
         },
       });
 
-      // 2. Blob Yöntemi ile İndirme (Yeni sekme açılmasını kesin engeller)
       canvas.toBlob((blob) => {
         if (!blob) {
             alert("Görsel oluşturulamadı.");
             return;
         }
-        
         const url = URL.createObjectURL(blob);
         const link = document.createElement('a');
         link.href = url;
         link.download = `${student.firstName}_${student.lastName}_Program_${formatLocalDate(currentWindowStart)}.png`;
-        
-        // Linki belgeye ekleyip tıklayıp siliyoruz
         document.body.appendChild(link);
         link.click();
         document.body.removeChild(link);
-        
-        // URL'i temizle
         URL.revokeObjectURL(url);
       }, 'image/png');
 
     } catch (err) {
       console.error("Görsel hatası:", err);
-      alert("Görsel oluşturulurken bir hata oluştu.");
+      alert("Görsel oluşturulurken bir hata oluştu. Logoyu public klasörüne eklediğinizden emin olun.");
     } finally {
-      // Butonu eski haline getir
       btn.innerText = "Resim İndir";
       btn.disabled = false;
     }
@@ -396,7 +411,7 @@ export default function ProgramCreator({ studentId, onBack }: ProgramCreatorProp
             </div>
             <div className="flex items-center space-x-3">
               <button
-                type="button" // ÖNEMLİ: Form submit gibi davranmasını engeller
+                type="button"
                 onClick={exportToImage}
                 className="flex items-center space-x-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
               >
