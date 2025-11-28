@@ -307,7 +307,7 @@ const exportToPDF = async () => {
           });
         });
 
-        // 3) TEXTAREA -> DIV dönüşümü
+        // 3) TEXTAREA -> DIV dönüşümü (satır sonlarını <br> ile koru)
         root.querySelectorAll("textarea").forEach((node) => {
           const ta = node as HTMLTextAreaElement;
           const div = clonedDoc.createElement("div");
@@ -322,15 +322,24 @@ const exportToPDF = async () => {
             : style.fontWeight;
           div.style.color = "#000000";
 
-          // Metni aktar
-          div.textContent = ta.value || ta.placeholder || "";
+          // Metni güvenli hale getir + satır sonlarını <br> yap
+          const rawText = ta.value || ta.placeholder || "";
+          const safeHtml = rawText
+            .replace(/&/g, "&amp;")
+            .replace(/</g, "&lt;")
+            .replace(/>/g, "&gt;")
+            .replace(/\r\n/g, "\n")
+            .replace(/\r/g, "\n")
+            .replace(/\n/g, "<br/>");
+
+          div.innerHTML = safeHtml;
 
           // Görünüm
           div.style.display = "block";
           div.style.width = "100%";
           div.style.height = "auto";
           div.style.minHeight = "20px";
-          div.style.whiteSpace = "pre-wrap";
+          div.style.whiteSpace = "normal"; // Artık <br> ile satır kırılıyor
           div.style.wordBreak = "break-word";
           div.style.overflow = "visible";
           div.style.padding = "0px";
