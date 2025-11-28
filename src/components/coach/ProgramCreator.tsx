@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { ArrowLeft, Plus, Check, ChevronLeft, ChevronRight, MoreVertical, Trash2, Download } from 'lucide-react';
-import html2pdf from 'html2pdf.js';
+import { ArrowLeft, Plus, Check, ChevronLeft, ChevronRight, MoreVertical, Trash2, Download, Image as ImageIcon } from 'lucide-react';
+import html2canvas from 'html2canvas';
 import { useApp } from '../../contexts/AppContext';
 import { Task, DayProgram } from '../../types';
 
@@ -231,76 +231,66 @@ export default function ProgramCreator({ studentId, onBack }: ProgramCreatorProp
     }
   };
 
-  // --- GELİŞMİŞ PDF DIŞA AKTARMA FONKSİYONU ---
-  const exportToPDF = async () => {
+  // --- RESİM (PNG) OLARAK İNDİRME FONKSİYONU ---
+  const exportToImage = async () => {
     if (!student || !exportRef.current) return;
 
-    // 1. Kullanıcı Geri Bildirimi
+    // Buton geri bildirimi
     const originalBtnText = document.activeElement?.textContent;
     if (document.activeElement instanceof HTMLElement) {
-       document.activeElement.innerText = "PDF Hazırlanıyor...";
+       document.activeElement.innerText = "Görsel Hazırlanıyor...";
        document.activeElement.setAttribute('disabled', 'true');
     }
 
-    const opt = {
-      margin: [10, 10, 10, 10], 
-      filename: `${student.firstName}_${student.lastName}_Program_${formatLocalDate(currentWindowStart)}.pdf`,
-      image: { type: 'jpeg', quality: 0.98 },
-      // 'avoid-all' yerine CSS tabanlı kontrol (Daha güvenli)
-      pagebreak: { mode: ['css', 'legacy'], avoid: '.keep-together' },
-      html2canvas: {
-        scale: 2, // Yüksek kalite
-        useCORS: true,
+    try {
+      const canvas = await html2canvas(exportRef.current, {
+        scale: 2, // Retina kalitesi (2x)
+        useCORS: true, // Dış kaynaklı resimleri yükle
         backgroundColor: '#ffffff',
         logging: false,
         scrollY: 0, // Scroll kaymasını sıfırla
-        windowWidth: 1600, // Geniş ekran simülasyonu
+        windowWidth: 1600, // Geniş pencere simülasyonu
         onclone: (clonedDoc: Document) => {
           const root = clonedDoc.querySelector('[data-export-root]') as HTMLElement | null;
           if (!root) return;
 
-          // --- ADIM 1: GLOBAL BASKI STİLLERİ (Sayfa yapısını zorlar) ---
+          // --- ADIM 1: STİL SIFIRLAMA (Her şeyi görünür ve esnek yap) ---
           const style = clonedDoc.createElement('style');
           style.innerHTML = `
-            /* Her şeyin yüksekliğini serbest bırak */
             * {
               height: auto !important;
               min-height: 0 !important;
               max-height: none !important;
               overflow: visible !important;
+              transition: none !important;
+              animation: none !important;
+              transform: none !important;
             }
-            /* Grid'i Flex'e çevir (PDF motoru Flex'i daha iyi böler) */
             [data-export-root] {
               display: flex !important;
               flex-wrap: wrap !important;
               gap: 20px !important;
               width: 100% !important;
+              padding: 20px !important;
+              background-color: white !important;
             }
-            /* Grid classlarını etkisizleştir */
-            .grid { display: flex !important; }
-            
-            /* Gün Kartları */
+            /* Kartları düzenle: 3'lü sıra */
             .bg-white.rounded-lg.shadow-md {
-              flex: 0 0 32% !important; /* Yan yana 3 kart */
-              max-width: 32% !important;
+              flex: 0 0 31% !important;
+              max-width: 31% !important;
               margin-bottom: 20px !important;
               border: 1px solid #ddd !important;
               box-shadow: none !important;
               display: block !important;
-              page-break-inside: avoid !important; /* Kartları bölme */
             }
-            
-            /* Animasyonlu elementleri sıfırla (Beyaz ekran çözümü) */
+            /* Animasyonları durdur */
             .aos-element, [data-aos] {
               opacity: 1 !important;
-              transform: none !important;
-              transition: none !important;
-              animation: none !important;
             }
           `;
           clonedDoc.head.appendChild(style);
 
-          // --- ADIM 2: TEXTAREA -> GENİŞLEYEN DIV DÖNÜŞÜMÜ ---
+          // --- ADIM 2: TEXTAREA -> DIV DÖNÜŞÜMÜ (Metinleri açığa çıkar) ---
           root.querySelectorAll('textarea').forEach(node => {
             const ta = node as HTMLTextAreaElement;
             const div = clonedDoc.createElement('div');
@@ -310,72 +300,55 @@ export default function ProgramCreator({ studentId, onBack }: ProgramCreatorProp
             const propertiesToCopy = [
               'font-family', 'font-size', 'font-weight', 'font-style',
               'line-height', 'text-align', 'color', 'letter-spacing',
-              'padding-top', 'padding-bottom', 'padding-left', 'padding-right',
-              'margin-top', 'margin-bottom', 'margin-left', 'margin-right'
+              'padding', 'margin'
             ];
             
             propertiesToCopy.forEach(prop => {
               div.style.setProperty(prop, computedStyle.getPropertyValue(prop));
             });
 
-            // Metni aktar
             div.textContent = ta.value || '';
             
-            // --- KRİTİK DÜZELTMELER ---
+            // Kritik yerleşim ayarları
             div.style.display = 'block';
             div.style.width = '100%';
-            div.style.height = 'auto'; // İçerik kadar uza
-            div.style.minHeight = '1.5em'; // En az bir satır
-            div.style.whiteSpace = 'pre-wrap'; // Satır atlamalarını koru
-            div.style.wordBreak = 'break-word'; 
-            div.style.overflow = 'visible';
+            div.style.height = 'auto'; 
+            div.style.whiteSpace = 'pre-wrap';
+            div.style.wordWrap = 'break-word';
+            div.style.minHeight = '1.5em';
             div.style.border = 'none';
             div.style.background = 'transparent';
             div.style.resize = 'none';
             
-            // Renk ve Okunabilirlik Düzeltmeleri
-            div.style.color = '#000000'; // Siyah yap (Gri silik çıkar)
+            // Renk sabitleme (Siyah)
+            div.style.color = '#000000';
             if (ta.className.includes('font-medium')) {
-                 div.style.fontWeight = '700'; 
+                 div.style.fontWeight = '700';
             }
 
             ta.replaceWith(div);
           });
 
-          // --- ADIM 3: EBEVEYN KİLİDİNİ AÇ (Parent Unlock) ---
-          // İçerik uzasa bile dışındaki kutu sabitse kesilir. Bunu engellemek için:
-          const dayCards = root.querySelectorAll('.bg-white.rounded-lg.shadow-md');
-          dayCards.forEach(card => {
-             card.classList.add('keep-together'); // Bölünmez işaretle
-             
-             // Kartın içindeki tüm div'lerin yüksekliğini serbest bırak
-             const children = card.querySelectorAll('div');
-             children.forEach(child => {
-                 child.style.height = 'auto';
-                 child.style.overflow = 'visible';
-             });
-          });
-
-          // UI temizliği
+          // Gereksiz butonları temizle
           root.querySelectorAll('button, svg').forEach(n => n.remove());
         },
-      },
-      jsPDF: { unit: 'mm', format: 'a4', orientation: 'landscape', compress: true },
-    } as const;
+      });
 
-    // Tarayıcı render'ı için bekleme
-    await new Promise(r => setTimeout(r, 200));
-    
-    try {
-        await html2pdf().set(opt).from(exportRef.current).save();
+      // İndirme işlemini tetikle
+      const image = canvas.toDataURL("image/png", 1.0);
+      const link = document.createElement('a');
+      link.download = `${student.firstName}_${student.lastName}_Program_${formatLocalDate(currentWindowStart)}.png`;
+      link.href = image;
+      link.click();
+
     } catch (err) {
-        console.error("PDF Hatası:", err);
-        alert("PDF oluşturulurken bir hata oluştu.");
+      console.error("Görsel hatası:", err);
+      alert("Görsel oluşturulurken bir hata oluştu.");
     } finally {
-        if (document.activeElement instanceof HTMLElement) {
-            document.activeElement.innerText = "PDF İndir";
-            document.activeElement.removeAttribute('disabled');
-         }
+      if (document.activeElement instanceof HTMLElement) {
+          document.activeElement.innerText = "Resim İndir";
+          document.activeElement.removeAttribute('disabled');
+      }
     }
   };
 
@@ -414,11 +387,11 @@ export default function ProgramCreator({ studentId, onBack }: ProgramCreatorProp
             </div>
             <div className="flex items-center space-x-3">
               <button
-                onClick={exportToPDF}
+                onClick={exportToImage}
                 className="flex items-center space-x-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
               >
-                <Download className="w-4 h-4" />
-                <span>PDF İndir</span>
+                <ImageIcon className="w-4 h-4" />
+                <span>Resim İndir</span>
               </button>
               <button
                 onClick={() => saveProgram(days)}
