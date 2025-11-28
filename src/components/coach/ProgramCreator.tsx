@@ -231,129 +231,101 @@ export default function ProgramCreator({ studentId, onBack }: ProgramCreatorProp
     }
   };
 
-  const exportToPDF = async () => {
+ const exportToPDF = async () => {
     if (!student || !exportRef.current) return;
 
     const opt = {
-      margin: [5, 5, 5, 5],
+      margin: [10, 10, 10, 10], // Kenar boşluklarını biraz artırdık
       filename: `${student.firstName}_${student.lastName}_Program_${formatLocalDate(currentWindowStart)}.pdf`,
       image: { type: 'jpeg', quality: 0.98 },
+      // KRİTİK AYAR: Sayfa kırılımlarını yönet
+      pagebreak: { mode: 'css', avoid: '.keep-together' },
       html2canvas: {
         scale: 2,
         useCORS: true,
         backgroundColor: '#ffffff',
         logging: false,
-        windowWidth: 1400,
+        windowWidth: 1400, // Geniş bir pencere simüle et
         onclone: (clonedDoc: Document) => {
           const root = clonedDoc.querySelector('[data-export-root]') as HTMLElement | null;
           if (!root) return;
 
-          // 1. GENEL TEMİZLİK
-          root.querySelectorAll<HTMLElement>('*').forEach(el => {
-            const cs = clonedDoc.defaultView!.getComputedStyle(el);
-            if (cs.overflow !== 'visible') el.style.overflow = 'visible';
-            if (cs.maxHeight !== 'none') { el.style.maxHeight = 'none'; el.style.height = 'auto'; }
-            if (cs.borderRadius && cs.borderRadius !== '0px') el.style.borderRadius = '0';
+          // 1. GRID YAPISINI FLEX'E ÇEVİR (PDF motoru Grid'i bölmekte zorlanır)
+          // Mevcut grid sınıflarını temizle ve flex yapısına geç
+          root.style.display = 'flex';
+          root.style.flexWrap = 'wrap';
+          root.style.gap = '15px';
+          root.style.justifyContent = 'flex-start';
+          root.style.width = '100%';
+          
+          // Izgara sınıflarını (grid-cols-...) etkisiz hale getir
+          root.className = root.className.replace(/grid-cols-\S+/g, '');
+
+          // 2. GÜN KARTLARINI DÜZENLE (Bölünmez yap)
+          const dayCards = root.querySelectorAll('.bg-white.rounded-lg.shadow-md');
+          dayCards.forEach((cardNode) => {
+            const card = cardNode as HTMLElement;
+            
+            // "keep-together" sınıfını ekle (opt.pagebreak ayarı bunu arıyor)
+            card.classList.add('keep-together');
+            
+            // Flex ayarları: Kart genişliğini ayarla (Sayfada yan yana 3-4 tane sığacak şekilde)
+            card.style.flex = '1 1 300px'; // Esnek genişlik, minimum 300px
+            card.style.maxWidth = '32%';     // Yan yana 3 tane sığsın (A4 Yatay için ideal)
+            card.style.marginBottom = '20px'; // Altına boşluk bırak
+            
+            // Kartın içindeki taşmaları serbest bırak
+            card.style.height = 'auto';
+            card.style.overflow = 'visible';
+            
+            // Gölgeleri kaldır (PDF'te bazen siyah kutu yapar)
+            card.style.boxShadow = 'none';
+            card.style.border = '1px solid #e5e7eb'; // Gölge yerine ince kenarlık
           });
 
-          // 2. TEXTAREA -> DIV DÖNÜŞÜMÜ (Metin kesilmelerini önleyen gelişmiş ayarlar)
+          // 3. TEXTAREA -> DIV DÖNÜŞÜMÜ (İçerik kesilmesini önle)
           root.querySelectorAll('textarea').forEach(node => {
             const ta = node as HTMLTextAreaElement;
             const div = clonedDoc.createElement('div');
-            
-            // Orijinal stilleri kopyala
             const style = window.getComputedStyle(ta);
+            
+            // Stilleri kopyala
             Array.from(style).forEach(key => {
               div.style.setProperty(key, style.getPropertyValue(key), style.getPropertyPriority(key));
             });
 
-            // Tireleme (Hyphenation) Fonksiyonları
-            const VOW = /[aeıioöuüAEIİOÖUÜ]/;
-            function hyphenateTrWord(w: string): string {
-              if (w.length < 12) return w;
-              let out = '';
-              let i = 0;
-              while (i < w.length) {
-                const nextCut = Math.min(i + 8, w.length);
-                let j = nextCut;
-                while (j > i + 4 && j < w.length && !VOW.test(w[j - 1])) j--;
-                if (j <= i + 4) j = nextCut;
-                out += w.slice(i, j) + (j < w.length ? '\u00AD' : '');
-                i = j;
-              }
-              return out;
-            }
-            function hyphenateTrLine(line: string): string {
-              return line.replace(/\p{L}{12,}/gu, (m) => hyphenateTrWord(m));
-            }
+            // Metni al ve div'e koy
+            div.textContent = ta.value || ta.placeholder || '';
 
-            const raw = ta.value || ta.placeholder || '';
-            const txt = hyphenateTrLine(raw);
-            div.textContent = txt;
-
-            // --- KRİTİK DÜZELTMELER ---
-            div.style.height = 'auto';          // İçeriğe göre uza
+            // Kritik Yükseklik Ayarları
+            div.style.height = 'auto';
             div.style.minHeight = style.height; // Orijinalden kısa olma
-            div.style.width = '100%';           // Genişliği tam kapla
-            div.style.display = 'block';
-            div.style.overflow = 'visible';
+            div.style.width = '100%';
             div.style.whiteSpace = 'pre-wrap';
             div.style.wordBreak = 'break-word';
+            div.style.overflow = 'visible';
             div.style.resize = 'none';
-            div.style.lineHeight = '1.5';       // Satır aralığını biraz aç
-            div.style.paddingBottom = '10px';   // Alt kısımdan kesilmemesi için buffer ekle
-            div.style.boxSizing = 'border-box';
+            div.style.display = 'block';
+            div.style.paddingBottom = '4px'; // Harf kuyrukları için güvenli bölge
 
             // Tipografi düzeltmeleri
-            const isName = ta.className.includes('text-sm') && ta.className.includes('font-medium');
-            const isDur = ta.placeholder?.toLowerCase() === 'süre';
-            const isCourse = ta.placeholder?.toLowerCase() === 'ders adı';
-
-            if (isName) { 
-                div.style.fontSize = '14px'; 
+            if (ta.className.includes('font-medium')) { 
                 div.style.fontWeight = '600'; 
-                div.style.color = '#1f2937'; 
-            } else if (isDur || isCourse) { 
-                div.style.fontSize = '12px'; 
-                div.style.color = isDur ? '#4b5563' : '#6b7280'; 
+                div.style.color = '#000';
             }
 
             ta.replaceWith(div);
           });
 
-          // 3. SAYFA BÖLÜNMELERİNİ ENGELLE (Page Break Fix)
-          // Gün kartlarını (shadow-md olanlar) ve Görev kartlarını (border olanlar) koru
-          root.querySelectorAll<HTMLElement>('.shadow-md, [class*="border"]').forEach(card => {
-            card.style.pageBreakInside = 'avoid'; // CSS standardı
-            card.style.breakInside = 'avoid';     // Modern tarayıcılar
-            
-            // Flex ve Grid öğelerinin stillerini düzelt
-            card.style.overflow = 'visible';
-            card.style.minHeight = 'auto';
-            card.style.height = 'auto';
-            card.style.maxHeight = 'none';
-            card.style.boxShadow = 'none'; // PDF'de gölge bazen siyah kutu gibi çıkar, kapatalım
-            
-            // Eğer bu bir gün kartıysa (bg-white ve shadow-md içeriyorsa) margin ekle ki yapışmasın
-            if (card.className.includes('shadow-md')) {
-                card.style.marginBottom = '20px';
-            }
-          });
-
-          // Flex container düzeltmeleri
-          root.querySelectorAll<HTMLElement>('.flex').forEach(f => {
-            f.style.alignItems = 'flex-start'; // İçerikleri yukarı yasla
-            f.style.overflow = 'visible';
-          });
-
-          // Gereksiz butonları sil
+          // Gereksiz butonları temizle
           root.querySelectorAll('button, svg').forEach(n => n.remove());
         },
       },
       jsPDF: { unit: 'mm', format: 'a4', orientation: 'landscape', compress: true },
     } as const;
 
-    await new Promise(r => requestAnimationFrame(() => r(null)));
+    // İşlemden önce tarayıcıyı rahatlat
+    await new Promise(r => setTimeout(r, 100));
     await html2pdf().set(opt).from(exportRef.current).save();
   };
 
