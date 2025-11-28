@@ -247,7 +247,7 @@ const exportToPDF = async () => {
       // Sayfa kırılımlarını yönet
       pagebreak: { mode: ['css', 'legacy'], avoid: '.keep-together' }, 
       html2canvas: {
-        scale: 1.5,
+        scale: 5,
         useCORS: true,
         backgroundColor: '#ffffff',
         logging: false,
