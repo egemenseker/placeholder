@@ -232,128 +232,131 @@ export default function ProgramCreator({ studentId, onBack }: ProgramCreatorProp
   };
 
 const exportToPDF = async () => {
-    if (!student || !exportRef.current) return;
+  if (!student || !exportRef.current) return;
 
-    // Kullanıcıya bilgi ver
-    const originalBtnText = document.activeElement?.textContent;
-    if (document.activeElement instanceof HTMLElement) {
-       document.activeElement.innerText = "Hazırlanıyor...";
-    }
+  // Buton metnini geçici olarak değiştir
+  const activeEl = document.activeElement as HTMLElement | null;
+  const originalBtnText = activeEl?.innerText;
+  if (activeEl) {
+    activeEl.innerText = 'Hazırlanıyor...';
+  }
 
-    const opt = {
-      margin: [10, 10, 10, 10], 
-      filename: `${student.firstName}_${student.lastName}_Program_${formatLocalDate(currentWindowStart)}.pdf`,
-      image: { type: 'jpeg', quality: 0.98 },
-      // Sayfa kırılımlarını yönet
-      pagebreak: { mode: ['css', 'legacy'], avoid: '.keep-together' }, 
-      html2canvas: {
-        scale: 5,
-        useCORS: true,
-        backgroundColor: '#ffffff',
-        logging: false,
-        scrollY: 0,
-        windowWidth: 1400,
-        onclone: (clonedDoc: Document) => {
-          const root = clonedDoc.querySelector('[data-export-root]') as HTMLElement | null;
-          if (!root) return;
+  const opt = {
+    margin: [10, 10, 10, 10],
+    filename: `${student.firstName}_${student.lastName}_Program_${formatLocalDate(
+      currentWindowStart
+    )}.pdf`,
+    image: { type: 'jpeg', quality: 0.98 },
+    // Sayfa kırılımları
+    pagebreak: { mode: ['css', 'legacy'], avoid: '.keep-together' },
+    html2canvas: {
+      scale: 2,
+      useCORS: true,
+      backgroundColor: '#ffffff',
+      logging: false,
+      scrollY: 0,
+      windowWidth: 1400,
+      onclone: (clonedDoc: Document) => {
+        const root = clonedDoc.querySelector('[data-export-root]') as HTMLElement | null;
+        if (!root) return;
 
-          // 1. TEMİZLİK: Animasyon, Transform ve Gölgeleri kaldır
-          const badElements = clonedDoc.querySelectorAll('.aos-element, [data-aos], .transition-all, .transform');
-          badElements.forEach(el => {
-            const element = el as HTMLElement;
-            element.classList.remove('aos-element', 'aos-animate', 'transition-all', 'transform');
-            element.removeAttribute('data-aos'); 
-            element.style.opacity = '1';       
-            element.style.transform = 'none';  
-            element.style.transition = 'none'; 
-            element.style.boxShadow = 'none';
+        // 1) Animasyon / transform / gölge temizliği
+        const badElements = clonedDoc.querySelectorAll(
+          '.aos-element, [data-aos], .transition-all, .transform'
+        );
+        badElements.forEach(el => {
+          const element = el as HTMLElement;
+          element.classList.remove('aos-element', 'aos-animate', 'transition-all', 'transform');
+          element.removeAttribute('data-aos');
+          element.style.opacity = '1';
+          element.style.transform = 'none';
+          element.style.transition = 'none';
+          element.style.boxShadow = 'none';
+        });
+
+        // 2) Grid yerine export için flex düzeni
+        root.style.display = 'flex';
+        root.style.flexWrap = 'wrap';
+        root.style.gap = '20px';
+        root.style.justifyContent = 'flex-start';
+        root.className = root.className.replace(/grid-cols-\S+/g, '');
+
+        const dayCards = root.querySelectorAll('.bg-white.rounded-lg.shadow-md');
+        dayCards.forEach(cardNode => {
+          const card = cardNode as HTMLElement;
+          card.classList.add('keep-together');
+          card.style.flex = '0 0 31%'; // yan yana 3 kart
+          card.style.maxWidth = '31%';
+          card.style.marginBottom = '20px';
+          card.style.height = 'auto';
+          card.style.overflow = 'visible';
+          card.style.border = '1px solid #ccc';
+          card.style.boxShadow = 'none';
+
+          const cardInnerDivs = card.querySelectorAll('div');
+          cardInnerDivs.forEach(divNode => {
+            const div = divNode as HTMLElement;
+            div.style.overflow = 'visible';
+            div.style.height = 'auto';
           });
+        });
 
-          // 2. DÜZEN: Grid yerine Flex kullan (Sayfa yapısı için)
-          root.style.display = 'flex';
-          root.style.flexWrap = 'wrap';
-          root.style.gap = '20px';
-          root.style.justifyContent = 'flex-start';
-          // Grid sınıflarını temizle
-          root.className = root.className.replace(/grid-cols-\S+/g, '');
+        // 3) TEXTAREA → DIV (altların kesilmesini engelleyen basit çözüm)
+        root.querySelectorAll('textarea').forEach(node => {
+          const ta = node as HTMLTextAreaElement;
+          const div = clonedDoc.createElement('div');
 
-          // Gün Kartlarını Düzenle
-          const dayCards = root.querySelectorAll('.bg-white.rounded-lg.shadow-md');
-          dayCards.forEach((cardNode) => {
-            const card = cardNode as HTMLElement;
-            card.classList.add('keep-together'); 
-            card.style.flex = '0 0 31%'; // Yan yana 3 kart
-            card.style.maxWidth = '31%';
-            card.style.marginBottom = '20px';
-            card.style.height = 'auto';      // Yükseklik serbest
-            card.style.overflow = 'visible'; // Taşma serbest
-            card.style.border = '1px solid #ccc';
-            card.style.boxShadow = 'none';
-            
-            // Kart içindeki flex yapılarını da serbest bırak
-            const cardInner = card.querySelectorAll('div');
-            cardInner.forEach(div => {
-                div.style.overflow = 'visible';
-                div.style.height = 'auto';
-            });
-          });
-
-          // 3. TEXTAREA -> DIV DÖNÜŞÜMÜ (Kesin Çözüm)
-          root.querySelectorAll('textarea').forEach(node => {
-            const ta = node as HTMLTextAreaElement;
-            const div = clonedDoc.createElement('div');
-            
-            // Font stillerini kopyala
-            const style = window.getComputedStyle(ta);
+          const style = clonedDoc.defaultView?.getComputedStyle(ta);
+          if (style) {
             div.style.fontFamily = style.fontFamily;
             div.style.fontSize = style.fontSize;
-            div.style.fontWeight = ta.className.includes('font-medium') ? 'bold' : style.fontWeight;
-            div.style.color = '#000000'; // Rengi siyaha sabitle (gri bazen silik çıkar)
-            
-            // Metni aktar
-            div.textContent = ta.value || ta.placeholder || '';
-            
-            // --- KRİTİK AYARLAR ---
-            div.style.display = 'block';
-            div.style.width = '100%';
-            div.style.height = 'auto';         // İçeriğe göre uza
-            div.style.minHeight = '20px';      // En az bir satır boyu
-            div.style.whiteSpace = 'pre-wrap'; // Satır atlamaları koru
-            div.style.wordBreak = 'break-word';// Uzun kelimeleri böl
-            div.style.overflow = 'visible';    // Gizleme yapma
-            div.style.padding = '0px';
-            div.style.paddingBottom = '5px';   // Alt kısımdan kesilmemesi için boşluk
-            div.style.marginBottom = '4px';    // Elemanlar arası boşluk
-            div.style.lineHeight = '1.4';      // Satırları biraz aç
-            div.style.border = 'none';
-            div.style.background = 'transparent';
-            
-            // Eğer font küçükse (ders adı, süre vb.) biraz daha belirgin yap
-            if (parseFloat(style.fontSize) < 12) {
-                 div.style.fontSize = '11px';
-                 div.style.color = '#333';
-            }
+            div.style.fontWeight = style.fontWeight;
+            div.style.color = style.color;
+          }
 
-            ta.replaceWith(div);
-          });
+          // Metni kopyala
+          div.textContent = ta.value || ta.placeholder || '';
 
-          // UI Temizliği
-          root.querySelectorAll('button, svg').forEach(n => n.remove());
-        },
+          // Altın kesilmemesi için önemli stiller
+          div.style.display = 'block';
+          div.style.width = '100%';
+          div.style.whiteSpace = 'pre-wrap';
+          div.style.wordBreak = 'break-word';
+          div.style.lineHeight = '1.4';
+          div.style.minHeight = '1.2em';
+          div.style.padding = '0 0 4px 0'; // küçük alt boşluk
+          div.style.margin = '0';
+          div.style.overflow = 'visible';
+          div.style.border = 'none';
+          div.style.background = 'transparent';
+
+          ta.replaceWith(div);
+        });
+
+        // 4) UI temizlik: buton ve ikonları kaldır
+        root.querySelectorAll('button, svg').forEach(n => n.remove());
       },
-      jsPDF: { unit: 'mm', format: 'a4', orientation: 'landscape', compress: true },
-    } as const;
+    },
+    jsPDF: {
+      unit: 'mm',
+      format: 'a4',
+      orientation: 'landscape',
+      compress: true,
+    },
+  } as const;
 
-    await new Promise(r => setTimeout(r, 100));
-    
-    try {
-        await html2pdf().set(opt).from(exportRef.current).save();
-    } finally {
-        if (document.activeElement instanceof HTMLElement) {
-            document.activeElement.innerText = "PDF İndir";
-         }
+  // Layout’un oturması için çok kısa gecikme
+  await new Promise(r => setTimeout(r, 100));
+
+  try {
+    await html2pdf().set(opt).from(exportRef.current).save();
+  } finally {
+    if (activeEl) {
+      activeEl.innerText = originalBtnText || 'PDF İndir';
     }
-  };
+  }
+};
+
 
   if (!student) {
     return (
