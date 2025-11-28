@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { ArrowLeft, Plus, Check, ChevronLeft, ChevronRight, MoreVertical, Trash2, Download } from 'lucide-react';
-import html2canvas from 'html2canvas';
-import jsPDF from 'jspdf';
+import html2pdf from 'html2pdf.js';
 import { useApp } from '../../contexts/AppContext';
 import { Task, DayProgram } from '../../types';
 
@@ -47,7 +46,7 @@ const getCanonicalWeekStart = (date: Date): Date => {
 export default function ProgramCreator({ studentId, onBack }: ProgramCreatorProps) {
   const { students, programs, addProgram, updateProgram, user } = useApp();
   const student = students?.find(s => s.id === studentId);
-  const programGridRef = useRef<HTMLDivElement>(null);
+  const exportRef = useRef<HTMLDivElement>(null);
 
   const [currentWindowStart, setCurrentWindowStart] = useState(() => normalizeDate(new Date()));
   const [days, setDays] = useState<DayProgram[]>([]);
@@ -232,37 +231,151 @@ export default function ProgramCreator({ studentId, onBack }: ProgramCreatorProp
     }
   };
 
+  // --- GELİŞMİŞ PDF DIŞA AKTARMA FONKSİYONU ---
   const exportToPDF = async () => {
-    if (!programGridRef.current || !student) return;
+    if (!student || !exportRef.current) return;
 
-    try {
-      const canvas = await html2canvas(programGridRef.current, {
-        scale: 2,
+    // 1. Kullanıcı Geri Bildirimi
+    const originalBtnText = document.activeElement?.textContent;
+    if (document.activeElement instanceof HTMLElement) {
+       document.activeElement.innerText = "PDF Hazırlanıyor...";
+       document.activeElement.setAttribute('disabled', 'true');
+    }
+
+    const opt = {
+      margin: [10, 10, 10, 10], 
+      filename: `${student.firstName}_${student.lastName}_Program_${formatLocalDate(currentWindowStart)}.pdf`,
+      image: { type: 'jpeg', quality: 0.98 },
+      // 'avoid-all' yerine CSS tabanlı kontrol (Daha güvenli)
+      pagebreak: { mode: ['css', 'legacy'], avoid: '.keep-together' },
+      html2canvas: {
+        scale: 2, // Yüksek kalite
         useCORS: true,
-        backgroundColor: '#f9fafb',
+        backgroundColor: '#ffffff',
         logging: false,
-      });
+        scrollY: 0, // Scroll kaymasını sıfırla
+        windowWidth: 1600, // Geniş ekran simülasyonu
+        onclone: (clonedDoc: Document) => {
+          const root = clonedDoc.querySelector('[data-export-root]') as HTMLElement | null;
+          if (!root) return;
 
-      const imgData = canvas.toDataURL('image/png');
-      const pdf = new jsPDF({
-        orientation: 'landscape',
-        unit: 'mm',
-        format: 'a4',
-      });
+          // --- ADIM 1: GLOBAL BASKI STİLLERİ (Sayfa yapısını zorlar) ---
+          const style = clonedDoc.createElement('style');
+          style.innerHTML = `
+            /* Her şeyin yüksekliğini serbest bırak */
+            * {
+              height: auto !important;
+              min-height: 0 !important;
+              max-height: none !important;
+              overflow: visible !important;
+            }
+            /* Grid'i Flex'e çevir (PDF motoru Flex'i daha iyi böler) */
+            [data-export-root] {
+              display: flex !important;
+              flex-wrap: wrap !important;
+              gap: 20px !important;
+              width: 100% !important;
+            }
+            /* Grid classlarını etkisizleştir */
+            .grid { display: flex !important; }
+            
+            /* Gün Kartları */
+            .bg-white.rounded-lg.shadow-md {
+              flex: 0 0 32% !important; /* Yan yana 3 kart */
+              max-width: 32% !important;
+              margin-bottom: 20px !important;
+              border: 1px solid #ddd !important;
+              box-shadow: none !important;
+              display: block !important;
+              page-break-inside: avoid !important; /* Kartları bölme */
+            }
+            
+            /* Animasyonlu elementleri sıfırla (Beyaz ekran çözümü) */
+            .aos-element, [data-aos] {
+              opacity: 1 !important;
+              transform: none !important;
+              transition: none !important;
+              animation: none !important;
+            }
+          `;
+          clonedDoc.head.appendChild(style);
 
-      const pdfWidth = pdf.internal.pageSize.getWidth();
-      const pdfHeight = pdf.internal.pageSize.getHeight();
-      const imgWidth = canvas.width;
-      const imgHeight = canvas.height;
-      const ratio = Math.min(pdfWidth / imgWidth, pdfHeight / imgHeight);
-      const imgX = (pdfWidth - imgWidth * ratio) / 2;
-      const imgY = 10;
+          // --- ADIM 2: TEXTAREA -> GENİŞLEYEN DIV DÖNÜŞÜMÜ ---
+          root.querySelectorAll('textarea').forEach(node => {
+            const ta = node as HTMLTextAreaElement;
+            const div = clonedDoc.createElement('div');
+            
+            // Orijinal stilleri kopyala
+            const computedStyle = window.getComputedStyle(ta);
+            const propertiesToCopy = [
+              'font-family', 'font-size', 'font-weight', 'font-style',
+              'line-height', 'text-align', 'color', 'letter-spacing',
+              'padding-top', 'padding-bottom', 'padding-left', 'padding-right',
+              'margin-top', 'margin-bottom', 'margin-left', 'margin-right'
+            ];
+            
+            propertiesToCopy.forEach(prop => {
+              div.style.setProperty(prop, computedStyle.getPropertyValue(prop));
+            });
 
-      pdf.addImage(imgData, 'PNG', imgX, imgY, imgWidth * ratio, imgHeight * ratio);
-      pdf.save(`${student.firstName}_${student.lastName}_Program_${formatLocalDate(currentWindowStart)}.pdf`);
-    } catch (error) {
-      console.error('PDF oluşturma hatası:', error);
-      alert('PDF oluşturulurken bir hata oluştu!');
+            // Metni aktar
+            div.textContent = ta.value || '';
+            
+            // --- KRİTİK DÜZELTMELER ---
+            div.style.display = 'block';
+            div.style.width = '100%';
+            div.style.height = 'auto'; // İçerik kadar uza
+            div.style.minHeight = '1.5em'; // En az bir satır
+            div.style.whiteSpace = 'pre-wrap'; // Satır atlamalarını koru
+            div.style.wordBreak = 'break-word'; 
+            div.style.overflow = 'visible';
+            div.style.border = 'none';
+            div.style.background = 'transparent';
+            div.style.resize = 'none';
+            
+            // Renk ve Okunabilirlik Düzeltmeleri
+            div.style.color = '#000000'; // Siyah yap (Gri silik çıkar)
+            if (ta.className.includes('font-medium')) {
+                 div.style.fontWeight = '700'; 
+            }
+
+            ta.replaceWith(div);
+          });
+
+          // --- ADIM 3: EBEVEYN KİLİDİNİ AÇ (Parent Unlock) ---
+          // İçerik uzasa bile dışındaki kutu sabitse kesilir. Bunu engellemek için:
+          const dayCards = root.querySelectorAll('.bg-white.rounded-lg.shadow-md');
+          dayCards.forEach(card => {
+             card.classList.add('keep-together'); // Bölünmez işaretle
+             
+             // Kartın içindeki tüm div'lerin yüksekliğini serbest bırak
+             const children = card.querySelectorAll('div');
+             children.forEach(child => {
+                 child.style.height = 'auto';
+                 child.style.overflow = 'visible';
+             });
+          });
+
+          // UI temizliği
+          root.querySelectorAll('button, svg').forEach(n => n.remove());
+        },
+      },
+      jsPDF: { unit: 'mm', format: 'a4', orientation: 'landscape', compress: true },
+    } as const;
+
+    // Tarayıcı render'ı için bekleme
+    await new Promise(r => setTimeout(r, 200));
+    
+    try {
+        await html2pdf().set(opt).from(exportRef.current).save();
+    } catch (err) {
+        console.error("PDF Hatası:", err);
+        alert("PDF oluşturulurken bir hata oluştu.");
+    } finally {
+        if (document.activeElement instanceof HTMLElement) {
+            document.activeElement.innerText = "PDF İndir";
+            document.activeElement.removeAttribute('disabled');
+         }
     }
   };
 
@@ -305,7 +418,7 @@ export default function ProgramCreator({ studentId, onBack }: ProgramCreatorProp
                 className="flex items-center space-x-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
               >
                 <Download className="w-4 h-4" />
-                <span>PDF Olarak İndir</span>
+                <span>PDF İndir</span>
               </button>
               <button
                 onClick={() => saveProgram(days)}
@@ -352,7 +465,7 @@ export default function ProgramCreator({ studentId, onBack }: ProgramCreatorProp
         </div>
 
         {/* Grid */}
-        <div ref={programGridRef} className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-7 gap-4">
+        <div ref={exportRef} data-export-root className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-7 gap-4">
           {(days || []).map((day, dayIndex) => (
             <div key={dayIndex} className="bg-white rounded-lg shadow-md p-4">
               {/* Day Header */}
