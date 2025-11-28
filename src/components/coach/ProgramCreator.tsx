@@ -92,7 +92,7 @@ export default function ProgramCreator({ studentId, onBack }: ProgramCreatorProp
   };
 
   const initializeEmpty7DayWindow = (windowStart: Date): DayProgram[] => {
-    const dayNames = ['Pazar', 'Pazartesi', 'Salı', 'Çarşamba', 'Perşembe', 'Cuma', 'Cumartesi'];
+    const dayNames = ['Pazar', 'Pazartesi', 'Salı', 'Çarşambaaa', 'Perşembe', 'Cuma', 'Cumartesi'];
     return Array.from({ length: 7 }, (_, i) => {
       const date = addDays(windowStart, i);
       return { date: formatLocalDate(date), dayName: dayNames[date.getDay()], tasks: [] };
