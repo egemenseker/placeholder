@@ -46,12 +46,7 @@ const getCanonicalWeekStart = (date: Date): Date => {
 export default function ProgramCreator({ studentId, onBack }: ProgramCreatorProps) {
   const { students, programs, addProgram, updateProgram, user } = useApp();
   const student = students?.find(s => s.id === studentId);
-  
-  // Normal ekran görünümü için ref (Ekranda düzenleme yapmak için)
   const exportRef = useRef<HTMLDivElement>(null);
-  
-  // PDF çıktısı için ÖZEL ref (Sadece PDF oluşturulurken kullanılır)
-  const printRef = useRef<HTMLDivElement>(null);
 
   const [currentWindowStart, setCurrentWindowStart] = useState(() => normalizeDate(new Date()));
   const [days, setDays] = useState<DayProgram[]>([]);
@@ -71,19 +66,17 @@ export default function ProgramCreator({ studentId, onBack }: ProgramCreatorProp
     const base = 'border rounded-lg p-3 transition-all duration-200';
     let color = '';
     switch (visualState) {
-      case 'completed':
-        color = 'bg-green-100 border-green-300';
-        break;
-      case 'failed':
-        color = 'bg-red-100 border-red-300';
-        break;
-      default:
-        color = 'bg-white border-gray-200';
-        break;
+      case 'completed': color = 'bg-green-100 border-green-300'; break;
+      case 'failed': color = 'bg-red-100 border-red-300'; break;
+      default: color = 'bg-white border-gray-200'; break;
     }
     if (reviewMode) {
       const interactive = 'cursor-pointer hover:shadow-md';
-      const hover = visualState === 'completed' ? 'hover:bg-green-200' : visualState === 'failed' ? 'hover:bg-red-200' : 'hover:bg-gray-50';
+      const hover = visualState === 'completed'
+        ? 'hover:bg-green-200'
+        : visualState === 'failed'
+        ? 'hover:bg-red-200'
+        : 'hover:bg-gray-50';
       return `${base} ${color} ${interactive} ${hover}`;
     }
     return `${base} ${color}`;
@@ -93,7 +86,8 @@ export default function ProgramCreator({ studentId, onBack }: ProgramCreatorProp
     if (!isReviewMode) return;
     const taskKey = `${dayIndex}-${taskId}`;
     const current = taskReviewStates[taskKey] || 'neutral';
-    const next: 'neutral' | 'completed' | 'failed' = current === 'neutral' ? 'completed' : current === 'completed' ? 'failed' : 'neutral';
+    const next: 'neutral' | 'completed' | 'failed' =
+      current === 'neutral' ? 'completed' : current === 'completed' ? 'failed' : 'neutral';
     setTaskReviewStates(prev => ({ ...prev, [taskKey]: next }));
   };
 
@@ -101,20 +95,14 @@ export default function ProgramCreator({ studentId, onBack }: ProgramCreatorProp
     const dayNames = ['Pazar', 'Pazartesi', 'Salı', 'Çarşamba', 'Perşembe', 'Cuma', 'Cumartesi'];
     return Array.from({ length: 7 }, (_, i) => {
       const date = addDays(windowStart, i);
-      return {
-        date: formatLocalDate(date),
-        dayName: dayNames[date.getDay()],
-        tasks: []
-      };
+      return { date: formatLocalDate(date), dayName: dayNames[date.getDay()], tasks: [] };
     });
   };
 
   const getCurrentWindowProgram = () => {
     if (!programs || !user?.coachId) return null;
     return programs.find(
-      p => p.studentId === studentId &&
-           p.coachId === user.coachId &&
-           p.weekStart === formatLocalDate(currentWindowStart)
+      p => p.studentId === studentId && p.coachId === user.coachId && p.weekStart === formatLocalDate(currentWindowStart)
     );
   };
 
@@ -124,11 +112,9 @@ export default function ProgramCreator({ studentId, onBack }: ProgramCreatorProp
 
     if (programs && user?.coachId) {
       const relevant = programs.filter(p => p.studentId === studentId && p.coachId === user.coachId);
-
       relevant.forEach(program => {
         const programStart = new Date(program.weekStart);
         const programEnd = addDays(programStart, 6);
-
         const hasOverlap =
           isDateInRange(programStart, currentWindowStart, displayWindowEnd) ||
           isDateInRange(programEnd, currentWindowStart, displayWindowEnd) ||
@@ -140,9 +126,7 @@ export default function ProgramCreator({ studentId, onBack }: ProgramCreatorProp
             const programDayDate = new Date(programDay.date);
             if (isDateInRange(programDayDate, currentWindowStart, displayWindowEnd)) {
               const idx = displayedDays.findIndex(d => d.date === formatLocalDate(programDayDate));
-              if (idx !== -1 && programDay.tasks) {
-                displayedDays[idx].tasks = [...programDay.tasks];
-              }
+              if (idx !== -1 && programDay.tasks) displayedDays[idx].tasks = [...programDay.tasks];
             }
           });
         }
@@ -159,30 +143,18 @@ export default function ProgramCreator({ studentId, onBack }: ProgramCreatorProp
       });
     });
     setTaskReviewStates(newStates);
-
   }, [currentWindowStart, programs, studentId, user?.coachId]);
 
   const addTask = (dayIndex: number) => {
-    const newTask: Task = {
-      id: Date.now().toString(),
-      name: '',
-      duration: '',
-      courseName: '',
-      completed: false
-    };
-    setDays(prev =>
-      prev.map((day, i) => (i === dayIndex ? { ...day, tasks: [...(day.tasks || []), newTask] } : day))
-    );
+    const newTask: Task = { id: Date.now().toString(), name: '', duration: '', courseName: '', completed: false };
+    setDays(prev => prev.map((day, i) => (i === dayIndex ? { ...day, tasks: [...(day.tasks || []), newTask] } : day)));
   };
 
   const updateTask = (dayIndex: number, taskId: string, updates: Partial<Task>) => {
     setDays(prev =>
       prev.map((day, i) =>
         i === dayIndex
-          ? {
-              ...day,
-              tasks: (day.tasks || []).map(t => (t.id === taskId ? { ...t, ...updates } : t))
-            }
+          ? { ...day, tasks: (day.tasks || []).map(t => (t.id === taskId ? { ...t, ...updates } : t)) }
           : day
       )
     );
@@ -191,11 +163,7 @@ export default function ProgramCreator({ studentId, onBack }: ProgramCreatorProp
   const deleteTask = (dayIndex: number, taskId: string) => {
     if (confirm('Bu görevi silmek istediğinizden emin misiniz?')) {
       setDays(prev =>
-        prev.map((day, i) =>
-          i === dayIndex
-            ? { ...day, tasks: (day.tasks || []).filter(t => t.id !== taskId) }
-            : day
-        )
+        prev.map((day, i) => (i === dayIndex ? { ...day, tasks: (day.tasks || []).filter(t => t.id !== taskId) } : day))
       );
       setSelectedTask(null);
     }
@@ -207,7 +175,6 @@ export default function ProgramCreator({ studentId, onBack }: ProgramCreatorProp
 
   const saveProgram = async (currentDays: DayProgram[] = days) => {
     if (!user?.coachId || !student) return;
-
     try {
       const programWeeksMap = new Map<string, DayProgram[]>();
 
@@ -215,25 +182,23 @@ export default function ProgramCreator({ studentId, onBack }: ProgramCreatorProp
         const dayDate = new Date(day.date);
         const canonicalWeekStart = getCanonicalWeekStart(dayDate);
         const weekStartKey = formatLocalDate(canonicalWeekStart);
-
         if (!programWeeksMap.has(weekStartKey)) {
           const weekDays = initializeEmpty7DayWindow(canonicalWeekStart);
           programWeeksMap.set(weekStartKey, weekDays);
         }
-
         const weekDays = programWeeksMap.get(weekStartKey)!;
         const idx = weekDays.findIndex(wd => wd.date === day.date);
-
         if (idx !== -1) {
-          const updatedTasks = day.tasks?.map(task => {
-            const taskKey = `${originalDayIndex}-${task.id}`;
-            const reviewState = taskReviewStates[taskKey];
-            return {
-              ...task,
-              status: reviewState || task.status || 'neutral',
-              completed: reviewState === 'completed' || (!reviewState && task.completed),
-            };
-          }) || [];
+          const updatedTasks =
+            day.tasks?.map(task => {
+              const taskKey = `${originalDayIndex}-${task.id}`;
+              const reviewState = taskReviewStates[taskKey];
+              return {
+                ...task,
+                status: reviewState || task.status || 'neutral',
+                completed: reviewState === 'completed' || (!reviewState && task.completed),
+              };
+            }) || [];
           weekDays[idx] = { ...day, tasks: updatedTasks };
         }
       });
@@ -241,11 +206,8 @@ export default function ProgramCreator({ studentId, onBack }: ProgramCreatorProp
       const savePromises: Promise<void>[] = [];
       for (const [weekStartKey, weekDays] of programWeeksMap.entries()) {
         const existingProgram = programs?.find(
-          p => p.studentId === studentId &&
-               p.coachId === user.coachId &&
-               p.weekStart === weekStartKey
+          p => p.studentId === studentId && p.coachId === user.coachId && p.weekStart === weekStartKey
         );
-
         if (existingProgram) {
           savePromises.push(updateProgram(existingProgram.id, { days: weekDays }));
         } else {
@@ -269,43 +231,119 @@ export default function ProgramCreator({ studentId, onBack }: ProgramCreatorProp
     }
   };
 
-  // KESİN ÇÖZÜM: PDF Export Fonksiyonu
-  // Bu fonksiyon ekrandaki formu değil, aşağıdaki gizli printRef içeriğini kullanır.
-  const exportToPDF = async () => {
-    if (!student || !printRef.current) return;
+ const exportToPDF = async () => {
+  if (!student || !exportRef.current) return;
 
-    // Buton metnini güncelle
-    const originalBtnText = document.activeElement?.textContent;
-    if (document.activeElement instanceof HTMLElement) {
-      document.activeElement.innerText = "Hazırlanıyor...";
-    }
+  const opt = {
+    margin: [5, 5, 5, 5],
+    filename: `${student.firstName}_${student.lastName}_Program_${formatLocalDate(currentWindowStart)}.pdf`,
+    image: { type: 'jpeg', quality: 0.98 },
+    html2canvas: {
+      scale: 2,
+      useCORS: true,
+      backgroundColor: '#ffffff',
+      foreignObjectRendering: true, // form kontrolleri için şart
+      logging: false,
+      windowWidth: 1400,
+      onclone: (clonedDoc: Document) => {
+        const root = clonedDoc.querySelector('[data-export-root]') as HTMLElement | null;
+        if (!root) return;
 
-    const opt = {
-      margin: [5, 5, 5, 5], // Kenar boşlukları (mm)
-      filename: `${student.firstName}_${student.lastName}_Program_${formatLocalDate(currentWindowStart)}.pdf`,
-      image: { type: 'jpeg', quality: 0.98 },
-      html2canvas: { 
-        scale: 2, // Yüksek çözünürlük için
-        useCORS: true, 
-        logging: false,
-        // Artık onclone ile textarea manipülasyonuna gerek yok, çünkü printRef zaten div kullanıyor.
+        // Genel: clipping ve sabit yükseklikleri kaldır
+        root.querySelectorAll<HTMLElement>('*').forEach(el => {
+          const cs = clonedDoc.defaultView!.getComputedStyle(el);
+          if (cs.overflow !== 'visible') el.style.overflow = 'visible';
+          if (cs.maxHeight !== 'none') { el.style.maxHeight = 'none'; el.style.height = 'auto'; }
+          // yuvarlatma kırpmasını önlemek için PDF'te radius'ları sıfırla
+          if (cs.borderRadius && cs.borderRadius !== '0px') el.style.borderRadius = '0';
+        });
+
+        // TEXTAREA → DIV dönüşümü (yükseklik kaybını bitirir)
+        root.querySelectorAll('textarea').forEach(node => {
+          const ta = node as HTMLTextAreaElement;
+          const div = clonedDoc.createElement('div');
+          div.textContent = ta.value || ta.placeholder || '';
+          const VOW = /[aeıioöuüAEIİOÖUÜ]/;
+
+// kelimeyi 6–10 karakterde bir, mümkünse ünlüden sonra kır
+function hyphenateTrWord(w: string): string {
+  if (w.length < 12) return w; // kısa kelimeyi bozma
+  let out = '';
+  let i = 0;
+  while (i < w.length) {
+    const nextCut = Math.min(i + 8, w.length);      // hedef blok uzunluğu
+    let j = nextCut;
+    // ünlüden sonra kesmeye çalış
+    while (j > i + 4 && j < w.length && !VOW.test(w[j - 1])) j--;
+    if (j <= i + 4) j = nextCut;                    // mecburen hedefte kes
+    out += w.slice(i, j) + (j < w.length ? '\u00AD' : '');
+    i = j;
+  }
+  return out;
+}
+
+function hyphenateTrLine(line: string): string {
+  return line.replace(/\p{L}{12,}/gu, (m) => hyphenateTrWord(m));
+}
+
+const raw = ta.value || ta.placeholder || '';
+const txt = hyphenateTrLine(raw);
+
+div.textContent = txt;
+div.style.whiteSpace = 'normal';
+div.style.wordBreak = 'break-word';
+div.style.hyphens = 'manual';
+          const isName = ta.className.includes('text-sm') && ta.className.includes('font-medium');
+          const isDur = ta.placeholder?.toLowerCase() === 'süre';
+          const isCourse = ta.placeholder?.toLowerCase() === 'ders adı';
+
+          div.style.whiteSpace = 'pre-wrap';
+          div.style.wordBreak = 'break-word';
+          div.style.lineHeight = '1.6';
+          div.style.padding = '0';
+          div.style.margin = '0';
+
+          if (isName) { div.style.fontSize = '14px'; div.style.fontWeight = '600'; div.style.color = '#1f2937'; }
+          else if (isDur) { div.style.fontSize = '12px'; div.style.color = '#4b5563'; }
+          else if (isCourse) { div.style.fontSize = '12px'; div.style.color = '#6b7280'; }
+          else { div.style.fontSize = '12px'; }
+
+          ta.replaceWith(div);
+        });
+
+        // Kartların ve flex ebeveynlerin kısıtlarını kaldır
+        root.querySelectorAll<HTMLElement>('[class*="border"]').forEach(card => {
+          card.style.overflow = 'visible';
+          card.style.minHeight = 'auto';
+          card.style.height = 'auto';
+          card.style.maxHeight = 'none';
+          // gölgeyi kaldır, PDF’te artefakt yapabiliyor
+          card.style.boxShadow = 'none';
+        });
+        root.querySelectorAll<HTMLElement>('.flex').forEach(f => {
+          f.style.alignItems = 'flex-start';
+          f.style.overflow = 'visible';
+        });
+
+        // UI buton ve ikonlarını kaldır
+        root.querySelectorAll('button, svg').forEach(n => n.remove());
       },
-      jsPDF: { unit: 'mm', format: 'a4', orientation: 'landscape', compress: true },
-      pagebreak: { mode: ['css', 'legacy'] }
-    };
+    },
+    jsPDF: { unit: 'mm', format: 'a4', orientation: 'landscape', compress: true },
+  } as const;
 
-    try {
-      // printRef referansını kullanarak PDF oluştur
-      await html2pdf().set(opt).from(printRef.current).save();
-    } catch (err) {
-      console.error(err);
-      alert("PDF oluşturulurken bir hata oluştu.");
-    } finally {
-      if (document.activeElement instanceof HTMLElement) {
-        document.activeElement.innerText = "PDF İndir";
-      }
-    }
-  };
+  // Ölçülerin hesaplanması için bir frame bekle
+  await new Promise(r => requestAnimationFrame(() => r(null)));
+
+  const worker: any = html2pdf().set(opt).from(exportRef.current).toCanvas();
+  const canvas: HTMLCanvasElement = await worker.get('canvas');
+  if (!canvas || canvas.width === 0 || canvas.height === 0) {
+    alert('PDF kaynağı boş görünüyor.');
+    return;
+  }
+  await worker.toPdf().save();
+};
+;
 
   if (!student) {
     return (
@@ -332,10 +370,7 @@ export default function ProgramCreator({ studentId, onBack }: ProgramCreatorProp
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
             <div className="flex items-center space-x-4">
-              <button
-                onClick={onBack}
-                className="flex items-center space-x-2 text-gray-600 hover:text-gray-800"
-              >
+              <button onClick={onBack} className="flex items-center space-x-2 text-gray-600 hover:text-gray-800">
                 <ArrowLeft className="w-4 h-4" />
                 <span>Geri</span>
               </button>
@@ -367,19 +402,13 @@ export default function ProgramCreator({ studentId, onBack }: ProgramCreatorProp
         <div className="flex justify-between items-center mb-6">
           <h2 className="text-2xl font-bold text-gray-900">7 Günlük Program</h2>
           <div className="flex items-center space-x-4">
-            <button
-              onClick={() => navigateDay('prev')}
-              className="p-2 rounded-lg border hover:bg-gray-50 transition-colors"
-            >
+            <button onClick={() => navigateDay('prev')} className="p-2 rounded-lg border hover:bg-gray-50 transition-colors">
               <ChevronLeft className="w-5 h-5" />
             </button>
             <span className="text-lg font-medium">
               {currentWindowStart.toLocaleDateString('tr-TR')} - {addDays(currentWindowStart, 6).toLocaleDateString('tr-TR')}
             </span>
-            <button
-              onClick={() => navigateDay('next')}
-              className="p-2 rounded-lg border hover:bg-gray-50 transition-colors"
-            >
+            <button onClick={() => navigateDay('next')} className="p-2 rounded-lg border hover:bg-gray-50 transition-colors">
               <ChevronRight className="w-5 h-5" />
             </button>
           </div>
@@ -401,7 +430,7 @@ export default function ProgramCreator({ studentId, onBack }: ProgramCreatorProp
           })()}
         </div>
 
-        {/* Grid (Ekranda Görünen - Düzenlenebilir Alan) */}
+        {/* Grid */}
         <div ref={exportRef} data-export-root className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-7 gap-4">
           {(days || []).map((day, dayIndex) => (
             <div key={dayIndex} className="bg-white rounded-lg shadow-md p-4">
@@ -420,6 +449,7 @@ export default function ProgramCreator({ studentId, onBack }: ProgramCreatorProp
                 >
                   <Plus className="w-4 h-4" />
                 </button>
+
                 <button
                   onClick={async () => {
                     if (isReviewMode) {
@@ -428,10 +458,7 @@ export default function ProgramCreator({ studentId, onBack }: ProgramCreatorProp
                         tasks: d.tasks.map(task => {
                           const key = `${dIdx}-${task.id}`;
                           const state = taskReviewStates[key] || 'neutral';
-                          return {
-                            ...task,
-                            completed: state === 'completed'
-                          };
+                          return { ...task, completed: state === 'completed' };
                         }),
                       }));
                       setDays(updatedDays);
@@ -445,9 +472,7 @@ export default function ProgramCreator({ studentId, onBack }: ProgramCreatorProp
                     }
                     setIsReviewMode(!isReviewMode);
                   }}
-                  className={`p-2 rounded-full transition-colors ${
-                    isReviewMode ? 'bg-green-600 text-white' : 'bg-gray-200 text-gray-600 hover:bg-gray-300'
-                  }`}
+                  className={`p-2 rounded-full transition-colors ${isReviewMode ? 'bg-green-600 text-white' : 'bg-gray-200 text-gray-600 hover:bg-gray-300'}`}
                   title="İnceleme Modu"
                 >
                   <Check className="w-4 h-4" />
@@ -525,6 +550,7 @@ export default function ProgramCreator({ studentId, onBack }: ProgramCreatorProp
                           }}
                         />
                       </div>
+
                       <div className="relative">
                         <button
                           onClick={e => {
@@ -535,6 +561,7 @@ export default function ProgramCreator({ studentId, onBack }: ProgramCreatorProp
                         >
                           <MoreVertical className="w-4 h-4" />
                         </button>
+
                         {selectedTask?.taskId === task.id && (
                           <div className="absolute right-0 top-6 bg-white border rounded-lg shadow-lg z-10 min-w-[120px]">
                             <button
@@ -553,6 +580,7 @@ export default function ProgramCreator({ studentId, onBack }: ProgramCreatorProp
                     </div>
                   </div>
                 ))}
+
                 {(!day.tasks || day.tasks.length === 0) && (
                   <div className="text-center text-gray-400 text-sm py-4">Henüz görev eklenmemiş</div>
                 )}
@@ -561,83 +589,6 @@ export default function ProgramCreator({ studentId, onBack }: ProgramCreatorProp
           ))}
         </div>
       </div>
-
-      {/* GİZLİ PDF ÇIKTI ŞABLONU (Kesin Çözüm) */}
-      {/* Bu alan ekranda görünmez (-9999px ile gizlendi) ama PDF oluşturulurken kullanılır. */}
-      <div style={{ position: 'absolute', left: '-9999px', top: '-9999px' }}>
-        <div ref={printRef} className="w-[1400px] bg-white p-8">
-          {/* PDF Başlık */}
-          <div className="mb-6 border-b pb-4">
-            <h1 className="text-2xl font-bold text-gray-800">
-              {student.firstName} {student.lastName} - Çalışma Programı
-            </h1>
-            <p className="text-gray-600">
-              {currentWindowStart.toLocaleDateString('tr-TR')} - {addDays(currentWindowStart, 6).toLocaleDateString('tr-TR')}
-            </p>
-          </div>
-
-          {/* PDF İçerik Grid - Flexbox kullanarak yan yana 7 gün */}
-          <div className="flex flex-wrap gap-4 items-start content-start">
-            {(days || []).map((day, dayIndex) => (
-              <div 
-                key={`print-${dayIndex}`} 
-                className="bg-white border border-gray-300 rounded-lg p-3 break-inside-avoid"
-                style={{ width: '13.5%', minHeight: '200px' }} // 7 gün yan yana sığması için %13.5 civarı ideal
-              >
-                <div className="text-center mb-3 border-b border-gray-100 pb-2">
-                  <h3 className="font-bold text-gray-900 bg-gray-50 py-1 rounded">{day.dayName}</h3>
-                  <p className="text-xs text-gray-500">{new Date(day.date).toLocaleDateString('tr-TR')}</p>
-                </div>
-
-                {/* Görevler - Sadece Görüntüleme (Input/Textarea YOK) */}
-                <div className="space-y-2">
-                  {(day.tasks || []).map((task, i) => (
-                    <div 
-                      key={i} 
-                      className={`p-2 rounded border text-sm ${
-                        task.completed ? 'bg-green-50 border-green-200' : 'bg-white border-gray-200'
-                      }`}
-                    >
-                      {/* Görev Adı */}
-                      <div className="font-semibold text-gray-900 break-words whitespace-pre-wrap">
-                        {task.name || '-'}
-                      </div>
-                      
-                      {/* Süre ve Ders Adı */}
-                      {(task.duration || task.courseName) && (
-                        <div className="mt-1 flex flex-wrap gap-2 text-xs text-gray-600">
-                          {task.duration && (
-                            <span className="bg-blue-50 text-blue-700 px-1.5 py-0.5 rounded">
-                              ⏱ {task.duration}
-                            </span>
-                          )}
-                          {task.courseName && (
-                            <span className="bg-purple-50 text-purple-700 px-1.5 py-0.5 rounded">
-                              📚 {task.courseName}
-                            </span>
-                          )}
-                        </div>
-                      )}
-                    </div>
-                  ))}
-                  
-                  {(!day.tasks || day.tasks.length === 0) && (
-                    <div className="text-center text-gray-400 text-xs py-4 italic">
-                      Boş Gün
-                    </div>
-                  )}
-                </div>
-              </div>
-            ))}
-          </div>
-          
-          {/* PDF Alt Bilgi */}
-          <div className="mt-8 pt-4 border-t text-center text-xs text-gray-400">
-            Bu program koçunuz tarafından özel olarak hazırlanmıştır.
-          </div>
-        </div>
-      </div>
-
     </div>
   );
 }
