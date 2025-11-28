@@ -47,10 +47,10 @@ export default function ProgramCreator({ studentId, onBack }: ProgramCreatorProp
   const { students, programs, addProgram, updateProgram, user } = useApp();
   const student = students?.find(s => s.id === studentId);
   
-  // Normal ekran görünümü için ref
+  // Normal ekran görünümü için ref (Ekranda düzenleme yapmak için)
   const exportRef = useRef<HTMLDivElement>(null);
   
-  // PDF çıktısı için özel ref (Eklendi)
+  // PDF çıktısı için ÖZEL ref (Sadece PDF oluşturulurken kullanılır)
   const printRef = useRef<HTMLDivElement>(null);
 
   const [currentWindowStart, setCurrentWindowStart] = useState(() => normalizeDate(new Date()));
@@ -269,7 +269,8 @@ export default function ProgramCreator({ studentId, onBack }: ProgramCreatorProp
     }
   };
 
-  // GÜNCELLENMİŞ EXPORT FONKSİYONU
+  // KESİN ÇÖZÜM: PDF Export Fonksiyonu
+  // Bu fonksiyon ekrandaki formu değil, aşağıdaki gizli printRef içeriğini kullanır.
   const exportToPDF = async () => {
     if (!student || !printRef.current) return;
 
@@ -280,20 +281,21 @@ export default function ProgramCreator({ studentId, onBack }: ProgramCreatorProp
     }
 
     const opt = {
-      margin: [5, 5, 5, 5], 
+      margin: [5, 5, 5, 5], // Kenar boşlukları (mm)
       filename: `${student.firstName}_${student.lastName}_Program_${formatLocalDate(currentWindowStart)}.pdf`,
       image: { type: 'jpeg', quality: 0.98 },
       html2canvas: { 
-        scale: 2,
+        scale: 2, // Yüksek çözünürlük için
         useCORS: true, 
         logging: false,
+        // Artık onclone ile textarea manipülasyonuna gerek yok, çünkü printRef zaten div kullanıyor.
       },
       jsPDF: { unit: 'mm', format: 'a4', orientation: 'landscape', compress: true },
       pagebreak: { mode: ['css', 'legacy'] }
     };
 
     try {
-      // Artık printRef kullanıyoruz
+      // printRef referansını kullanarak PDF oluştur
       await html2pdf().set(opt).from(printRef.current).save();
     } catch (err) {
       console.error(err);
@@ -399,7 +401,7 @@ export default function ProgramCreator({ studentId, onBack }: ProgramCreatorProp
           })()}
         </div>
 
-        {/* Grid (Ekranda Görünen) */}
+        {/* Grid (Ekranda Görünen - Düzenlenebilir Alan) */}
         <div ref={exportRef} data-export-root className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-7 gap-4">
           {(days || []).map((day, dayIndex) => (
             <div key={dayIndex} className="bg-white rounded-lg shadow-md p-4">
@@ -560,7 +562,8 @@ export default function ProgramCreator({ studentId, onBack }: ProgramCreatorProp
         </div>
       </div>
 
-      {/* GİZLİ PDF ÇIKTI ŞABLONU (Eklendi) */}
+      {/* GİZLİ PDF ÇIKTI ŞABLONU (Kesin Çözüm) */}
+      {/* Bu alan ekranda görünmez (-9999px ile gizlendi) ama PDF oluşturulurken kullanılır. */}
       <div style={{ position: 'absolute', left: '-9999px', top: '-9999px' }}>
         <div ref={printRef} className="w-[1400px] bg-white p-8">
           {/* PDF Başlık */}
@@ -573,19 +576,20 @@ export default function ProgramCreator({ studentId, onBack }: ProgramCreatorProp
             </p>
           </div>
 
-          {/* PDF İçerik Grid */}
+          {/* PDF İçerik Grid - Flexbox kullanarak yan yana 7 gün */}
           <div className="flex flex-wrap gap-4 items-start content-start">
             {(days || []).map((day, dayIndex) => (
               <div 
                 key={`print-${dayIndex}`} 
                 className="bg-white border border-gray-300 rounded-lg p-3 break-inside-avoid"
-                style={{ width: '13.5%', minHeight: '200px' }} // 7 gün yan yana sığması için ayarlandı
+                style={{ width: '13.5%', minHeight: '200px' }} // 7 gün yan yana sığması için %13.5 civarı ideal
               >
                 <div className="text-center mb-3 border-b border-gray-100 pb-2">
                   <h3 className="font-bold text-gray-900 bg-gray-50 py-1 rounded">{day.dayName}</h3>
                   <p className="text-xs text-gray-500">{new Date(day.date).toLocaleDateString('tr-TR')}</p>
                 </div>
 
+                {/* Görevler - Sadece Görüntüleme (Input/Textarea YOK) */}
                 <div className="space-y-2">
                   {(day.tasks || []).map((task, i) => (
                     <div 
@@ -594,10 +598,12 @@ export default function ProgramCreator({ studentId, onBack }: ProgramCreatorProp
                         task.completed ? 'bg-green-50 border-green-200' : 'bg-white border-gray-200'
                       }`}
                     >
+                      {/* Görev Adı */}
                       <div className="font-semibold text-gray-900 break-words whitespace-pre-wrap">
                         {task.name || '-'}
                       </div>
                       
+                      {/* Süre ve Ders Adı */}
                       {(task.duration || task.courseName) && (
                         <div className="mt-1 flex flex-wrap gap-2 text-xs text-gray-600">
                           {task.duration && (
@@ -625,6 +631,7 @@ export default function ProgramCreator({ studentId, onBack }: ProgramCreatorProp
             ))}
           </div>
           
+          {/* PDF Alt Bilgi */}
           <div className="mt-8 pt-4 border-t text-center text-xs text-gray-400">
             Bu program koçunuz tarafından özel olarak hazırlanmıştır.
           </div>
