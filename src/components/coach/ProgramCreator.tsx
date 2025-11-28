@@ -242,23 +242,21 @@ export default function ProgramCreator({ studentId, onBack }: ProgramCreatorProp
         scale: 2,
         useCORS: true,
         backgroundColor: '#ffffff',
-        // foreignObjectRendering KALDIRILDI
         logging: false,
         windowWidth: 1400,
         onclone: (clonedDoc: Document) => {
           const root = clonedDoc.querySelector('[data-export-root]') as HTMLElement | null;
           if (!root) return;
 
-          // Genel: clipping ve sabit yükseklikleri kaldır
+          // 1. GENEL TEMİZLİK
           root.querySelectorAll<HTMLElement>('*').forEach(el => {
             const cs = clonedDoc.defaultView!.getComputedStyle(el);
             if (cs.overflow !== 'visible') el.style.overflow = 'visible';
             if (cs.maxHeight !== 'none') { el.style.maxHeight = 'none'; el.style.height = 'auto'; }
-            // yuvarlatma kırpmasını önlemek için PDF'te radius'ları sıfırla
             if (cs.borderRadius && cs.borderRadius !== '0px') el.style.borderRadius = '0';
           });
 
-          // TEXTAREA → DIV dönüşümü (yükseklik kaybını ve stilleri düzeltir)
+          // 2. TEXTAREA -> DIV DÖNÜŞÜMÜ (Metin kesilmelerini önleyen gelişmiş ayarlar)
           root.querySelectorAll('textarea').forEach(node => {
             const ta = node as HTMLTextAreaElement;
             const div = clonedDoc.createElement('div');
@@ -269,7 +267,7 @@ export default function ProgramCreator({ studentId, onBack }: ProgramCreatorProp
               div.style.setProperty(key, style.getPropertyValue(key), style.getPropertyPriority(key));
             });
 
-            // Tireleme fonksiyonları (orijinal kodunuzdan)
+            // Tireleme (Hyphenation) Fonksiyonları
             const VOW = /[aeıioöuüAEIİOÖUÜ]/;
             function hyphenateTrWord(w: string): string {
               if (w.length < 12) return w;
@@ -293,20 +291,20 @@ export default function ProgramCreator({ studentId, onBack }: ProgramCreatorProp
             const txt = hyphenateTrLine(raw);
             div.textContent = txt;
 
-            // Kritik Düzeltmeler (Kesilmeyi Önler)
-            div.style.height = 'auto'; // İçeriğe göre uza
-            div.style.minHeight = style.height; // Orijinal boyuttan kısa olma
-            div.style.overflow = 'visible'; // Taşanları gizleme
-            div.style.whiteSpace = 'pre-wrap'; // Satır atlamayı koru
+            // --- KRİTİK DÜZELTMELER ---
+            div.style.height = 'auto';          // İçeriğe göre uza
+            div.style.minHeight = style.height; // Orijinalden kısa olma
+            div.style.width = '100%';           // Genişliği tam kapla
+            div.style.display = 'block';
+            div.style.overflow = 'visible';
+            div.style.whiteSpace = 'pre-wrap';
             div.style.wordBreak = 'break-word';
             div.style.resize = 'none';
-            div.style.lineHeight = '1.6';
-            
-            // Ekstra görünüm düzeltmeleri
-            div.style.display = 'block';
+            div.style.lineHeight = '1.5';       // Satır aralığını biraz aç
+            div.style.paddingBottom = '10px';   // Alt kısımdan kesilmemesi için buffer ekle
             div.style.boxSizing = 'border-box';
-            
-            // Tipografi düzeltmeleri (manuel override yerine computedStyle üzerine ekliyoruz)
+
+            // Tipografi düzeltmeleri
             const isName = ta.className.includes('text-sm') && ta.className.includes('font-medium');
             const isDur = ta.placeholder?.toLowerCase() === 'süre';
             const isCourse = ta.placeholder?.toLowerCase() === 'ders adı';
@@ -323,30 +321,39 @@ export default function ProgramCreator({ studentId, onBack }: ProgramCreatorProp
             ta.replaceWith(div);
           });
 
-          // Kartların ve flex ebeveynlerin kısıtlarını kaldır
-          root.querySelectorAll<HTMLElement>('[class*="border"]').forEach(card => {
+          // 3. SAYFA BÖLÜNMELERİNİ ENGELLE (Page Break Fix)
+          // Gün kartlarını (shadow-md olanlar) ve Görev kartlarını (border olanlar) koru
+          root.querySelectorAll<HTMLElement>('.shadow-md, [class*="border"]').forEach(card => {
+            card.style.pageBreakInside = 'avoid'; // CSS standardı
+            card.style.breakInside = 'avoid';     // Modern tarayıcılar
+            
+            // Flex ve Grid öğelerinin stillerini düzelt
             card.style.overflow = 'visible';
             card.style.minHeight = 'auto';
             card.style.height = 'auto';
             card.style.maxHeight = 'none';
-            card.style.boxShadow = 'none';
+            card.style.boxShadow = 'none'; // PDF'de gölge bazen siyah kutu gibi çıkar, kapatalım
+            
+            // Eğer bu bir gün kartıysa (bg-white ve shadow-md içeriyorsa) margin ekle ki yapışmasın
+            if (card.className.includes('shadow-md')) {
+                card.style.marginBottom = '20px';
+            }
           });
+
+          // Flex container düzeltmeleri
           root.querySelectorAll<HTMLElement>('.flex').forEach(f => {
-            f.style.alignItems = 'flex-start';
+            f.style.alignItems = 'flex-start'; // İçerikleri yukarı yasla
             f.style.overflow = 'visible';
           });
 
-          // UI buton ve ikonlarını kaldır
+          // Gereksiz butonları sil
           root.querySelectorAll('button, svg').forEach(n => n.remove());
         },
       },
       jsPDF: { unit: 'mm', format: 'a4', orientation: 'landscape', compress: true },
     } as const;
 
-    // Ölçülerin hesaplanması için bir frame bekle
     await new Promise(r => requestAnimationFrame(() => r(null)));
-
-    // Basit kayıt işlemi (worker yerine)
     await html2pdf().set(opt).from(exportRef.current).save();
   };
 
