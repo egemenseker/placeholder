@@ -1,6 +1,5 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { ArrowLeft, Plus, Check, ChevronLeft, ChevronRight, MoreVertical, Trash2, Download } from 'lucide-react';
-import html2pdf from 'html2pdf.js';
+import React, { useState, useEffect } from 'react';
+import { ArrowLeft, Plus, Check, ChevronLeft, ChevronRight, MoreVertical, Trash2 } from 'lucide-react';
 import { useApp } from '../../contexts/AppContext';
 import { Task, DayProgram } from '../../types';
 
@@ -46,7 +45,6 @@ const getCanonicalWeekStart = (date: Date): Date => {
 export default function ProgramCreator({ studentId, onBack }: ProgramCreatorProps) {
   const { students, programs, addProgram, updateProgram, user } = useApp();
   const student = students?.find(s => s.id === studentId);
-  const exportRef = useRef<HTMLDivElement>(null);
 
   const [currentWindowStart, setCurrentWindowStart] = useState(() => normalizeDate(new Date()));
   const [days, setDays] = useState<DayProgram[]>([]);
@@ -231,159 +229,6 @@ export default function ProgramCreator({ studentId, onBack }: ProgramCreatorProp
     }
   };
 
-const exportToPDF = async () => {
-  if (!student || !exportRef.current) return;
-
-  // Buton metnini geçici olarak değiştir
-  const activeEl = document.activeElement;
-  let originalBtnText: string | null = null;
-  if (activeEl instanceof HTMLElement) {
-    originalBtnText = activeEl.innerText;
-    activeEl.innerText = "Hazırlanıyor...";
-  }
-
-  const opt = {
-    margin: [10, 10, 10, 10],
-    filename: `${student.firstName}_${student.lastName}_Program_${formatLocalDate(
-      currentWindowStart
-    )}.pdf`,
-    image: { type: "jpeg", quality: 0.98 },
-    pagebreak: { mode: ["css", "legacy"], avoid: ".keep-together" },
-    html2canvas: {
-      scale: 1.5,
-      useCORS: true,
-      backgroundColor: "#ffffff",
-      logging: false,
-      scrollY: 0,
-      windowWidth: 1400,
-      onclone: (clonedDoc: Document) => {
-        const root = clonedDoc.querySelector("[data-export-root]") as
-          | HTMLElement
-          | null;
-        if (!root) return;
-
-        const clonedWindow = clonedDoc.defaultView || window;
-
-        // 1) Animasyon / transform / gölge temizliği
-        const badElements = clonedDoc.querySelectorAll(
-          ".aos-element, [data-aos], .transition-all, .transform"
-        );
-        badElements.forEach((el) => {
-          const element = el as HTMLElement;
-          element.classList.remove(
-            "aos-element",
-            "aos-animate",
-            "transition-all",
-            "transform"
-          );
-          element.removeAttribute("data-aos");
-          element.style.opacity = "1";
-          element.style.transform = "none";
-          element.style.transition = "none";
-          element.style.boxShadow = "none";
-        });
-
-        // 2) Gün kartlarının sayfa içinde bölünmesini engelle
-        const dayCards = root.querySelectorAll(
-          ".bg-white.rounded-lg.shadow-md"
-        );
-        dayCards.forEach((cardNode) => {
-          const card = cardNode as HTMLElement;
-          card.classList.add("keep-together");
-          card.style.height = "auto";
-          card.style.overflow = "visible";
-          card.style.border = "1px solid #ccc";
-          card.style.boxShadow = "none";
-
-          // Page-break kontrolleri
-          (card.style as any).pageBreakInside = "avoid";
-          (card.style as any).breakInside = "avoid";
-
-          const cardInner = card.querySelectorAll("div");
-          cardInner.forEach((divNode) => {
-            const div = divNode as HTMLElement;
-            div.style.overflow = "visible";
-            div.style.height = "auto";
-          });
-        });
-
-        // 3) TEXTAREA -> DIV dönüşümü (satır sonlarını <br> ile koru)
-        root.querySelectorAll("textarea").forEach((node) => {
-          const ta = node as HTMLTextAreaElement;
-          const div = clonedDoc.createElement("div");
-
-          const style = clonedWindow.getComputedStyle(ta);
-
-          // Font stillerini kopyala
-          div.style.fontFamily = style.fontFamily;
-          div.style.fontSize = style.fontSize;
-          div.style.fontWeight = ta.className.includes("font-medium")
-            ? "bold"
-            : style.fontWeight;
-          div.style.color = "#000000";
-
-          // Metni güvenli hale getir + satır sonlarını <br> yap
-          const rawText = ta.value || ta.placeholder || "";
-          const safeHtml = rawText
-            .replace(/&/g, "&amp;")
-            .replace(/</g, "&lt;")
-            .replace(/>/g, "&gt;")
-            .replace(/\r\n/g, "\n")
-            .replace(/\r/g, "\n")
-            .replace(/\n/g, "<br/>");
-
-          div.innerHTML = safeHtml;
-
-          // Görünüm
-          div.style.display = "block";
-          div.style.width = "100%";
-          div.style.height = "auto";
-          div.style.minHeight = "20px";
-          div.style.whiteSpace = "normal"; // Artık <br> ile satır kırılıyor
-          div.style.wordBreak = "break-word";
-          div.style.overflow = "visible";
-          div.style.padding = "0px";
-          div.style.paddingBottom = "5px";
-          div.style.marginBottom = "4px";
-          div.style.lineHeight = "1.4";
-          div.style.border = "none";
-          div.style.background = "transparent";
-
-          // Küçük fontları biraz büyüt / koyulaştır
-          if (parseFloat(style.fontSize) < 12) {
-            div.style.fontSize = "11px";
-            div.style.color = "#333";
-          }
-
-          ta.replaceWith(div);
-        });
-
-        // 4) PDF'de gereksiz olan UI elemanlarını kaldır
-        root.querySelectorAll("button, svg").forEach((n) => n.remove());
-      },
-    },
-    jsPDF: {
-      unit: "mm",
-      format: "a4",
-      orientation: "landscape",
-      compress: true,
-    },
-  } as const;
-
-  // Küçük bir gecikme (layout'un oturması için)
-  await new Promise((r) => setTimeout(r, 100));
-
-  try {
-    await html2pdf().set(opt).from(exportRef.current).save();
-  } finally {
-    // Buton metnini eski haline getir
-    if (activeEl instanceof HTMLElement && originalBtnText !== null) {
-      activeEl.innerText = originalBtnText;
-    }
-  }
-};
-
-
   if (!student) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
@@ -417,21 +262,12 @@ const exportToPDF = async () => {
                 Program Oluştur - {student.firstName} {student.lastName}
               </h1>
             </div>
-            <div className="flex items-center space-x-3">
-              <button
-                onClick={exportToPDF}
-                className="flex items-center space-x-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
-              >
-                <Download className="w-4 h-4" />
-                <span>PDF İndir</span>
-              </button>
-              <button
-                onClick={() => saveProgram(days)}
-                className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
-              >
-                {existingProgram ? 'Güncelle' : 'Kaydet'}
-              </button>
-            </div>
+            <button
+              onClick={() => saveProgram(days)}
+              className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+            >
+              {existingProgram ? 'Güncelle' : 'Kaydet'}
+            </button>
           </div>
         </div>
       </div>
@@ -470,7 +306,7 @@ const exportToPDF = async () => {
         </div>
 
         {/* Grid */}
-        <div ref={exportRef} data-export-root className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-7 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-7 gap-4">
           {(days || []).map((day, dayIndex) => (
             <div key={dayIndex} className="bg-white rounded-lg shadow-md p-4">
               {/* Day Header */}
