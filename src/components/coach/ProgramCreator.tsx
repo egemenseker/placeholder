@@ -1,5 +1,7 @@
-import React, { useState, useEffect } from 'react';
-import { ArrowLeft, Plus, Check, ChevronLeft, ChevronRight, MoreVertical, Trash2 } from 'lucide-react';
+import React, { useState, useEffect, useRef } from 'react';
+import { ArrowLeft, Plus, Check, ChevronLeft, ChevronRight, MoreVertical, Trash2, Download } from 'lucide-react';
+import html2canvas from 'html2canvas';
+import jsPDF from 'jspdf';
 import { useApp } from '../../contexts/AppContext';
 import { Task, DayProgram } from '../../types';
 
@@ -45,6 +47,7 @@ const getCanonicalWeekStart = (date: Date): Date => {
 export default function ProgramCreator({ studentId, onBack }: ProgramCreatorProps) {
   const { students, programs, addProgram, updateProgram, user } = useApp();
   const student = students?.find(s => s.id === studentId);
+  const programGridRef = useRef<HTMLDivElement>(null);
 
   const [currentWindowStart, setCurrentWindowStart] = useState(() => normalizeDate(new Date()));
   const [days, setDays] = useState<DayProgram[]>([]);
@@ -229,6 +232,40 @@ export default function ProgramCreator({ studentId, onBack }: ProgramCreatorProp
     }
   };
 
+  const exportToPDF = async () => {
+    if (!programGridRef.current || !student) return;
+
+    try {
+      const canvas = await html2canvas(programGridRef.current, {
+        scale: 2,
+        useCORS: true,
+        backgroundColor: '#f9fafb',
+        logging: false,
+      });
+
+      const imgData = canvas.toDataURL('image/png');
+      const pdf = new jsPDF({
+        orientation: 'landscape',
+        unit: 'mm',
+        format: 'a4',
+      });
+
+      const pdfWidth = pdf.internal.pageSize.getWidth();
+      const pdfHeight = pdf.internal.pageSize.getHeight();
+      const imgWidth = canvas.width;
+      const imgHeight = canvas.height;
+      const ratio = Math.min(pdfWidth / imgWidth, pdfHeight / imgHeight);
+      const imgX = (pdfWidth - imgWidth * ratio) / 2;
+      const imgY = 10;
+
+      pdf.addImage(imgData, 'PNG', imgX, imgY, imgWidth * ratio, imgHeight * ratio);
+      pdf.save(`${student.firstName}_${student.lastName}_Program_${formatLocalDate(currentWindowStart)}.pdf`);
+    } catch (error) {
+      console.error('PDF oluşturma hatası:', error);
+      alert('PDF oluşturulurken bir hata oluştu!');
+    }
+  };
+
   if (!student) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
@@ -262,12 +299,21 @@ export default function ProgramCreator({ studentId, onBack }: ProgramCreatorProp
                 Program Oluştur - {student.firstName} {student.lastName}
               </h1>
             </div>
-            <button
-              onClick={() => saveProgram(days)}
-              className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
-            >
-              {existingProgram ? 'Güncelle' : 'Kaydet'}
-            </button>
+            <div className="flex items-center space-x-3">
+              <button
+                onClick={exportToPDF}
+                className="flex items-center space-x-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
+              >
+                <Download className="w-4 h-4" />
+                <span>PDF Olarak İndir</span>
+              </button>
+              <button
+                onClick={() => saveProgram(days)}
+                className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+              >
+                {existingProgram ? 'Güncelle' : 'Kaydet'}
+              </button>
+            </div>
           </div>
         </div>
       </div>
@@ -306,7 +352,7 @@ export default function ProgramCreator({ studentId, onBack }: ProgramCreatorProp
         </div>
 
         {/* Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-7 gap-4">
+        <div ref={programGridRef} className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-7 gap-4">
           {(days || []).map((day, dayIndex) => (
             <div key={dayIndex} className="bg-white rounded-lg shadow-md p-4">
               {/* Day Header */}
