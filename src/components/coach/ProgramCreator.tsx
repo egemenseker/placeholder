@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { ArrowLeft, Plus, Check, ChevronLeft, ChevronRight, MoreVertical, Trash2, Download, Image as ImageIcon } from 'lucide-react';
+import { ArrowLeft, Plus, Check, ChevronLeft, ChevronRight, MoreVertical, Trash2, Image as ImageIcon } from 'lucide-react';
 import html2canvas from 'html2canvas';
 import { useApp } from '../../contexts/AppContext';
 import { Task, DayProgram } from '../../types';
@@ -232,29 +232,32 @@ export default function ProgramCreator({ studentId, onBack }: ProgramCreatorProp
   };
 
   // --- RESİM (PNG) OLARAK İNDİRME FONKSİYONU ---
-  const exportToImage = async () => {
+  const exportToImage = async (e: React.MouseEvent<HTMLButtonElement>) => {
+    // 1. Sayfa yenilenmesini ve form gönderimini engelle (Kritik)
+    e.preventDefault();
+    e.stopPropagation();
+
     if (!student || !exportRef.current) return;
 
     // Buton geri bildirimi
-    const originalBtnText = document.activeElement?.textContent;
-    if (document.activeElement instanceof HTMLElement) {
-       document.activeElement.innerText = "Görsel Hazırlanıyor...";
-       document.activeElement.setAttribute('disabled', 'true');
-    }
+    const btn = e.currentTarget;
+    const originalText = btn.innerText;
+    btn.innerText = "Hazırlanıyor...";
+    btn.disabled = true;
 
     try {
       const canvas = await html2canvas(exportRef.current, {
         scale: 2, // Retina kalitesi (2x)
-        useCORS: true, // Dış kaynaklı resimleri yükle
+        useCORS: true,
         backgroundColor: '#ffffff',
         logging: false,
-        scrollY: 0, // Scroll kaymasını sıfırla
-        windowWidth: 1600, // Geniş pencere simülasyonu
+        scrollY: 0,
+        windowWidth: 1600,
         onclone: (clonedDoc: Document) => {
           const root = clonedDoc.querySelector('[data-export-root]') as HTMLElement | null;
           if (!root) return;
 
-          // --- ADIM 1: STİL SIFIRLAMA (Her şeyi görünür ve esnek yap) ---
+          // Stil Sıfırlama
           const style = clonedDoc.createElement('style');
           style.innerHTML = `
             * {
@@ -274,7 +277,6 @@ export default function ProgramCreator({ studentId, onBack }: ProgramCreatorProp
               padding: 20px !important;
               background-color: white !important;
             }
-            /* Kartları düzenle: 3'lü sıra */
             .bg-white.rounded-lg.shadow-md {
               flex: 0 0 31% !important;
               max-width: 31% !important;
@@ -283,19 +285,17 @@ export default function ProgramCreator({ studentId, onBack }: ProgramCreatorProp
               box-shadow: none !important;
               display: block !important;
             }
-            /* Animasyonları durdur */
             .aos-element, [data-aos] {
               opacity: 1 !important;
             }
           `;
           clonedDoc.head.appendChild(style);
 
-          // --- ADIM 2: TEXTAREA -> DIV DÖNÜŞÜMÜ (Metinleri açığa çıkar) ---
+          // Textarea -> Div Dönüşümü
           root.querySelectorAll('textarea').forEach(node => {
             const ta = node as HTMLTextAreaElement;
             const div = clonedDoc.createElement('div');
             
-            // Orijinal stilleri kopyala
             const computedStyle = window.getComputedStyle(ta);
             const propertiesToCopy = [
               'font-family', 'font-size', 'font-weight', 'font-style',
@@ -308,8 +308,6 @@ export default function ProgramCreator({ studentId, onBack }: ProgramCreatorProp
             });
 
             div.textContent = ta.value || '';
-            
-            // Kritik yerleşim ayarları
             div.style.display = 'block';
             div.style.width = '100%';
             div.style.height = 'auto'; 
@@ -319,9 +317,8 @@ export default function ProgramCreator({ studentId, onBack }: ProgramCreatorProp
             div.style.border = 'none';
             div.style.background = 'transparent';
             div.style.resize = 'none';
-            
-            // Renk sabitleme (Siyah)
             div.style.color = '#000000';
+            
             if (ta.className.includes('font-medium')) {
                  div.style.fontWeight = '700';
             }
@@ -329,26 +326,38 @@ export default function ProgramCreator({ studentId, onBack }: ProgramCreatorProp
             ta.replaceWith(div);
           });
 
-          // Gereksiz butonları temizle
           root.querySelectorAll('button, svg').forEach(n => n.remove());
         },
       });
 
-      // İndirme işlemini tetikle
-      const image = canvas.toDataURL("image/png", 1.0);
-      const link = document.createElement('a');
-      link.download = `${student.firstName}_${student.lastName}_Program_${formatLocalDate(currentWindowStart)}.png`;
-      link.href = image;
-      link.click();
+      // 2. Blob Yöntemi ile İndirme (Yeni sekme açılmasını kesin engeller)
+      canvas.toBlob((blob) => {
+        if (!blob) {
+            alert("Görsel oluşturulamadı.");
+            return;
+        }
+        
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = `${student.firstName}_${student.lastName}_Program_${formatLocalDate(currentWindowStart)}.png`;
+        
+        // Linki belgeye ekleyip tıklayıp siliyoruz
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        
+        // URL'i temizle
+        URL.revokeObjectURL(url);
+      }, 'image/png');
 
     } catch (err) {
       console.error("Görsel hatası:", err);
       alert("Görsel oluşturulurken bir hata oluştu.");
     } finally {
-      if (document.activeElement instanceof HTMLElement) {
-          document.activeElement.innerText = "Resim İndir";
-          document.activeElement.removeAttribute('disabled');
-      }
+      // Butonu eski haline getir
+      btn.innerText = "Resim İndir";
+      btn.disabled = false;
     }
   };
 
@@ -387,6 +396,7 @@ export default function ProgramCreator({ studentId, onBack }: ProgramCreatorProp
             </div>
             <div className="flex items-center space-x-3">
               <button
+                type="button" // ÖNEMLİ: Form submit gibi davranmasını engeller
                 onClick={exportToImage}
                 className="flex items-center space-x-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
               >
