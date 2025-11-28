@@ -332,7 +332,7 @@ const exportToPDF = async () => {
             div.style.width = '100%';
             div.style.whiteSpace = 'pre-wrap';   // Satır atlamalarını koru
             div.style.wordBreak = 'break-word';  // Uzun kelimeleri böl
-            div.style.overflow = 'visible';      // Taşanları gizleme
+            div.style.overflow = 'hidden';      // Taşanları gizleme
             div.style.resize = 'none';
             div.style.paddingBottom = '8px';     // "g, y, p" gibi harfler için alt tampon
             div.style.lineHeight = '1.4';        // Satır aralığını rahatlat
