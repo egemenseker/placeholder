@@ -91,7 +91,16 @@ export default function AdminApplications() {
                     }`}
                   >
                     <td className="py-3 px-4 text-gray-900">{session.fullName}</td>
-                    <td className="py-3 px-4 text-gray-900">{session.phone}</td>
+                    <td className="py-3 px-4">
+                      <a
+                        href={`https://wa.me/${session.phone.replace(/\D/g, '')}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-blue-600 hover:text-blue-800 hover:underline"
+                      >
+                        {session.phone}
+                      </a>
+                    </td>
                     <td className="py-3 px-4 text-gray-900">{getFieldName(session.field)}</td>
                     <td className="py-3 px-4 text-gray-600 text-sm">{formatDate(session.createdAt)}</td>
                     <td className="py-3 px-4 text-center">
@@ -146,7 +155,16 @@ export default function AdminApplications() {
                   >
                     <td className="py-3 px-4 text-gray-900">{request.fullName}</td>
                     <td className="py-3 px-4 text-gray-900">{request.userType}</td>
-                    <td className="py-3 px-4 text-gray-900">{request.phone}</td>
+                    <td className="py-3 px-4">
+                      <a
+                        href={`https://wa.me/${request.phone.replace(/\D/g, '')}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-blue-600 hover:text-blue-800 hover:underline"
+                      >
+                        {request.phone}
+                      </a>
+                    </td>
                     <td className="py-3 px-4 text-gray-600 text-sm">{formatDate(request.createdAt)}</td>
                     <td className="py-3 px-4 text-center">
                       <button
