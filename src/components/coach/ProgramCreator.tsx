@@ -334,7 +334,7 @@ const exportToPDF = async () => {
             div.style.wordBreak = 'break-word';  // Uzun kelimeleri böl
             div.style.overflow = 'visible';      // Taşanları gizleme
             div.style.resize = 'none';
-            div.style.paddingBottom = '18px';     // "g, y, p" gibi harfler için alt tampon
+            div.style.paddingBottom = '8px';     // "g, y, p" gibi harfler için alt tampon
             div.style.lineHeight = '1.4';        // Satır aralığını rahatlat
             div.style.border = 'none';           // Kenarlıkları kaldır
             div.style.backgroundColor = 'transparent';
