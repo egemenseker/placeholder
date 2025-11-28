@@ -243,7 +243,7 @@ const exportToPDF = async () => {
     const opt = {
       margin: [10, 10, 10, 10], 
       filename: `${student.firstName}_${student.lastName}_Program_${formatLocalDate(currentWindowStart)}.pdf`,
-      image: { type: 'jpeg', quality: 0.98 },
+      image: { type: 'png', quality: 0.98 },
       // Sayfa kırılımlarını yönet
       pagebreak: { mode: ['css', 'legacy'], avoid: '.keep-together' }, 
       html2canvas: {
