@@ -242,7 +242,6 @@ export default function ProgramCreator({ studentId, onBack }: ProgramCreatorProp
       scale: 2,
       useCORS: true,
       backgroundColor: '#ffffff',
-      foreignObjectRendering: true, // form kontrolleri için şart
       logging: false,
       windowWidth: 1400,
       onclone: (clonedDoc: Document) => {
@@ -335,13 +334,7 @@ div.style.hyphens = 'manual';
   // Ölçülerin hesaplanması için bir frame bekle
   await new Promise(r => requestAnimationFrame(() => r(null)));
 
-  const worker: any = html2pdf().set(opt).from(exportRef.current).toCanvas();
-  const canvas: HTMLCanvasElement = await worker.get('canvas');
-  if (!canvas || canvas.width === 0 || canvas.height === 0) {
-    alert('PDF kaynağı boş görünüyor.');
-    return;
-  }
-  await worker.toPdf().save();
+  await html2pdf().set(opt).from(exportRef.current).save();
 };
 ;
 
