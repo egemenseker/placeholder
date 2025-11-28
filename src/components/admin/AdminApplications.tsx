@@ -1,5 +1,5 @@
 import React, { useMemo } from 'react';
-import { Check, Phone, Users } from 'lucide-react';
+import { Check, Phone, Users, MessageCircle } from 'lucide-react';
 import { useApp } from '../../contexts/AppContext';
 
 export default function AdminApplications() {
@@ -59,6 +59,14 @@ export default function AdminApplications() {
     });
   };
 
+  const formatPhoneForWhatsApp = (phone: string) => {
+    const cleaned = phone.replace(/\D/g, '');
+    if (cleaned.startsWith('90')) {
+      return cleaned;
+    }
+    return '90' + cleaned;
+  };
+
   return (
     <div className="space-y-8">
       {/* Trial Sessions Section */}
@@ -93,11 +101,12 @@ export default function AdminApplications() {
                     <td className="py-3 px-4 text-gray-900">{session.fullName}</td>
                     <td className="py-3 px-4">
                       <a
-                        href={`https://wa.me/${session.phone.replace(/\D/g, '')}`}
+                        href={`https://wa.me/${formatPhoneForWhatsApp(session.phone)}`}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="text-blue-600 hover:text-blue-800 hover:underline"
+                        className="inline-flex items-center gap-2 text-green-600 hover:text-green-700 hover:underline"
                       >
+                        <MessageCircle className="w-4 h-4" />
                         {session.phone}
                       </a>
                     </td>
@@ -157,11 +166,12 @@ export default function AdminApplications() {
                     <td className="py-3 px-4 text-gray-900">{request.userType}</td>
                     <td className="py-3 px-4">
                       <a
-                        href={`https://wa.me/${request.phone.replace(/\D/g, '')}`}
+                        href={`https://wa.me/${formatPhoneForWhatsApp(request.phone)}`}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="text-blue-600 hover:text-blue-800 hover:underline"
+                        className="inline-flex items-center gap-2 text-green-600 hover:text-green-700 hover:underline"
                       >
+                        <MessageCircle className="w-4 h-4" />
                         {request.phone}
                       </a>
                     </td>
