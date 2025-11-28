@@ -234,99 +234,123 @@ export default function ProgramCreator({ studentId, onBack }: ProgramCreatorProp
  const exportToPDF = async () => {
     if (!student || !exportRef.current) return;
 
+    // 1. PDF oluşturulurken kullanıcıya bilgi ver (Opsiyonel ama iyi bir UX)
+    const originalBtnText = document.activeElement?.textContent;
+    if (document.activeElement instanceof HTMLElement) {
+       document.activeElement.innerText = "Hazırlanıyor...";
+    }
+
     const opt = {
-      margin: [10, 10, 10, 10], // Kenar boşluklarını biraz artırdık
+      margin: [10, 10, 10, 10],
       filename: `${student.firstName}_${student.lastName}_Program_${formatLocalDate(currentWindowStart)}.pdf`,
       image: { type: 'jpeg', quality: 0.98 },
-      // KRİTİK AYAR: Sayfa kırılımlarını yönet
-      pagebreak: { mode: 'css', avoid: '.keep-together' },
+      // 'avoid-all' modu, elementleri bölmemek için en agresif moddur.
+      pagebreak: { mode: 'avoid-all', before: '.page-break-force' },
       html2canvas: {
         scale: 2,
         useCORS: true,
         backgroundColor: '#ffffff',
         logging: false,
-        windowWidth: 1400, // Geniş bir pencere simüle et
+        scrollY: 0, // ÖNEMLİ: Scroll kaymasını önler
+        windowWidth: 1400, // Geniş ekran simülasyonu
         onclone: (clonedDoc: Document) => {
           const root = clonedDoc.querySelector('[data-export-root]') as HTMLElement | null;
           if (!root) return;
 
-          // 1. GRID YAPISINI FLEX'E ÇEVİR (PDF motoru Grid'i bölmekte zorlanır)
-          // Mevcut grid sınıflarını temizle ve flex yapısına geç
-          root.style.display = 'flex';
-          root.style.flexWrap = 'wrap';
-          root.style.gap = '15px';
-          root.style.justifyContent = 'flex-start';
-          root.style.width = '100%';
-          
-          // Izgara sınıflarını (grid-cols-...) etkisiz hale getir
-          root.className = root.className.replace(/grid-cols-\S+/g, '');
-
-          // 2. GÜN KARTLARINI DÜZENLE (Bölünmez yap)
-          const dayCards = root.querySelectorAll('.bg-white.rounded-lg.shadow-md');
-          dayCards.forEach((cardNode) => {
-            const card = cardNode as HTMLElement;
-            
-            // "keep-together" sınıfını ekle (opt.pagebreak ayarı bunu arıyor)
-            card.classList.add('keep-together');
-            
-            // Flex ayarları: Kart genişliğini ayarla (Sayfada yan yana 3-4 tane sığacak şekilde)
-            card.style.flex = '1 1 300px'; // Esnek genişlik, minimum 300px
-            card.style.maxWidth = '32%';     // Yan yana 3 tane sığsın (A4 Yatay için ideal)
-            card.style.marginBottom = '20px'; // Altına boşluk bırak
-            
-            // Kartın içindeki taşmaları serbest bırak
-            card.style.height = 'auto';
-            card.style.overflow = 'visible';
-            
-            // Gölgeleri kaldır (PDF'te bazen siyah kutu yapar)
-            card.style.boxShadow = 'none';
-            card.style.border = '1px solid #e5e7eb'; // Gölge yerine ince kenarlık
+          // --- ADIM 1: ANİMASYONLARI VE TRANSFORMLARI TEMİZLE (Beyaz Ekran Çözümü) ---
+          // AOS ve Premium efektler PDF'te sorun yaratır. Hepsini nötrle.
+          const animatedElements = clonedDoc.querySelectorAll('.aos-element, .premium-card, .premium-button');
+          animatedElements.forEach(el => {
+            const element = el as HTMLElement;
+            element.classList.remove('aos-element', 'aos-animate', 'premium-card');
+            element.style.opacity = '1';       // Görünür yap
+            element.style.transform = 'none';  // Dönüşümü iptal et
+            element.style.transition = 'none'; // Geçişleri kapat
+            element.style.animation = 'none';  // Animasyonları kapat
+            element.style.boxShadow = 'none';  // Gölgeleri kaldır (PDF'te bazen siyah çıkar)
           });
 
-          // 3. TEXTAREA -> DIV DÖNÜŞÜMÜ (İçerik kesilmesini önle)
+          // --- ADIM 2: LAYOUT DÜZENLEMESİ (Grid -> Flex) ---
+          root.style.display = 'flex';
+          root.style.flexWrap = 'wrap';
+          root.style.gap = '20px';
+          root.style.justifyContent = 'flex-start';
+          root.style.width = '100%';
+          // Grid sınıflarını temizle
+          root.className = root.className.replace(/grid-cols-\S+/g, '');
+
+          // Gün Kartlarını Düzenle
+          const dayCards = root.querySelectorAll('.bg-white.rounded-lg.shadow-md');
+          dayCards.forEach((cardNode, index) => {
+            const card = cardNode as HTMLElement;
+            card.classList.add('keep-together'); // Bölünmemesi için işaretle
+            
+            // A4 Yatayda yan yana 3 tane sığacak şekilde ayarla
+            card.style.flex = '0 0 32%'; 
+            card.style.maxWidth = '32%';
+            card.style.marginBottom = '20px';
+            
+            // İçerik taşmalarını göster
+            card.style.overflow = 'visible';
+            card.style.height = 'auto';
+            card.style.border = '1px solid #ddd'; // Gölge yerine kenarlık
+            card.style.boxShadow = 'none';
+          });
+
+          // --- ADIM 3: TEXTAREA DÖNÜŞÜMÜ (Metin Kesilmesi Çözümü) ---
           root.querySelectorAll('textarea').forEach(node => {
             const ta = node as HTMLTextAreaElement;
             const div = clonedDoc.createElement('div');
             const style = window.getComputedStyle(ta);
             
-            // Stilleri kopyala
             Array.from(style).forEach(key => {
               div.style.setProperty(key, style.getPropertyValue(key), style.getPropertyPriority(key));
             });
 
-            // Metni al ve div'e koy
+            // Metin içeriği
             div.textContent = ta.value || ta.placeholder || '';
-
-            // Kritik Yükseklik Ayarları
-            div.style.height = 'auto';
-            div.style.minHeight = style.height; // Orijinalden kısa olma
+            
+            // Stil Override'ları
+            div.style.display = 'block';
+            div.style.height = 'auto';           // Yükseklik serbest
+            div.style.minHeight = style.height;
             div.style.width = '100%';
-            div.style.whiteSpace = 'pre-wrap';
-            div.style.wordBreak = 'break-word';
+            div.style.whiteSpace = 'pre-wrap';   // Satır sonlarını koru
+            div.style.wordBreak = 'break-word';  // Uzun kelimeleri böl
             div.style.overflow = 'visible';
             div.style.resize = 'none';
-            div.style.display = 'block';
-            div.style.paddingBottom = '4px'; // Harf kuyrukları için güvenli bölge
+            div.style.paddingBottom = '5px';     // Alt boşluk (kesilmeyi önler)
+            div.style.lineHeight = '1.4';        // Satır aralığını rahatlat
 
-            // Tipografi düzeltmeleri
+            // Font düzeltmeleri
             if (ta.className.includes('font-medium')) { 
                 div.style.fontWeight = '600'; 
-                div.style.color = '#000';
+                div.style.color = '#111827'; // Koyu gri/siyah
+            } else {
+                div.style.fontSize = '12px'; // Küçük notlar için
             }
 
             ta.replaceWith(div);
           });
 
-          // Gereksiz butonları temizle
+          // Gereksiz buton ve ikonları sil
           root.querySelectorAll('button, svg').forEach(n => n.remove());
         },
       },
       jsPDF: { unit: 'mm', format: 'a4', orientation: 'landscape', compress: true },
     } as const;
 
-    // İşlemden önce tarayıcıyı rahatlat
-    await new Promise(r => setTimeout(r, 100));
-    await html2pdf().set(opt).from(exportRef.current).save();
+    // Tarayıcının nefes alması için kısa bekleme
+    await new Promise(r => setTimeout(r, 200));
+    
+    try {
+        await html2pdf().set(opt).from(exportRef.current).save();
+    } finally {
+        // İşlem bitince buton metnini geri al (eğer değiştirdiyseniz)
+        if (document.activeElement instanceof HTMLElement) {
+            document.activeElement.innerText = "PDF İndir";
+         }
+    }
   };
 
   if (!student) {
