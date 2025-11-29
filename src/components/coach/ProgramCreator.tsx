@@ -254,8 +254,8 @@ export default function ProgramCreator({ studentId, onBack }: ProgramCreatorProp
         backgroundColor: '#ffffff',
         logging: false,
         // Sabit genişlik ve yükseklik ayarları ile tam görünüm garanti edilir
-        width: 1400, 
-        windowWidth: 1400
+        width: 1500, // 1400px yetmediği için 1500px yapıldı
+        windowWidth: 1500
       });
 
       const link = document.createElement('a');
@@ -520,8 +520,8 @@ export default function ProgramCreator({ studentId, onBack }: ProgramCreatorProp
       {/* GİZLİ PNG ÇIKTI ŞABLONU (Kesin Çözüm) */}
       {/* Bu alan ekranda görünmez (absolute ve left -9999px) ama render edilirken kullanılır */}
       {/* Textarea yerine DIV kullanıldığı için yazılar kesilmez! */}
-      <div style={{ position: 'absolute', left: '-9999px', top: 0, width: '1400px', zIndex: -1000 }}>
-        <div ref={printRef} className="bg-white p-8" style={{ width: '1400px', minHeight: '800px' }}>
+      <div style={{ position: 'absolute', left: '-9999px', top: 0, width: '1500px', zIndex: -1000 }}>
+        <div ref={printRef} className="bg-white p-8" style={{ width: '1500px', minHeight: '800px' }}>
           {/* Başlık */}
           <div className="mb-8 border-b-2 border-gray-200 pb-6">
             <h1 className="text-3xl font-bold text-gray-800 mb-2">
