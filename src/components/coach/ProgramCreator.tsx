@@ -592,13 +592,14 @@ export default function ProgramCreator({ studentId, onBack }: ProgramCreatorProp
                                     
                                     <div className="flex flex-wrap gap-2">
                                         {task.courseName && (
-                                            <span className="px-2 py-1 bg-gray-100 text-gray-600 text-[10px] font-bold rounded uppercase tracking-wide border border-gray-200">
+                                            <span className="px-2 py-1 bg-gray-100 text-gray-600 text-[10px] font-bold rounded uppercase tracking-wide border border-gray-200 inline-flex items-center leading-none">
                                                 {task.courseName}
                                             </span>
                                         )}
                                         {task.duration && (
-                                            <span className="px-2 py-1 bg-blue-50 text-blue-700 text-[10px] font-bold rounded flex items-center gap-1 border border-blue-100">
-                                                ⏱ {task.duration}
+                                            <span className="px-2 py-1 bg-blue-50 text-blue-700 text-[10px] font-bold rounded inline-flex items-center gap-1 border border-blue-100 leading-none">
+                                                <span>⏱</span>
+                                                <span>{task.duration}</span>
                                             </span>
                                         )}
                                     </div>
