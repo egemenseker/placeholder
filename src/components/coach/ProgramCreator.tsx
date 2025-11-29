@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { ArrowLeft, Plus, Check, ChevronLeft, ChevronRight, MoreVertical, Trash2, Download } from 'lucide-react';
-import html2pdf from 'html2pdf.js';
+import html2canvas from 'html2canvas';
+import jsPDF from 'jspdf';
 import { useApp } from '../../contexts/AppContext';
 import { Task, DayProgram } from '../../types';
 
@@ -46,7 +47,7 @@ const getCanonicalWeekStart = (date: Date): Date => {
 export default function ProgramCreator({ studentId, onBack }: ProgramCreatorProps) {
   const { students, programs, addProgram, updateProgram, user } = useApp();
   const student = students?.find(s => s.id === studentId);
-  const exportRef = useRef<HTMLDivElement>(null);
+  const programGridRef = useRef<HTMLDivElement>(null);
 
   const [currentWindowStart, setCurrentWindowStart] = useState(() => normalizeDate(new Date()));
   const [days, setDays] = useState<DayProgram[]>([]);
@@ -231,119 +232,63 @@ export default function ProgramCreator({ studentId, onBack }: ProgramCreatorProp
     }
   };
 
- const exportToPDF = async () => {
-  if (!student || !exportRef.current) return;
+  const exportToPDF = async () => {
+    if (!programGridRef.current || !student) return;
 
-  const opt = {
-    margin: [5, 5, 5, 5],
-    filename: `${student.firstName}_${student.lastName}_Program_${formatLocalDate(currentWindowStart)}.pdf`,
-    image: { type: 'jpeg', quality: 0.98 },
-    html2canvas: {
-      scale: 2,
-      useCORS: true,
-      backgroundColor: '#ffffff',
-      foreignObjectRendering: true, // form kontrolleri için şart
-      logging: false,
-      windowWidth: 1400,
-      onclone: (clonedDoc: Document) => {
-        const root = clonedDoc.querySelector('[data-export-root]') as HTMLElement | null;
-        if (!root) return;
+    try {
+      const canvas = await html2canvas(programGridRef.current, {
+        scale: 2,
+        useCORS: true,
+        backgroundColor: '#f9fafb',
+        logging: false,
+      });
 
-        // Genel: clipping ve sabit yükseklikleri kaldır
-        root.querySelectorAll<HTMLElement>('*').forEach(el => {
-          const cs = clonedDoc.defaultView!.getComputedStyle(el);
-          if (cs.overflow !== 'visible') el.style.overflow = 'visible';
-          if (cs.maxHeight !== 'none') { el.style.maxHeight = 'none'; el.style.height = 'auto'; }
-          // yuvarlatma kırpmasını önlemek için PDF'te radius'ları sıfırla
-          if (cs.borderRadius && cs.borderRadius !== '0px') el.style.borderRadius = '0';
-        });
+      const imgData = canvas.toDataURL('image/png');
+      const pdf = new jsPDF({
+        orientation: 'landscape',
+        unit: 'mm',
+        format: 'a4',
+      });
 
-        // TEXTAREA → DIV dönüşümü (yükseklik kaybını bitirir)
-        root.querySelectorAll('textarea').forEach(node => {
-          const ta = node as HTMLTextAreaElement;
-          const div = clonedDoc.createElement('div');
-          div.textContent = ta.value || ta.placeholder || '';
-          const VOW = /[aeıioöuüAEIİOÖUÜ]/;
+      const pdfWidth = pdf.internal.pageSize.getWidth();
+      const pdfHeight = pdf.internal.pageSize.getHeight();
+      const imgWidth = canvas.width;
+      const imgHeight = canvas.height;
+      const ratio = Math.min(pdfWidth / imgWidth, pdfHeight / imgHeight);
+      const imgX = (pdfWidth - imgWidth * ratio) / 2;
+      const imgY = 10;
 
-// kelimeyi 6–10 karakterde bir, mümkünse ünlüden sonra kır
-function hyphenateTrWord(w: string): string {
-  if (w.length < 12) return w; // kısa kelimeyi bozma
-  let out = '';
-  let i = 0;
-  while (i < w.length) {
-    const nextCut = Math.min(i + 8, w.length);      // hedef blok uzunluğu
-    let j = nextCut;
-    // ünlüden sonra kesmeye çalış
-    while (j > i + 4 && j < w.length && !VOW.test(w[j - 1])) j--;
-    if (j <= i + 4) j = nextCut;                    // mecburen hedefte kes
-    out += w.slice(i, j) + (j < w.length ? '\u00AD' : '');
-    i = j;
-  }
-  return out;
-}
+      pdf.addImage(imgData, 'PNG', imgX, imgY, imgWidth * ratio, imgHeight * ratio);
 
-function hyphenateTrLine(line: string): string {
-  return line.replace(/\p{L}{12,}/gu, (m) => hyphenateTrWord(m));
-}
+      const logo = new Image();
+      logo.crossOrigin = 'anonymous';
+      logo.src = '/arı koçluk logo.jpeg';
 
-const raw = ta.value || ta.placeholder || '';
-const txt = hyphenateTrLine(raw);
+      await new Promise((resolve, reject) => {
+        logo.onload = resolve;
+        logo.onerror = reject;
+      }).catch(() => {
+        console.warn('Logo yüklenemedi, PDF logosuz oluşturulacak');
+      });
 
-div.textContent = txt;
-div.style.whiteSpace = 'normal';
-div.style.wordBreak = 'break-word';
-div.style.hyphens = 'manual';
-          const isName = ta.className.includes('text-sm') && ta.className.includes('font-medium');
-          const isDur = ta.placeholder?.toLowerCase() === 'süre';
-          const isCourse = ta.placeholder?.toLowerCase() === 'ders adı';
+      if (logo.complete && logo.naturalHeight !== 0) {
+        const logoWidth = 60;
+        const logoHeight = 60;
+        const logoX = (pdfWidth - logoWidth) / 2;
+        const logoY = (pdfHeight - logoHeight) / 2;
 
-          div.style.whiteSpace = 'pre-wrap';
-          div.style.wordBreak = 'break-word';
-          div.style.lineHeight = '1.6';
-          div.style.padding = '0';
-          div.style.margin = '0';
+        pdf.saveGraphicsState();
+        pdf.setGState(new pdf.GState({ opacity: 0.1 }));
+        pdf.addImage(logo, 'JPEG', logoX, logoY, logoWidth, logoHeight);
+        pdf.restoreGraphicsState();
+      }
 
-          if (isName) { div.style.fontSize = '14px'; div.style.fontWeight = '600'; div.style.color = '#1f2937'; }
-          else if (isDur) { div.style.fontSize = '12px'; div.style.color = '#4b5563'; }
-          else if (isCourse) { div.style.fontSize = '12px'; div.style.color = '#6b7280'; }
-          else { div.style.fontSize = '12px'; }
-
-          ta.replaceWith(div);
-        });
-
-        // Kartların ve flex ebeveynlerin kısıtlarını kaldır
-        root.querySelectorAll<HTMLElement>('[class*="border"]').forEach(card => {
-          card.style.overflow = 'visible';
-          card.style.minHeight = 'auto';
-          card.style.height = 'auto';
-          card.style.maxHeight = 'none';
-          // gölgeyi kaldır, PDF’te artefakt yapabiliyor
-          card.style.boxShadow = 'none';
-        });
-        root.querySelectorAll<HTMLElement>('.flex').forEach(f => {
-          f.style.alignItems = 'flex-start';
-          f.style.overflow = 'visible';
-        });
-
-        // UI buton ve ikonlarını kaldır
-        root.querySelectorAll('button, svg').forEach(n => n.remove());
-      },
-    },
-    jsPDF: { unit: 'mm', format: 'a4', orientation: 'landscape', compress: true },
-  } as const;
-
-  // Ölçülerin hesaplanması için bir frame bekle
-  await new Promise(r => requestAnimationFrame(() => r(null)));
-
-  const worker: any = html2pdf().set(opt).from(exportRef.current).toCanvas();
-  const canvas: HTMLCanvasElement = await worker.get('canvas');
-  if (!canvas || canvas.width === 0 || canvas.height === 0) {
-    alert('PDF kaynağı boş görünüyor.');
-    return;
-  }
-  await worker.toPdf().save();
-};
-;
+      pdf.save(`${student.firstName}_${student.lastName}_Program_${formatLocalDate(currentWindowStart)}.pdf`);
+    } catch (error) {
+      console.error('PDF oluşturma hatası:', error);
+      alert('PDF oluşturulurken bir hata oluştu!');
+    }
+  };
 
   if (!student) {
     return (
@@ -431,7 +376,7 @@ div.style.hyphens = 'manual';
         </div>
 
         {/* Grid */}
-        <div ref={exportRef} data-export-root className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-7 gap-4">
+        <div ref={programGridRef} className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-7 gap-4">
           {(days || []).map((day, dayIndex) => (
             <div key={dayIndex} className="bg-white rounded-lg shadow-md p-4">
               {/* Day Header */}
