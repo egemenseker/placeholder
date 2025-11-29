@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { ArrowLeft, Plus, Check, ChevronLeft, ChevronRight, MoreVertical, Trash2, Download } from 'lucide-react';
+import { ArrowLeft, Plus, Check, ChevronLeft, ChevronRight, MoreVertical, Trash2, Download, Clock, BookOpen, Calendar } from 'lucide-react';
 import html2canvas from 'html2canvas';
 import { useApp } from '../../contexts/AppContext';
 import { Task, DayProgram } from '../../types';
@@ -236,7 +236,7 @@ export default function ProgramCreator({ studentId, onBack }: ProgramCreatorProp
     }
   };
 
-  // YENİ NESİL PNG EXPORT FONKSİYONU
+  // PNG Export Fonksiyonu
   const exportToPNG = async () => {
     if (!printRef.current || !student) return;
 
@@ -513,8 +513,7 @@ export default function ProgramCreator({ studentId, onBack }: ProgramCreatorProp
         </div>
       </div>
 
-      {/* YENİ GİZLİ PNG ÇIKTI ŞABLONU (ÖZEL TASARIM) */}
-      {/* Ekranda görünmez ama render edilirken kullanılır */}
+      {/* YENİ GİZLİ PNG ÇIKTI ŞABLONU (GÜNCELLENMİŞ PREMIUM SARI-TURUNCU TASARIM) */}
       <div style={{ position: 'absolute', left: '-9999px', top: 0, zIndex: -1000 }}>
         <div ref={printRef} className="bg-white p-10 box-border relative" style={{ width: '1600px', minHeight: '1000px', fontFamily: 'Inter, sans-serif' }}>
             
@@ -524,21 +523,21 @@ export default function ProgramCreator({ studentId, onBack }: ProgramCreatorProp
             </div>
 
             {/* Çıktı Başlık Alanı */}
-            <div className="flex justify-between items-center mb-10 border-b-4 border-blue-600 pb-6 relative z-10">
+            <div className="flex justify-between items-center mb-10 border-b-2 border-orange-100 pb-6 relative z-10">
                 <div className="flex items-center gap-6">
-                    <div className="w-16 h-16 bg-blue-600 rounded-full flex items-center justify-center text-white font-bold text-2xl shadow-lg">
+                    <div className="w-16 h-16 bg-orange-500 rounded-full flex items-center justify-center text-white font-bold text-2xl shadow-sm">
                         {student.firstName[0]}{student.lastName[0]}
                     </div>
                     <div>
-                        <h1 className="text-4xl font-bold text-gray-900 mb-1 tracking-tight">
+                        <h1 className="text-4xl font-bold text-gray-800 mb-1 tracking-tight">
                             {student.firstName} {student.lastName}
                         </h1>
-                        <h2 className="text-2xl text-blue-600 font-medium">Haftalık Çalışma Programı</h2>
+                        <h2 className="text-2xl text-orange-600 font-medium">Haftalık Çalışma Programı</h2>
                     </div>
                 </div>
                 <div className="text-right">
-                     <div className="bg-gray-50 px-8 py-4 rounded-xl border border-gray-200 shadow-sm">
-                        <p className="text-xs text-gray-500 uppercase tracking-wider font-bold mb-1">TARİH ARALIĞI</p>
+                     <div className="bg-orange-50 px-8 py-4 rounded-lg border border-orange-100 shadow-sm">
+                        <p className="text-xs text-orange-500 uppercase tracking-wider font-bold mb-1">TARİH ARALIĞI</p>
                         <p className="text-xl font-bold text-gray-800">
                             {currentWindowStart.toLocaleDateString('tr-TR')} - {addDays(currentWindowStart, 6).toLocaleDateString('tr-TR')}
                         </p>
@@ -546,70 +545,72 @@ export default function ProgramCreator({ studentId, onBack }: ProgramCreatorProp
                 </div>
             </div>
 
-            {/* Günler - Flexbox ile yan yana ve eşit genişlikte */}
+            {/* Günler */}
             <div className="flex w-full gap-4 items-stretch relative z-10">
                 {(days || []).map((day, index) => (
                     <div 
                         key={`print-${index}`} 
-                        className="flex-1 flex flex-col bg-white border border-gray-200 rounded-xl overflow-hidden shadow-sm"
+                        className="flex-1 flex flex-col bg-white border border-orange-100 rounded-lg overflow-hidden shadow-sm"
                         style={{ minWidth: 0 }}
                     >
                         {/* Gün Başlığı */}
-                        <div className={`py-4 px-2 text-center border-b ${
-                            index === 6 ? 'bg-red-50 border-red-100' : 'bg-gray-50 border-gray-100'
+                        <div className={`py-3 px-2 text-center border-b ${
+                            index === 6 ? 'bg-orange-100 border-orange-200' : 'bg-orange-50 border-orange-100'
                         }`}>
-                            <h3 className={`font-bold text-xl ${
-                                 index === 6 ? 'text-red-700' : 'text-gray-800'
+                            <h3 className={`font-bold text-lg ${
+                                 index === 6 ? 'text-orange-700' : 'text-gray-800'
                             }`}>
                                 {day.dayName}
                             </h3>
-                            <p className="text-xs text-gray-500 mt-1 font-medium">
+                            <p className="text-xs text-gray-500 mt-1">
                                 {new Date(day.date).toLocaleDateString('tr-TR', { day: 'numeric', month: 'long' })}
                             </p>
                         </div>
 
                         {/* Görevler Listesi */}
-                        <div className="p-3 flex-1 bg-white space-y-3">
+                        <div className="p-3 flex-1 bg-white space-y-2">
                             {(day.tasks || []).map((task, i) => {
                                 const visualState = getTaskVisualState(index, task);
                                 
-                                let cardClasses = 'bg-white border-blue-500 border-t border-r border-b border-gray-100'; // Default Neutral
+                                // Default Style (Nötr): Beyaz arka plan, ince turuncu kenarlık
+                                let cardClasses = 'bg-white border-l-4 border-orange-300';
                                 
                                 if (visualState === 'completed') {
-                                    cardClasses = 'bg-green-50 border-green-500';
+                                    // Completed (Yapıldı): Hafif yeşil, koyu yeşil kenar
+                                    cardClasses = 'bg-green-50 border-l-4 border-green-500';
                                 } else if (visualState === 'failed') {
-                                    cardClasses = 'bg-red-50 border-red-500';
+                                    // Failed (Yapılmadı): Hafif kırmızı, kırmızı kenar
+                                    cardClasses = 'bg-red-50 border-l-4 border-red-500';
                                 }
 
                                 return (
                                 <div 
                                     key={i} 
-                                    className={`p-3 rounded-lg border-l-4 shadow-sm relative overflow-hidden flex flex-col gap-2 ${cardClasses}`}
+                                    className={`p-3 rounded border border-gray-100 shadow-sm relative overflow-hidden flex flex-col gap-2 ${cardClasses}`}
                                 >
-                                    <div className="font-bold text-gray-900 text-sm leading-snug break-words whitespace-pre-wrap">
+                                    <div className="font-semibold text-gray-900 text-sm leading-snug break-words whitespace-pre-wrap">
                                         {task.name || 'İsimsiz Görev'}
                                     </div>
                                     
                                     <div className="flex flex-wrap gap-2">
                                         {task.courseName && (
-                                            <span className="px-2 py-1 bg-gray-100 text-gray-600 text-[10px] font-bold rounded uppercase tracking-wide border border-gray-200">
-                                                {task.courseName}
-                                            </span>
+                                            <div className="flex items-center justify-center px-2 py-1 bg-orange-50 text-orange-700 text-[10px] font-bold rounded border border-orange-200 h-6">
+                                                <span className="leading-none">{task.courseName}</span>
+                                            </div>
                                         )}
                                         {task.duration && (
-                                            <span className="px-2 py-1 bg-blue-50 text-blue-700 text-[10px] font-bold rounded flex items-center gap-1 border border-blue-100">
-                                                ⏱ {task.duration}
-                                            </span>
+                                            <div className="flex items-center justify-center gap-1 px-2 py-1 bg-amber-50 text-amber-700 text-[10px] font-bold rounded border border-amber-200 h-6">
+                                                <Clock className="w-3 h-3" />
+                                                <span className="leading-none pt-[1px]">{task.duration}</span>
+                                            </div>
                                         )}
                                     </div>
                                 </div>
                             )})}
 
                             {(!day.tasks || day.tasks.length === 0) && (
-                                <div className="h-full flex flex-col items-center justify-center py-12 opacity-30">
-                                    <div className="w-16 h-1 bg-gray-300 rounded-full mb-2"></div>
-                                    <div className="w-8 h-1 bg-gray-300 rounded-full mb-4"></div>
-                                    <span className="text-xs font-bold text-gray-400 uppercase tracking-widest">BOŞ GÜN</span>
+                                <div className="h-full flex flex-col items-center justify-center py-8 opacity-30">
+                                    <span className="text-xs font-bold text-orange-400 uppercase tracking-widest">BOŞ</span>
                                 </div>
                             )}
                         </div>
@@ -618,13 +619,12 @@ export default function ProgramCreator({ studentId, onBack }: ProgramCreatorProp
             </div>
 
             {/* Alt Bilgi */}
-            <div className="mt-12 pt-6 border-t border-gray-100 flex justify-between items-center text-gray-400 text-sm relative z-10">
+            <div className="mt-8 pt-6 border-t border-orange-100 flex justify-between items-center text-gray-400 text-sm relative z-10">
                 <div className="flex items-center gap-2">
-                    <div className="w-2 h-2 bg-blue-600 rounded-full"></div>
-                    <span className="font-medium text-gray-500">Arı Koçluk Sistemleri - Özel Çalışma Programı</span>
+                    <span className="font-medium text-orange-500">Arı Koçluk Sistemleri</span>
                 </div>
                 <div className="font-medium opacity-60">
-                    Oluşturulma Tarihi: {new Date().toLocaleDateString('tr-TR', { year: 'numeric', month: 'long', day: 'numeric' })}
+                    {new Date().toLocaleDateString('tr-TR')}
                 </div>
             </div>
         </div>
