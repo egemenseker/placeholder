@@ -236,7 +236,7 @@ export default function ProgramCreator({ studentId, onBack }: ProgramCreatorProp
     }
   };
 
-  // YENİ NESİL PNG EXPORT FONKSİYONU
+  // PNG Export Fonksiyonu
   const exportToPNG = async () => {
     if (!printRef.current || !student) return;
 
@@ -246,7 +246,6 @@ export default function ProgramCreator({ studentId, onBack }: ProgramCreatorProp
     }
 
     try {
-      // Çıktı kalitesini artırmak için ölçeklendirme ve genişlik ayarları
       const canvas = await html2canvas(printRef.current, {
         scale: 2, 
         useCORS: true,
@@ -514,38 +513,31 @@ export default function ProgramCreator({ studentId, onBack }: ProgramCreatorProp
         </div>
       </div>
 
-      {/* YENİ GİZLİ PNG ÇIKTI ŞABLONU (ÖZEL TASARIM) */}
-      {/* Ekranda görünmez ama render edilirken kullanılır */}
+      {/* YENİ GİZLİ PNG ÇIKTI ŞABLONU (GÜNCELLENMİŞ SADE VE HİZALI TASARIM) */}
       <div style={{ position: 'absolute', left: '-9999px', top: 0, zIndex: -1000 }}>
-        <div ref={printRef} className="bg-gray-50 p-10 box-border relative" style={{ width: '1600px', minHeight: '1000px', fontFamily: 'Inter, sans-serif' }}>
+        <div ref={printRef} className="bg-white p-10 box-border relative" style={{ width: '1600px', minHeight: '1000px', fontFamily: 'Inter, sans-serif' }}>
             
-            {/* Arkaplan Deseni */}
-            <div className="absolute inset-0 opacity-5 pointer-events-none z-0" style={{ backgroundImage: 'radial-gradient(#4B5563 1px, transparent 1px)', backgroundSize: '20px 20px' }}></div>
-
             {/* Logo Filigranı */}
             <div className="absolute inset-0 flex items-center justify-center opacity-10 pointer-events-none z-0">
                 <img src="/arı koçluk logo.jpg" alt="Arı Koçluk" className="w-1/2 h-auto object-contain" />
             </div>
 
             {/* Çıktı Başlık Alanı */}
-            <div className="flex justify-between items-center mb-10 border-b border-gray-200 pb-6 relative z-10 bg-white p-6 rounded-2xl shadow-sm">
+            <div className="flex justify-between items-center mb-10 border-b-2 border-gray-100 pb-6 relative z-10">
                 <div className="flex items-center gap-6">
-                    <div className="w-20 h-20 bg-blue-600 rounded-2xl flex items-center justify-center text-white font-bold text-3xl shadow-lg transform -rotate-3">
+                    <div className="w-16 h-16 bg-blue-600 rounded-full flex items-center justify-center text-white font-bold text-2xl shadow-sm">
                         {student.firstName[0]}{student.lastName[0]}
                     </div>
                     <div>
-                        <h1 className="text-4xl font-bold text-gray-900 mb-1 tracking-tight">
+                        <h1 className="text-4xl font-bold text-gray-800 mb-1 tracking-tight">
                             {student.firstName} {student.lastName}
                         </h1>
-                        <div className="flex items-center gap-2 text-blue-600">
-                           <Calendar className="w-5 h-5" />
-                           <h2 className="text-2xl font-medium">Haftalık Çalışma Programı</h2>
-                        </div>
+                        <h2 className="text-2xl text-blue-600 font-medium">Haftalık Çalışma Programı</h2>
                     </div>
                 </div>
                 <div className="text-right">
-                     <div className="bg-blue-50 px-8 py-4 rounded-xl border border-blue-100 shadow-sm">
-                        <p className="text-xs text-blue-600 uppercase tracking-wider font-bold mb-1">TARİH ARALIĞI</p>
+                     <div className="bg-gray-50 px-8 py-4 rounded-lg border border-gray-100 shadow-sm">
+                        <p className="text-xs text-gray-500 uppercase tracking-wider font-bold mb-1">TARİH ARALIĞI</p>
                         <p className="text-xl font-bold text-gray-800">
                             {currentWindowStart.toLocaleDateString('tr-TR')} - {addDays(currentWindowStart, 6).toLocaleDateString('tr-TR')}
                         </p>
@@ -553,62 +545,60 @@ export default function ProgramCreator({ studentId, onBack }: ProgramCreatorProp
                 </div>
             </div>
 
-            {/* Günler - Flexbox ile yan yana ve eşit genişlikte */}
+            {/* Günler */}
             <div className="flex w-full gap-4 items-stretch relative z-10">
                 {(days || []).map((day, index) => (
                     <div 
                         key={`print-${index}`} 
-                        className="flex-1 flex flex-col bg-white border border-gray-200 rounded-2xl overflow-hidden shadow-lg"
+                        className="flex-1 flex flex-col bg-white border border-gray-200 rounded-lg overflow-hidden shadow-sm"
                         style={{ minWidth: 0 }}
                     >
                         {/* Gün Başlığı */}
-                        <div className={`py-4 px-2 text-center border-b ${
+                        <div className={`py-3 px-2 text-center border-b ${
                             index === 6 ? 'bg-red-50 border-red-100' : 'bg-gray-50 border-gray-100'
                         }`}>
-                            <h3 className={`font-bold text-xl ${
+                            <h3 className={`font-bold text-lg ${
                                  index === 6 ? 'text-red-700' : 'text-gray-800'
                             }`}>
                                 {day.dayName}
                             </h3>
-                            <p className="text-xs text-gray-500 mt-1 font-medium">
+                            <p className="text-xs text-gray-500 mt-1">
                                 {new Date(day.date).toLocaleDateString('tr-TR', { day: 'numeric', month: 'long' })}
                             </p>
                         </div>
 
                         {/* Görevler Listesi */}
-                        <div className="p-3 flex-1 bg-white space-y-3">
+                        <div className="p-3 flex-1 bg-white space-y-2">
                             {(day.tasks || []).map((task, i) => {
                                 const visualState = getTaskVisualState(index, task);
                                 
-                                let cardClasses = 'bg-white border-blue-500 border-t border-r border-b border-gray-100'; // Default Neutral
-                                let statusIndicator = null;
+                                let cardClasses = 'bg-white border-gray-200'; // Default Neutral
                                 
                                 if (visualState === 'completed') {
-                                    cardClasses = 'bg-green-50 border-green-500';
+                                    cardClasses = 'bg-green-50 border-green-200';
                                 } else if (visualState === 'failed') {
-                                    cardClasses = 'bg-red-100 border-red-400'; // Daha belirgin kırmızı
+                                    cardClasses = 'bg-red-50 border-red-200';
                                 }
 
                                 return (
                                 <div 
                                     key={i} 
-                                    className={`p-3 rounded-xl border-l-4 shadow-sm relative overflow-hidden flex flex-col gap-2 transition-all ${cardClasses}`}
+                                    className={`p-3 rounded border shadow-sm relative overflow-hidden flex flex-col gap-2 ${cardClasses}`}
                                 >
-                                    <div className="font-bold text-gray-900 text-sm leading-snug break-words whitespace-pre-wrap">
+                                    <div className="font-semibold text-gray-900 text-sm leading-snug break-words whitespace-pre-wrap">
                                         {task.name || 'İsimsiz Görev'}
                                     </div>
                                     
-                                    <div className="flex flex-wrap gap-2 mt-1">
+                                    <div className="flex flex-wrap gap-2">
                                         {task.courseName && (
-                                            <div className="flex items-center gap-1 px-2 py-1 bg-white text-gray-700 text-[10px] font-bold rounded-full uppercase tracking-wide border border-gray-200 shadow-sm">
-                                                <BookOpen className="w-3 h-3" />
-                                                <span className="mt-[1px]">{task.courseName}</span>
+                                            <div className="flex items-center justify-center px-2 py-1 bg-gray-100 text-gray-700 text-[10px] font-bold rounded border border-gray-200 h-6">
+                                                <span className="leading-none">{task.courseName}</span>
                                             </div>
                                         )}
                                         {task.duration && (
-                                            <div className="flex items-center gap-1 px-2 py-1 bg-blue-50 text-blue-700 text-[10px] font-bold rounded-full border border-blue-100 shadow-sm">
+                                            <div className="flex items-center justify-center gap-1 px-2 py-1 bg-blue-50 text-blue-700 text-[10px] font-bold rounded border border-blue-100 h-6">
                                                 <Clock className="w-3 h-3" />
-                                                <span className="mt-[1px]">{task.duration}</span>
+                                                <span className="leading-none pt-[1px]">{task.duration}</span>
                                             </div>
                                         )}
                                     </div>
@@ -616,10 +606,8 @@ export default function ProgramCreator({ studentId, onBack }: ProgramCreatorProp
                             )})}
 
                             {(!day.tasks || day.tasks.length === 0) && (
-                                <div className="h-full flex flex-col items-center justify-center py-12 opacity-40">
-                                    <div className="w-12 h-1 bg-gray-300 rounded-full mb-2"></div>
-                                    <div className="w-6 h-1 bg-gray-300 rounded-full mb-4"></div>
-                                    <span className="text-xs font-bold text-gray-400 uppercase tracking-widest">BOŞ GÜN</span>
+                                <div className="h-full flex flex-col items-center justify-center py-8 opacity-30">
+                                    <span className="text-xs font-bold text-gray-400 uppercase tracking-widest">BOŞ</span>
                                 </div>
                             )}
                         </div>
@@ -628,13 +616,12 @@ export default function ProgramCreator({ studentId, onBack }: ProgramCreatorProp
             </div>
 
             {/* Alt Bilgi */}
-            <div className="mt-10 pt-6 border-t border-gray-200 flex justify-between items-center text-gray-500 text-sm relative z-10">
-                <div className="flex items-center gap-3 bg-white px-4 py-2 rounded-full shadow-sm border border-gray-100">
-                    <div className="w-3 h-3 bg-blue-600 rounded-full animate-pulse"></div>
-                    <span className="font-medium">Arı Koçluk Sistemleri - Özel Çalışma Programı</span>
+            <div className="mt-8 pt-6 border-t border-gray-100 flex justify-between items-center text-gray-400 text-sm relative z-10">
+                <div className="flex items-center gap-2">
+                    <span className="font-medium text-gray-500">Arı Koçluk Sistemleri</span>
                 </div>
-                <div className="font-medium opacity-70">
-                    Oluşturulma Tarihi: {new Date().toLocaleDateString('tr-TR', { year: 'numeric', month: 'long', day: 'numeric' })}
+                <div className="font-medium opacity-60">
+                    {new Date().toLocaleDateString('tr-TR')}
                 </div>
             </div>
         </div>
