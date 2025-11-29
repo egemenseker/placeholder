@@ -47,10 +47,10 @@ export default function ProgramCreator({ studentId, onBack }: ProgramCreatorProp
   const { students, programs, addProgram, updateProgram, user } = useApp();
   const student = students?.find(s => s.id === studentId);
   
-  // Normal düzenleme ekranı referansı (Bunu export için kullanmayacağız)
+  // Normal düzenleme ekranı referansı
   const programGridRef = useRef<HTMLDivElement>(null);
   
-  // ÇIKTI İÇİN ÖZEL REFERANS (Sorunu çözen kısım burası)
+  // ÇIKTI İÇİN ÖZEL REFERANS
   const printRef = useRef<HTMLDivElement>(null);
 
   const [currentWindowStart, setCurrentWindowStart] = useState(() => normalizeDate(new Date()));
@@ -236,26 +236,27 @@ export default function ProgramCreator({ studentId, onBack }: ProgramCreatorProp
     }
   };
 
-  // GÜNCELLENMİŞ PNG EXPORT FONKSİYONU
+  // YENİ NESİL PNG EXPORT FONKSİYONU
   const exportToPNG = async () => {
-    // Artık programGridRef yerine gizli printRef'i kullanıyoruz
     if (!printRef.current || !student) return;
 
-    // Buton metnini güncelle
     const originalBtnText = document.activeElement?.textContent;
     if (document.activeElement instanceof HTMLElement) {
       document.activeElement.innerText = "Hazırlanıyor...";
     }
 
     try {
+      // Çıktı kalitesini artırmak için ölçeklendirme ve genişlik ayarları
       const canvas = await html2canvas(printRef.current, {
-        scale: 2, // Yüksek kalite için scale artırıldı
+        scale: 2, 
         useCORS: true,
         backgroundColor: '#ffffff',
         logging: false,
-        // Sabit genişlik ve yükseklik ayarları ile tam görünüm garanti edilir
-        width: 1500, // 1400px yetmediği için 1500px yapıldı
-        windowWidth: 1500
+        width: 1600, // 7 günü rahat sığdırmak için genişlik artırıldı
+        windowWidth: 1600,
+        // Yükseklik içeriğe göre dinamik olacak ama minimum bir değer veriyoruz
+        height: printRef.current.offsetHeight + 50, 
+        windowHeight: printRef.current.offsetHeight + 50,
       });
 
       const link = document.createElement('a');
@@ -267,7 +268,7 @@ export default function ProgramCreator({ studentId, onBack }: ProgramCreatorProp
       alert('Program indirilirken bir hata oluştu!');
     } finally {
       if (document.activeElement instanceof HTMLElement) {
-        document.activeElement.innerText = "Programı İndir";
+        document.activeElement.innerText = "Programı İndir (PNG)";
       }
     }
   };
@@ -277,10 +278,7 @@ export default function ProgramCreator({ studentId, onBack }: ProgramCreatorProp
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
           <h2 className="text-xl font-semibold text-gray-900 mb-2">Öğrenci bulunamadı!</h2>
-          <button
-            onClick={onBack}
-            className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
-          >
+          <button onClick={onBack} className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
             Geri Dön
           </button>
         </div>
@@ -517,77 +515,108 @@ export default function ProgramCreator({ studentId, onBack }: ProgramCreatorProp
         </div>
       </div>
 
-      {/* GİZLİ PNG ÇIKTI ŞABLONU (Kesin Çözüm) */}
-      {/* Bu alan ekranda görünmez (absolute ve left -9999px) ama render edilirken kullanılır */}
-      {/* Textarea yerine DIV kullanıldığı için yazılar kesilmez! */}
-      <div style={{ position: 'absolute', left: '-9999px', top: 0, width: '1500px', zIndex: -1000 }}>
-        <div ref={printRef} className="bg-white p-8" style={{ width: '1500px', minHeight: '800px' }}>
-          {/* Başlık */}
-          <div className="mb-8 border-b-2 border-gray-200 pb-6">
-            <h1 className="text-3xl font-bold text-gray-800 mb-2">
-              {student.firstName} {student.lastName} - Çalışma Programı
-            </h1>
-            <p className="text-lg text-gray-600">
-              Tarih: {currentWindowStart.toLocaleDateString('tr-TR')} - {addDays(currentWindowStart, 6).toLocaleDateString('tr-TR')}
-            </p>
-          </div>
-
-          {/* İçerik Grid - Flexbox ile düzenlenmiş */}
-          <div className="flex flex-wrap gap-6 items-start content-start">
-            {(days || []).map((day, dayIndex) => (
-              <div 
-                key={`print-${dayIndex}`} 
-                className="bg-white border-2 border-gray-200 rounded-xl p-4 break-inside-avoid shadow-sm"
-                style={{ width: '180px', minHeight: '300px', display: 'flex', flexDirection: 'column' }} 
-              >
-                <div className="text-center mb-4 border-b border-gray-100 pb-3">
-                  <h3 className="font-bold text-xl text-gray-900 bg-gray-50 py-2 rounded-lg">{day.dayName}</h3>
-                  <p className="text-sm text-gray-500 mt-1">{new Date(day.date).toLocaleDateString('tr-TR')}</p>
+      {/* YENİ GİZLİ PNG ÇIKTI ŞABLONU (ÖZEL TASARIM) */}
+      {/* Ekranda görünmez ama render edilirken kullanılır */}
+      <div style={{ position: 'absolute', left: '-9999px', top: 0, zIndex: -1000 }}>
+        <div ref={printRef} className="bg-white p-10 box-border" style={{ width: '1600px', minHeight: '1000px', fontFamily: 'Inter, sans-serif' }}>
+            
+            {/* Çıktı Başlık Alanı */}
+            <div className="flex justify-between items-center mb-10 border-b-4 border-blue-600 pb-6">
+                <div className="flex items-center gap-6">
+                    <div className="w-16 h-16 bg-blue-600 rounded-full flex items-center justify-center text-white font-bold text-2xl shadow-lg">
+                        {student.firstName[0]}{student.lastName[0]}
+                    </div>
+                    <div>
+                        <h1 className="text-4xl font-bold text-gray-900 mb-1 tracking-tight">
+                            {student.firstName} {student.lastName}
+                        </h1>
+                        <h2 className="text-2xl text-blue-600 font-medium">Haftalık Çalışma Programı</h2>
+                    </div>
                 </div>
+                <div className="text-right">
+                     <div className="bg-gray-50 px-8 py-4 rounded-xl border border-gray-200 shadow-sm">
+                        <p className="text-xs text-gray-500 uppercase tracking-wider font-bold mb-1">TARİH ARALIĞI</p>
+                        <p className="text-xl font-bold text-gray-800">
+                            {currentWindowStart.toLocaleDateString('tr-TR')} - {addDays(currentWindowStart, 6).toLocaleDateString('tr-TR')}
+                        </p>
+                     </div>
+                </div>
+            </div>
 
-                <div className="space-y-3 flex-1">
-                  {(day.tasks || []).map((task, i) => (
+            {/* Günler - Flexbox ile yan yana ve eşit genişlikte */}
+            <div className="flex w-full gap-4 items-stretch">
+                {(days || []).map((day, index) => (
                     <div 
-                      key={i} 
-                      className={`p-3 rounded-lg border text-sm ${
-                        task.completed ? 'bg-green-50 border-green-200' : 'bg-white border-gray-200'
-                      }`}
-                      style={{ pageBreakInside: 'avoid' }}
+                        key={`print-${index}`} 
+                        className="flex-1 flex flex-col bg-white border border-gray-200 rounded-xl overflow-hidden shadow-sm"
+                        style={{ minWidth: 0 }}
                     >
-                      <div className="font-bold text-gray-900 text-base mb-1 break-words whitespace-pre-wrap">
-                        {task.name || '-'}
-                      </div>
-                      
-                      <div className="flex flex-col gap-1">
-                         {task.duration && (
-                            <span className="inline-block bg-blue-50 text-blue-800 px-2 py-1 rounded text-xs font-medium border border-blue-100">
-                              ⏱ {task.duration}
-                            </span>
-                          )}
-                          {task.courseName && (
-                            <span className="inline-block bg-purple-50 text-purple-800 px-2 py-1 rounded text-xs font-medium border border-purple-100">
-                              📚 {task.courseName}
-                            </span>
-                          )}
-                      </div>
+                        {/* Gün Başlığı */}
+                        <div className={`py-4 px-2 text-center border-b ${
+                            index === 6 ? 'bg-red-50 border-red-100' : 'bg-gray-50 border-gray-100'
+                        }`}>
+                            <h3 className={`font-bold text-xl ${
+                                 index === 6 ? 'text-red-700' : 'text-gray-800'
+                            }`}>
+                                {day.dayName}
+                            </h3>
+                            <p className="text-xs text-gray-500 mt-1 font-medium">
+                                {new Date(day.date).toLocaleDateString('tr-TR', { day: 'numeric', month: 'long' })}
+                            </p>
+                        </div>
+
+                        {/* Görevler Listesi */}
+                        <div className="p-3 flex-1 bg-white space-y-3">
+                            {(day.tasks || []).map((task, i) => (
+                                <div 
+                                    key={i} 
+                                    className={`p-3 rounded-lg border-l-4 shadow-sm relative overflow-hidden ${
+                                        task.completed 
+                                        ? 'bg-green-50 border-green-500' 
+                                        : 'bg-white border-blue-500 border-t border-r border-b border-gray-100'
+                                    }`}
+                                >
+                                    <div className="font-bold text-gray-900 text-sm mb-2 leading-snug break-words whitespace-pre-wrap">
+                                        {task.name || 'İsimsiz Görev'}
+                                    </div>
+                                    
+                                    <div className="flex flex-wrap gap-2 mt-2">
+                                        {task.courseName && (
+                                            <span className="px-2 py-1 bg-gray-100 text-gray-600 text-[10px] font-bold rounded uppercase tracking-wide border border-gray-200">
+                                                {task.courseName}
+                                            </span>
+                                        )}
+                                        {task.duration && (
+                                            <span className="px-2 py-1 bg-blue-50 text-blue-700 text-[10px] font-bold rounded flex items-center gap-1 border border-blue-100">
+                                                ⏱ {task.duration}
+                                            </span>
+                                        )}
+                                    </div>
+                                </div>
+                            ))}
+
+                            {(!day.tasks || day.tasks.length === 0) && (
+                                <div className="h-full flex flex-col items-center justify-center py-12 opacity-30">
+                                    <div className="w-16 h-1 bg-gray-300 rounded-full mb-2"></div>
+                                    <div className="w-8 h-1 bg-gray-300 rounded-full mb-4"></div>
+                                    <span className="text-xs font-bold text-gray-400 uppercase tracking-widest">BOŞ GÜN</span>
+                                </div>
+                            )}
+                        </div>
                     </div>
-                  ))}
-                  
-                  {(!day.tasks || day.tasks.length === 0) && (
-                    <div className="text-center text-gray-400 text-sm py-8 italic flex flex-col items-center justify-center h-full">
-                      <span>Boş Gün</span>
-                    </div>
-                  )}
+                ))}
+            </div>
+
+            {/* Alt Bilgi */}
+            <div className="mt-12 pt-6 border-t border-gray-100 flex justify-between items-center text-gray-400 text-sm">
+                <div className="flex items-center gap-2">
+                    <div className="w-2 h-2 bg-blue-600 rounded-full"></div>
+                    <span className="font-medium text-gray-500">Arı Koçluk Sistemleri - Özel Çalışma Programı</span>
                 </div>
-              </div>
-            ))}
-          </div>
-          
-          {/* Footer */}
-          <div className="mt-12 pt-6 border-t border-gray-200 flex justify-between items-center text-gray-500 text-sm">
-            <span>Arı Koçluk Sistemleri</span>
-            <span>Oluşturulma Tarihi: {new Date().toLocaleDateString('tr-TR')}</span>
-          </div>
+                <div className="font-medium opacity-60">
+                    Oluşturulma Tarihi: {new Date().toLocaleDateString('tr-TR', { year: 'numeric', month: 'long', day: 'numeric' })}
+                </div>
+            </div>
         </div>
       </div>
 
