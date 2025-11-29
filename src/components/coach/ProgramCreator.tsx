@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { ArrowLeft, Plus, Check, ChevronLeft, ChevronRight, MoreVertical, Trash2, Download } from 'lucide-react';
 import html2canvas from 'html2canvas';
-import jsPDF from 'jspdf';
 import { useApp } from '../../contexts/AppContext';
 import { Task, DayProgram } from '../../types';
 
@@ -232,61 +231,26 @@ export default function ProgramCreator({ studentId, onBack }: ProgramCreatorProp
     }
   };
 
-  const exportToPDF = async () => {
+  const exportToPNG = async () => {
     if (!programGridRef.current || !student) return;
 
     try {
       const canvas = await html2canvas(programGridRef.current, {
-        scale: 2,
+        scale: 3,
         useCORS: true,
-        backgroundColor: '#f9fafb',
+        backgroundColor: '#ffffff',
         logging: false,
+        width: programGridRef.current.scrollWidth,
+        height: programGridRef.current.scrollHeight,
       });
 
-      const imgData = canvas.toDataURL('image/png');
-      const pdf = new jsPDF({
-        orientation: 'landscape',
-        unit: 'mm',
-        format: 'a4',
-      });
-
-      const pdfWidth = pdf.internal.pageSize.getWidth();
-      const pdfHeight = pdf.internal.pageSize.getHeight();
-      const imgWidth = canvas.width;
-      const imgHeight = canvas.height;
-      const ratio = Math.min(pdfWidth / imgWidth, pdfHeight / imgHeight);
-      const imgX = (pdfWidth - imgWidth * ratio) / 2;
-      const imgY = 10;
-
-      pdf.addImage(imgData, 'PNG', imgX, imgY, imgWidth * ratio, imgHeight * ratio);
-
-      const logo = new Image();
-      logo.crossOrigin = 'anonymous';
-      logo.src = '/arı koçluk logo.jpeg';
-
-      await new Promise((resolve, reject) => {
-        logo.onload = resolve;
-        logo.onerror = reject;
-      }).catch(() => {
-        console.warn('Logo yüklenemedi, PDF logosuz oluşturulacak');
-      });
-
-      if (logo.complete && logo.naturalHeight !== 0) {
-        const logoWidth = 60;
-        const logoHeight = 60;
-        const logoX = (pdfWidth - logoWidth) / 2;
-        const logoY = (pdfHeight - logoHeight) / 2;
-
-        pdf.saveGraphicsState();
-        pdf.setGState(new pdf.GState({ opacity: 0.1 }));
-        pdf.addImage(logo, 'JPEG', logoX, logoY, logoWidth, logoHeight);
-        pdf.restoreGraphicsState();
-      }
-
-      pdf.save(`${student.firstName}_${student.lastName}_Program_${formatLocalDate(currentWindowStart)}.pdf`);
+      const link = document.createElement('a');
+      link.download = `${student.firstName}_${student.lastName}_Program_${formatLocalDate(currentWindowStart)}.png`;
+      link.href = canvas.toDataURL('image/png', 1.0);
+      link.click();
     } catch (error) {
-      console.error('PDF oluşturma hatası:', error);
-      alert('PDF oluşturulurken bir hata oluştu!');
+      console.error('PNG oluşturma hatası:', error);
+      alert('Program indirilirken bir hata oluştu!');
     }
   };
 
@@ -325,11 +289,11 @@ export default function ProgramCreator({ studentId, onBack }: ProgramCreatorProp
             </div>
             <div className="flex items-center space-x-3">
               <button
-                onClick={exportToPDF}
+                onClick={exportToPNG}
                 className="flex items-center space-x-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
               >
                 <Download className="w-4 h-4" />
-                <span>PDF İndir</span>
+                <span>Programı İndir</span>
               </button>
               <button
                 onClick={() => saveProgram(days)}
