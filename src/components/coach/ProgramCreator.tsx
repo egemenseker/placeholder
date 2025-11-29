@@ -246,15 +246,13 @@ export default function ProgramCreator({ studentId, onBack }: ProgramCreatorProp
     }
 
     try {
-      // Çıktı kalitesini artırmak için ölçeklendirme ve genişlik ayarları
       const canvas = await html2canvas(printRef.current, {
         scale: 2, 
         useCORS: true,
         backgroundColor: '#ffffff',
         logging: false,
-        width: 1600, // 7 günü rahat sığdırmak için genişlik artırıldı
+        width: 1600,
         windowWidth: 1600,
-        // Yükseklik içeriğe göre dinamik olacak ama minimum bir değer veriyoruz
         height: printRef.current.offsetHeight, 
         windowHeight: printRef.current.offsetHeight,
       });
@@ -383,7 +381,7 @@ export default function ProgramCreator({ studentId, onBack }: ProgramCreatorProp
                         tasks: d.tasks.map(task => {
                           const key = `${dIdx}-${task.id}`;
                           const state = taskReviewStates[key] || 'neutral';
-                          return { ...task, completed: state === 'completed' };
+                          return { ...task, status: state, completed: state === 'completed' };
                         }),
                       }));
                       setDays(updatedDays);
@@ -572,20 +570,27 @@ export default function ProgramCreator({ studentId, onBack }: ProgramCreatorProp
 
                         {/* Görevler Listesi */}
                         <div className="p-3 flex-1 bg-white space-y-3">
-                            {(day.tasks || []).map((task, i) => (
+                            {(day.tasks || []).map((task, i) => {
+                                const visualState = getTaskVisualState(index, task);
+                                
+                                let cardClasses = 'bg-white border-blue-500 border-t border-r border-b border-gray-100'; // Default Neutral
+                                
+                                if (visualState === 'completed') {
+                                    cardClasses = 'bg-green-50 border-green-500';
+                                } else if (visualState === 'failed') {
+                                    cardClasses = 'bg-red-50 border-red-500';
+                                }
+
+                                return (
                                 <div 
                                     key={i} 
-                                    className={`p-3 rounded-lg border-l-4 shadow-sm relative overflow-hidden ${
-                                        task.completed 
-                                        ? 'bg-green-50 border-green-500' 
-                                        : 'bg-red-50 border-red-500' // Yapılmamış görevler için kırmızı arkaplan ve kenarlık
-                                    }`}
+                                    className={`p-3 rounded-lg border-l-4 shadow-sm relative overflow-hidden flex flex-col gap-2 ${cardClasses}`}
                                 >
-                                    <div className="font-bold text-gray-900 text-sm mb-2 leading-snug break-words whitespace-pre-wrap">
+                                    <div className="font-bold text-gray-900 text-sm leading-snug break-words whitespace-pre-wrap">
                                         {task.name || 'İsimsiz Görev'}
                                     </div>
                                     
-                                    <div className="flex flex-wrap gap-2 mt-2">
+                                    <div className="flex flex-wrap gap-2">
                                         {task.courseName && (
                                             <span className="px-2 py-1 bg-gray-100 text-gray-600 text-[10px] font-bold rounded uppercase tracking-wide border border-gray-200">
                                                 {task.courseName}
@@ -598,7 +603,7 @@ export default function ProgramCreator({ studentId, onBack }: ProgramCreatorProp
                                         )}
                                     </div>
                                 </div>
-                            ))}
+                            )})}
 
                             {(!day.tasks || day.tasks.length === 0) && (
                                 <div className="h-full flex flex-col items-center justify-center py-12 opacity-30">
