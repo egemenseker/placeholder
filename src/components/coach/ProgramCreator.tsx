@@ -46,7 +46,12 @@ const getCanonicalWeekStart = (date: Date): Date => {
 export default function ProgramCreator({ studentId, onBack }: ProgramCreatorProps) {
   const { students, programs, addProgram, updateProgram, user } = useApp();
   const student = students?.find(s => s.id === studentId);
+  
+  // Normal düzenleme ekranı referansı (Bunu export için kullanmayacağız)
   const programGridRef = useRef<HTMLDivElement>(null);
+  
+  // ÇIKTI İÇİN ÖZEL REFERANS (Sorunu çözen kısım burası)
+  const printRef = useRef<HTMLDivElement>(null);
 
   const [currentWindowStart, setCurrentWindowStart] = useState(() => normalizeDate(new Date()));
   const [days, setDays] = useState<DayProgram[]>([]);
@@ -231,17 +236,26 @@ export default function ProgramCreator({ studentId, onBack }: ProgramCreatorProp
     }
   };
 
+  // GÜNCELLENMİŞ PNG EXPORT FONKSİYONU
   const exportToPNG = async () => {
-    if (!programGridRef.current || !student) return;
+    // Artık programGridRef yerine gizli printRef'i kullanıyoruz
+    if (!printRef.current || !student) return;
+
+    // Buton metnini güncelle
+    const originalBtnText = document.activeElement?.textContent;
+    if (document.activeElement instanceof HTMLElement) {
+      document.activeElement.innerText = "Hazırlanıyor...";
+    }
 
     try {
-      const canvas = await html2canvas(programGridRef.current, {
-        scale: 3,
+      const canvas = await html2canvas(printRef.current, {
+        scale: 2, // Yüksek kalite için scale artırıldı
         useCORS: true,
         backgroundColor: '#ffffff',
         logging: false,
-        width: programGridRef.current.scrollWidth,
-        height: programGridRef.current.scrollHeight,
+        // Sabit genişlik ve yükseklik ayarları ile tam görünüm garanti edilir
+        width: 1400, 
+        windowWidth: 1400
       });
 
       const link = document.createElement('a');
@@ -251,6 +265,10 @@ export default function ProgramCreator({ studentId, onBack }: ProgramCreatorProp
     } catch (error) {
       console.error('PNG oluşturma hatası:', error);
       alert('Program indirilirken bir hata oluştu!');
+    } finally {
+      if (document.activeElement instanceof HTMLElement) {
+        document.activeElement.innerText = "Programı İndir";
+      }
     }
   };
 
@@ -293,7 +311,7 @@ export default function ProgramCreator({ studentId, onBack }: ProgramCreatorProp
                 className="flex items-center space-x-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
               >
                 <Download className="w-4 h-4" />
-                <span>Programı İndir</span>
+                <span>Programı İndir (PNG)</span>
               </button>
               <button
                 onClick={() => saveProgram(days)}
@@ -339,7 +357,7 @@ export default function ProgramCreator({ studentId, onBack }: ProgramCreatorProp
           })()}
         </div>
 
-        {/* Grid */}
+        {/* Grid (Ekranda Düzenlenebilir Alan) */}
         <div ref={programGridRef} className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-7 gap-4">
           {(days || []).map((day, dayIndex) => (
             <div key={dayIndex} className="bg-white rounded-lg shadow-md p-4">
@@ -498,6 +516,81 @@ export default function ProgramCreator({ studentId, onBack }: ProgramCreatorProp
           ))}
         </div>
       </div>
+
+      {/* GİZLİ PNG ÇIKTI ŞABLONU (Kesin Çözüm) */}
+      {/* Bu alan ekranda görünmez (absolute ve left -9999px) ama render edilirken kullanılır */}
+      {/* Textarea yerine DIV kullanıldığı için yazılar kesilmez! */}
+      <div style={{ position: 'absolute', left: '-9999px', top: 0, width: '1400px', zIndex: -1000 }}>
+        <div ref={printRef} className="bg-white p-8" style={{ width: '1400px', minHeight: '800px' }}>
+          {/* Başlık */}
+          <div className="mb-8 border-b-2 border-gray-200 pb-6">
+            <h1 className="text-3xl font-bold text-gray-800 mb-2">
+              {student.firstName} {student.lastName} - Çalışma Programı
+            </h1>
+            <p className="text-lg text-gray-600">
+              Tarih: {currentWindowStart.toLocaleDateString('tr-TR')} - {addDays(currentWindowStart, 6).toLocaleDateString('tr-TR')}
+            </p>
+          </div>
+
+          {/* İçerik Grid - Flexbox ile düzenlenmiş */}
+          <div className="flex flex-wrap gap-6 items-start content-start">
+            {(days || []).map((day, dayIndex) => (
+              <div 
+                key={`print-${dayIndex}`} 
+                className="bg-white border-2 border-gray-200 rounded-xl p-4 break-inside-avoid shadow-sm"
+                style={{ width: '180px', minHeight: '300px', display: 'flex', flexDirection: 'column' }} 
+              >
+                <div className="text-center mb-4 border-b border-gray-100 pb-3">
+                  <h3 className="font-bold text-xl text-gray-900 bg-gray-50 py-2 rounded-lg">{day.dayName}</h3>
+                  <p className="text-sm text-gray-500 mt-1">{new Date(day.date).toLocaleDateString('tr-TR')}</p>
+                </div>
+
+                <div className="space-y-3 flex-1">
+                  {(day.tasks || []).map((task, i) => (
+                    <div 
+                      key={i} 
+                      className={`p-3 rounded-lg border text-sm ${
+                        task.completed ? 'bg-green-50 border-green-200' : 'bg-white border-gray-200'
+                      }`}
+                      style={{ pageBreakInside: 'avoid' }}
+                    >
+                      <div className="font-bold text-gray-900 text-base mb-1 break-words whitespace-pre-wrap">
+                        {task.name || '-'}
+                      </div>
+                      
+                      <div className="flex flex-col gap-1">
+                         {task.duration && (
+                            <span className="inline-block bg-blue-50 text-blue-800 px-2 py-1 rounded text-xs font-medium border border-blue-100">
+                              ⏱ {task.duration}
+                            </span>
+                          )}
+                          {task.courseName && (
+                            <span className="inline-block bg-purple-50 text-purple-800 px-2 py-1 rounded text-xs font-medium border border-purple-100">
+                              📚 {task.courseName}
+                            </span>
+                          )}
+                      </div>
+                    </div>
+                  ))}
+                  
+                  {(!day.tasks || day.tasks.length === 0) && (
+                    <div className="text-center text-gray-400 text-sm py-8 italic flex flex-col items-center justify-center h-full">
+                      <span>Boş Gün</span>
+                    </div>
+                  )}
+                </div>
+              </div>
+            ))}
+          </div>
+          
+          {/* Footer */}
+          <div className="mt-12 pt-6 border-t border-gray-200 flex justify-between items-center text-gray-500 text-sm">
+            <span>Arı Koçluk Sistemleri</span>
+            <span>Oluşturulma Tarihi: {new Date().toLocaleDateString('tr-TR')}</span>
+          </div>
+        </div>
+      </div>
+
     </div>
   );
 }
