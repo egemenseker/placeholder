@@ -255,8 +255,8 @@ export default function ProgramCreator({ studentId, onBack }: ProgramCreatorProp
         width: 1600, // 7 günü rahat sığdırmak için genişlik artırıldı
         windowWidth: 1600,
         // Yükseklik içeriğe göre dinamik olacak ama minimum bir değer veriyoruz
-        height: printRef.current.offsetHeight + 50, 
-        windowHeight: printRef.current.offsetHeight + 50,
+        height: printRef.current.offsetHeight, 
+        windowHeight: printRef.current.offsetHeight,
       });
 
       const link = document.createElement('a');
@@ -518,10 +518,15 @@ export default function ProgramCreator({ studentId, onBack }: ProgramCreatorProp
       {/* YENİ GİZLİ PNG ÇIKTI ŞABLONU (ÖZEL TASARIM) */}
       {/* Ekranda görünmez ama render edilirken kullanılır */}
       <div style={{ position: 'absolute', left: '-9999px', top: 0, zIndex: -1000 }}>
-        <div ref={printRef} className="bg-white p-10 box-border" style={{ width: '1600px', minHeight: '1000px', fontFamily: 'Inter, sans-serif' }}>
+        <div ref={printRef} className="bg-white p-10 box-border relative" style={{ width: '1600px', minHeight: '1000px', fontFamily: 'Inter, sans-serif' }}>
             
+            {/* Logo Filigranı */}
+            <div className="absolute inset-0 flex items-center justify-center opacity-10 pointer-events-none z-0">
+                <img src="/arı koçluk logo.jpg" alt="Arı Koçluk" className="w-1/2 h-auto object-contain" />
+            </div>
+
             {/* Çıktı Başlık Alanı */}
-            <div className="flex justify-between items-center mb-10 border-b-4 border-blue-600 pb-6">
+            <div className="flex justify-between items-center mb-10 border-b-4 border-blue-600 pb-6 relative z-10">
                 <div className="flex items-center gap-6">
                     <div className="w-16 h-16 bg-blue-600 rounded-full flex items-center justify-center text-white font-bold text-2xl shadow-lg">
                         {student.firstName[0]}{student.lastName[0]}
@@ -544,7 +549,7 @@ export default function ProgramCreator({ studentId, onBack }: ProgramCreatorProp
             </div>
 
             {/* Günler - Flexbox ile yan yana ve eşit genişlikte */}
-            <div className="flex w-full gap-4 items-stretch">
+            <div className="flex w-full gap-4 items-stretch relative z-10">
                 {(days || []).map((day, index) => (
                     <div 
                         key={`print-${index}`} 
@@ -573,7 +578,7 @@ export default function ProgramCreator({ studentId, onBack }: ProgramCreatorProp
                                     className={`p-3 rounded-lg border-l-4 shadow-sm relative overflow-hidden ${
                                         task.completed 
                                         ? 'bg-green-50 border-green-500' 
-                                        : 'bg-white border-blue-500 border-t border-r border-b border-gray-100'
+                                        : 'bg-red-50 border-red-500' // Yapılmamış görevler için kırmızı arkaplan ve kenarlık
                                     }`}
                                 >
                                     <div className="font-bold text-gray-900 text-sm mb-2 leading-snug break-words whitespace-pre-wrap">
@@ -608,7 +613,7 @@ export default function ProgramCreator({ studentId, onBack }: ProgramCreatorProp
             </div>
 
             {/* Alt Bilgi */}
-            <div className="mt-12 pt-6 border-t border-gray-100 flex justify-between items-center text-gray-400 text-sm">
+            <div className="mt-12 pt-6 border-t border-gray-100 flex justify-between items-center text-gray-400 text-sm relative z-10">
                 <div className="flex items-center gap-2">
                     <div className="w-2 h-2 bg-blue-600 rounded-full"></div>
                     <span className="font-medium text-gray-500">Arı Koçluk Sistemleri - Özel Çalışma Programı</span>
